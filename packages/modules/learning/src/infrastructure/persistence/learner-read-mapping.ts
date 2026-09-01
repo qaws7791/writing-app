@@ -1,5 +1,8 @@
-import { createHmac } from "node:crypto"
-
+import {
+  createLearnerStepPresentationScope,
+  orderLearnerStepItems,
+  orderLearnerStepItemsAvoidingPrefix,
+} from "@workspace/contracts/learning/step-presentation-order"
 import type {
   CurriculumVersionId,
   LessonId,
@@ -427,8 +430,13 @@ export function presentLearnerStep(
   step: LearningStep,
   context: LearnerStepPresentationContext
 ): LearnerLessonStep {
+  const scope = createPresentationScope(step, context)
   const order = <T extends { readonly id: string }>(items: readonly T[]) =>
-    orderLearnerStepItems(items, createPresentationScope(step, context))
+    orderLearnerStepItems(items, scope)
+  const orderAvoidingPrefix = <T extends { readonly id: string }>(
+    items: readonly T[],
+    correctIds: readonly string[]
+  ) => orderLearnerStepItemsAvoidingPrefix(items, scope, correctIds)
 
   switch (step.type) {
     case "READING":
@@ -477,11 +485,12 @@ export function presentLearnerStep(
     case "FILL_BLANK":
       return {
         blankCount: step.answer.length,
-        choices: order(
+        choices: orderAvoidingPrefix(
           step.words.map((text, index) => ({
             id: requireParallelItemId(step.wordIds, index, step.id),
             text,
-          }))
+          })),
+          step.answer
         ),
         id: step.id,
         sortOrder: step.sortOrder,
@@ -503,11 +512,12 @@ export function presentLearnerStep(
     case "ORDER":
       return {
         id: step.id,
-        items: order(
+        items: orderAvoidingPrefix(
           step.items.map((text, index) => ({
             id: requireParallelItemId(step.itemIds, index, step.id),
             text,
-          }))
+          })),
+          step.correct
         ),
         sortOrder: step.sortOrder,
         title: step.title,
@@ -567,11 +577,12 @@ export function presentLearnerStep(
         question: step.question,
         sortOrder: step.sortOrder,
         tileCount: step.correct.length,
-        tiles: order(
+        tiles: orderAvoidingPrefix(
           step.tiles.map((text, index) => ({
             id: requireParallelItemId(step.tileIds, index, step.id),
             text,
-          }))
+          })),
+          step.correct
         ),
         type: "SENTENCE_BUILD",
       }
@@ -613,17 +624,11 @@ function createPresentationScope(
   step: LearningStep,
   context: LearnerStepPresentationContext
 ): string {
-  return `${context.learnerScope}:${context.versionId}:${context.lessonId}:${step.id}`
-}
-
-function orderLearnerStepItems<T extends { readonly id: string }>(
-  items: readonly T[],
-  scope: string
-): readonly T[] {
-  return Array.from(items).sort((left, right) => {
-    const leftKey = createHmac("sha256", scope).update(left.id).digest("hex")
-    const rightKey = createHmac("sha256", scope).update(right.id).digest("hex")
-    return leftKey.localeCompare(rightKey) || left.id.localeCompare(right.id)
+  return createLearnerStepPresentationScope({
+    learnerScope: context.learnerScope,
+    lessonId: context.lessonId,
+    stepId: step.id,
+    versionId: context.versionId,
   })
 }
 

@@ -16,5 +16,4 @@ export const compareStepDtoSchema = lessonStepBaseSchema.extend({
   type: z.literal("COMPARE"),
   title: stepTitleSchema,
   versions: z.array(compareVersionSchema).min(2),
-  analysis: z.literal(""),
 })

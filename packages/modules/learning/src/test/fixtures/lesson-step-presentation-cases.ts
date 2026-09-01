@@ -49,7 +49,6 @@ export const learnerStepPresentationCases = [
     },
     name: "COMPARE",
     step: withFutureSecret({
-      analysis: "",
       id: "compare-1",
       sortOrder: 2,
       title: "두 문장 비교",

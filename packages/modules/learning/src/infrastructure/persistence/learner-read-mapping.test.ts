@@ -37,7 +37,56 @@ describe("학습자 step 공개 presenter", () => {
       })
     }
   )
+
+  it("빈칸과 문장 조립은 앞에서부터 탭한 순서가 정답이 되지 않는다", () => {
+    const fillBlank = findPresentationCase("FILL_BLANK")
+    const presentedFillBlank = presentLearnerStep(
+      fillBlank.step,
+      learnerStepPresentationContext
+    )
+    if (presentedFillBlank.type !== "FILL_BLANK") {
+      throw new Error("FILL_BLANK 투영 실패")
+    }
+    if (!("answer" in fillBlank.step)) {
+      throw new Error("FILL_BLANK 정답 없음")
+    }
+    expect(
+      presentedFillBlank.choices
+        .slice(0, fillBlank.step.answer.length)
+        .map((choice) => choice.id)
+    ).not.toEqual([...fillBlank.step.answer])
+
+    const sentenceBuild = findPresentationCase("SENTENCE_BUILD")
+    const presentedSentenceBuild = presentLearnerStep(
+      sentenceBuild.step,
+      learnerStepPresentationContext
+    )
+    if (presentedSentenceBuild.type !== "SENTENCE_BUILD") {
+      throw new Error("SENTENCE_BUILD 투영 실패")
+    }
+    if (
+      !("correct" in sentenceBuild.step) ||
+      !Array.isArray(sentenceBuild.step.correct)
+    ) {
+      throw new Error("SENTENCE_BUILD 정답 없음")
+    }
+    expect(
+      presentedSentenceBuild.tiles
+        .slice(0, sentenceBuild.step.correct.length)
+        .map((tile) => tile.id)
+    ).not.toEqual([...sentenceBuild.step.correct])
+  })
 })
+
+function findPresentationCase(name: string) {
+  const found = learnerStepPresentationCases.find(
+    (entry) => entry.name === name
+  )
+  if (found === undefined) {
+    throw new Error(`없는 presentation fixture: ${name}`)
+  }
+  return found
+}
 
 function withItemsSortedById(value: unknown): unknown {
   if (Array.isArray(value)) {

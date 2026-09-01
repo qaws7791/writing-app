@@ -12,8 +12,7 @@
     "versions": [
       { "label": "A", "text": "자격으로서 적합하다." },
       { "label": "B", "text": "수단으로써 해결했다." }
-    ],
-    "analysis": ""
+    ]
   },
   {
     "type": "multiple_choice",

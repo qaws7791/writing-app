@@ -268,7 +268,7 @@ Card 표면은 `card`, `card-foreground`, `border`와 elevation token을 사용�
 
 `Lesson`은 진행 헤더, 중앙 스크롤 본문과 하단 행동을 같은 `max-w-2xl` 열에 배치한다. 나가기 아이콘은 hit area 40×40을 유지한 채 글리프를 본문 왼쪽 엣지에 광학 정렬한다. 진행 헤더의 닫기·진행 막대·단계 수는 같은 행 높이에서 세로 중앙을 맞춘다. 하단 `LessonFooter`는 상단 구분선 없이 본문과 이어지며 모바일 safe area inset을 반영한다. Footer 배경은 불투명 `background`다. 완료 화면은 같은 `max-w-2xl` 열 폭을 유지한다. `Step`은 각 학습 활동의 제목, 본문과 보조 상태를 조합한다. `StepEyebrow`는 한국어에 Latin `uppercase`와 과도한 letter-spacing을 쓰지 않는다. 제목 아래에 사용법 문구를 두지 않는다. 클릭·터치 가능한 선택 타일·칩·카드는 `shadow-xs`로 조작 가능함을 드러낸다. 채점 평가와 해설은 하단 `LessonFeedback` 오버레이가 담당한다. `LessonFeedback` 배경은 레슨 shell 전체 너비이고, 문구와 CTA는 헤더·본문과 같은 `max-w-2xl` 열과 같은 수평 패딩을 쓴다.
 
-선택형 상태는 `Choice`, `Verdict`, `Token`과 `Segment`의 `data-state`로 표현한다. 확인 전 `selected`·`active`는 `info` 톤온톤으로 표시하고, 확인 전 `success`는 쓰지 않는다. `TRUE_FALSE`는 본문 주장 아래 1행 2열 O·X 버튼인 `Verdict`를 사용한다. 대기 상태의 O·X에 정답·오답 색을 입히지 않는다. 이동형 상태는 `Sortable`, `Pair`와 `Classify`로 표현한다. `CATEGORIZE`는 남은 항목 쟁반과 카테고리 바구니로 담는다. 바구니 헤더와 `MATCH` 짝은 `series-1`~`series-4`와 점으로 정체를 구분한다. 채점 후에도 정체 색은 점·바구니 헤더·연결선에 남기고, 정오답은 항목 본문에만 올린다. `ERROR_CORRECT`의 오류 구간 선택은 `Segment intent="fault"`의 `warning` 톤을 쓴다. `COMPARE` 분석은 `Insight tone="think"`의 `info` 톤을 쓴다. 서술형 상태는 `Compose`와 `Coaching`으로 표현한다. 앱은 서버 evaluation을 이 상태로 변환하며 공유 UI는 정답을 계산하지 않는다.
+선택형 상태는 `Choice`, `Verdict`, `Token`과 `Segment`의 `data-state`로 표현한다. 확인 전 `selected`·`active`는 `info` 톤온톤으로 표시하고, 확인 전 `success`는 쓰지 않는다. `TRUE_FALSE`는 본문 주장 아래 1행 2열 O·X 버튼인 `Verdict`를 사용한다. 대기 상태의 O·X에 정답·오답 색을 입히지 않는다. 이동형 상태는 `Sortable`, `Pair`와 `Classify`로 표현한다. `CATEGORIZE`는 남은 항목 쟁반과 카테고리 바구니로 담는다. 바구니 헤더와 `MATCH` 짝은 `series-1`~`series-4`와 점으로 정체를 구분한다. 채점 후에도 정체 색은 점·바구니 헤더·연결선에 남기고, 정오답은 항목 본문에만 올린다. `ERROR_CORRECT`의 오류 구간 선택은 `Segment intent="fault"`의 `warning` 톤을 쓴다. 서술형 상태는 `Compose`와 `Coaching`으로 표현한다. 앱은 서버 evaluation을 이 상태로 변환하며 공유 UI는 정답을 계산하지 않는다.
 
 ## Spinner와 Separator
 
@@ -377,12 +377,11 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - 저장 충돌과 실패는 `Insight tone="incorrect"`로 표시한다.
 - `lg` 미만은 상단 왼쪽·오른쪽 클러스터와 하단 글자 수·점검 클러스터를 나눈다. 하단은 소프트 키보드 위로 올린다. 열린 Drawer는 키보드가 열리면 한 줄 미리보기로 접힌다. 키보드가 없을 때 높이는 Drawer `snapPoints`의 `간단히`·`나누기`·`읽기`다.
 
-### CompareStepView와 Insight
+### CompareStepView
 
 구현 위치: `packages/shared/ui/src/components/learning/compare-step-view.tsx`
 
 - 버전 전환은 `CompareVersions`, `CompareVersionList`, `CompareVersion`과 `ComparePanel`을 사용한다.
-- 비교 분석은 `Insight tone="think"`를 사용한다.
 - 버전 control은 Tabs keyboard 계약을 유지한다.
 - compare·reading·write 등 정보 제시형 스텝 CTA 라벨은 「이해했어요」다.
 

@@ -5,19 +5,12 @@ import {
   CompareVersionList,
   CompareVersions,
 } from "#ui/components/learning/compare"
-import {
-  Insight,
-  InsightDescription,
-  InsightEyebrow,
-} from "#ui/components/learning/insight"
 import { StepHeader, StepTitle } from "#ui/components/learning/step"
 
 export function CompareStepView({
-  analysis,
   title,
   versions,
 }: {
-  readonly analysis: string
   readonly title: string
   readonly versions: readonly {
     readonly label: string
@@ -52,12 +45,6 @@ export function CompareStepView({
             </ComparePanel>
           ))}
         </CompareVersions>
-        {analysis ? (
-          <Insight tone="think">
-            <InsightEyebrow>생각해보기</InsightEyebrow>
-            <InsightDescription>{analysis}</InsightDescription>
-          </Insight>
-        ) : null}
       </Compare>
     </>
   )

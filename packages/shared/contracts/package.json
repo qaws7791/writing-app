@@ -35,6 +35,7 @@
     "./learning/read-data": "./src/learning/read-data.ts",
     "./learning/status": "./src/learning/status.ts",
     "./learning/step-data": "./src/learning/step-data.ts",
+    "./learning/step-presentation-order": "./src/learning/step-presentation-order.ts",
     "./operations/admin-analytics": "./src/operations/admin-analytics.ts",
     "./operations/admin-audit": "./src/operations/admin-audit.ts",
     "./operations/admin-dashboard": "./src/operations/admin-dashboard.ts",

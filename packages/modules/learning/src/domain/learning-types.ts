@@ -25,7 +25,6 @@ export type LearningStep =
       }>)
   | (LearningStepBase &
       Readonly<{
-        analysis: string
         title: string
         type: "COMPARE"
         versions: readonly Readonly<{ label: string; text: string }>[]

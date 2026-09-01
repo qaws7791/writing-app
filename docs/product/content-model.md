@@ -46,7 +46,7 @@ Course
 
 - 스텝은 레슨을 구성하는 가장 작은 활동 단위다.
 - 스텝은 타입, 정렬 순서, 상태, 콘텐츠 JSON을 가진다.
-- 선택형 스텝의 option·segment·item·pair는 버전 사이에서 유지되는 stable ID를 가지며 정답 참조는 배열 위치나 문구 대신 ID를 사용한다.
+- 선택형 스텝의 option·segment·item·pair는 버전 사이에서 유지되는 stable ID를 가지며 정답 참조는 배열 위치나 문구 대신 ID를 사용한다. 학습자 표시 순서는 저작 배열 순서가 아니며, 표시 순열은 [`step-presentation-order.ts`](../../packages/shared/contracts/src/learning/step-presentation-order.ts)가 소유한다.
 - 스텝 상태는 코스 상태와 같은 `active`, `archived`를 사용한다.
 - 스텝 wire 계약은 `packages/shared/contracts/src/content/steps`의 타입별 파일과 `steps/index.ts`의 명시 조합으로 관리한다.
 - 집필 분량·품질 상·하한은 [`authoring-limits.ts`](../../packages/shared/contracts/src/content/authoring/authoring-limits.ts)와 [`authoring-text-schemas.ts`](../../packages/shared/contracts/src/content/authoring/authoring-text-schemas.ts)가 소유하며, 스텝 DTO schema에 포함된다.

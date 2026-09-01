@@ -36,7 +36,7 @@
 - 레슨 요약은 한 줄에 한 항목으로 입력하고 빈 줄은 저장하지 않는다.
 - 카테고리와 설명은 값을 비우면 저장하지 않는 상태로 되돌린다.
 - 스텝 작업대는 step registry와 타입별 form renderer를 사용해 content JSON을 보여준다.
-- 학습자 미리보기는 스텝마다 접을 수 있는 영역으로 제공하고, 학습자 앱과 같은 렌더러로 해당 스텝을 보여준다. 근거는 [ADR-0028](../../engineering/adr/ADR-0028-admin-learner-step-preview-reuse.md)이다.
+- 학습자 미리보기는 스텝마다 접을 수 있는 영역으로 제공하고, 학습자 앱과 같은 렌더러로 해당 스텝을 보여준다. 보기·낱말·항목 순서는 학습자 표시 순열과 같은 규칙을 쓰며 저작 폼 배열 순서를 그대로 보여 주지 않는다. 근거는 [ADR-0028](../../engineering/adr/ADR-0028-admin-learner-step-preview-reuse.md)이다.
 - 미리보기는 읽기 전용이다. 답안 입력 결과, 채점 상태와 AI 호출을 노출하지 않으며 예상 시간도 표시하지 않는다.
 - 화면 섹션 전환은 Luma `Tabs`를 사용한다. 편집 패널은 `Card`, `CardHeader`, `CardContent`, `Field`와 `FieldGroup`을 조합한다.
 - draft 발행, 미저장 변경 폐기와 유닛·레슨·스텝 삭제는 `AlertDialog` 확인 뒤 실행한다. 삭제 action만 `destructive` variant를 사용한다.

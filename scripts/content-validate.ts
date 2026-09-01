@@ -202,6 +202,8 @@ function printUsage(): void {
   bun run content:validate -- work-orders <work-orders-json-경로> [--lessons-root <디렉터리>] [<레슨-id>...]
   bun run content:validate -- seed [--course=<코스-id>...]
 
+시드 교체 코스는 --course로 집필 검사를 통과해야 한다.
+
 예:
   bun run content:validate -- lesson content-authoring/lead-magnet/courses/course-01-spelling/lesson-spelling-roseo.json
   bun run content:validate -- work-orders content-authoring/lead-magnet/work-orders.json

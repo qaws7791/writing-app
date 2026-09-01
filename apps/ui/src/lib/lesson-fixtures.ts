@@ -16,7 +16,6 @@ export const compareDefaults = {
       text: "나는 3년간 매일 30분씩 글을 썼다. 어느 날 거울 앞에 선 내 생각이 달라져 있었다.",
     },
   ],
-  analysis: "구체적인 장면과 변화의 암시는 독자를 다음 문장으로 끌어당깁니다.",
 } as const;
 
 export const multipleChoiceDefaults = {

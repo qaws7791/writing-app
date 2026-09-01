@@ -112,7 +112,6 @@ describe("mergeAuthoringIntoSeed", () => {
             type: "multiple_choice",
           },
           {
-            analysis: "",
             title: "두 문장 비교",
             type: "compare",
             versions: [

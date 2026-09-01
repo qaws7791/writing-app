@@ -42,7 +42,6 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
     case "COMPARE":
       return {
         ...base,
-        analysis: "",
         title: "새 비교",
         type: input.type,
         versions: [

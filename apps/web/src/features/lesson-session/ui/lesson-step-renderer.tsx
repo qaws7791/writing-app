@@ -131,9 +131,7 @@ function renderStep({
     }
     case "COMPARE": {
       const StepRenderer = lessonStepRendererByType.COMPARE
-      return (
-        <StepRenderer analysis="" title={step.title} versions={step.versions} />
-      )
+      return <StepRenderer title={step.title} versions={step.versions} />
     }
     case "MULTIPLE_CHOICE": {
       const StepRenderer = lessonStepRendererByType.MULTIPLE_CHOICE

@@ -21,6 +21,8 @@
 - 학습 시작 정책은 lesson scope, 잠금, 기존 진행과 정렬된 step ID snapshot만 받아 rejection·start·replay와 readonly effect를 결정한다. Drizzle repository는 한 transaction에서 load → decide → apply만 수행한다.
 - 일반 단계 완료 정책은 rejection·retry·replay·step/lesson acceptance를 구분하고, 답안 저장 → step/lesson 전진 → 필요한 course 완료 → 활동 집계 effect를 SQL·table 이름 없이 계획한다. interpreter는 이 순서를 한 transaction에서 적용한다.
 - `@workspace/learning`은 현재 스텝의 서버 드래프트 접근·revision·version 검증을 소유한다. 드래프트 저장은 `BEGIN IMMEDIATE` transaction에서 compare-and-swap으로 처리하고, 답변 제출 성공 시 답안 저장과 드래프트 삭제를 같은 transaction에서 확정한다.
+- 학습자 레슨 조회는 `presentLearnerStep`이 객관식 선택지, 빈칸 낱말, 순서 항목, 매칭 양쪽, 분류 항목, 문장 조립 타일, 오류 교정 교정안을 HMAC 결정적 순열로 배열한다. 빈칸·문장 조립·순서 항목은 앞에서부터 고르면 정답이 되는 배열이면 한 칸 돌린다. 순열 함수는 `@workspace/contracts/learning/step-presentation-order`가 소유한다.
+- `apps/admin` 미리보기는 같은 순열 함수를 `admin-preview:<stepId>` 범위로 사용한다.
 - `apps/web/src/features/lesson-session`은 loading, editing, saving, checking, advancing, 복구 가능한 오류, 아직 전송하지 않은 입력과 시각 컴포넌트 조립만 소유한다. 내부 machine event와 서버 transition DTO를 분리하며 revision, 현재 스텝, 채점, 잠금과 완료를 계산하지 않는다.
 - `apps/web/src/features/lesson-session/model/lesson-match-presentation.ts`와 `ui/lesson-match-answer.tsx`는 매칭 choice ID, 결정적 shuffle, pending·일대일 selection 전이, 서버 evaluation 기반 tone과 stable item-ID payload를 소유한다.
 - `apps/web/src/features/lesson-session/hooks/use-lesson-draft-sync.ts`는 입력 debounce, 즉시 flush, 서버 version 조정과 화면에 표시할 저장 상태만 소유한다. 초안의 권위와 충돌 판정은 서버 응답을 따른다.

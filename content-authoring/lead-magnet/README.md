@@ -18,6 +18,7 @@ bun run content:validate -- seed
 2. `courses/<코스-id>/<레슨-id>.json`에 시드 형식 스텝 배열을 작성합니다.
 3. `content:validate -- work-orders`로 코스 작업 지시서를 검증합니다.
 4. 검증 통과 후 `content:merge`로 `content-seed-data.json`에 병합합니다.
+5. 병합한 코스는 `content:validate -- seed --course=<코스-id>`로 시드 집필 검사를 통과해야 합니다.
 
 ```sh
 bun run content:merge -- course-01-spelling content-authoring/lead-magnet/courses/course-01-spelling --dry-run

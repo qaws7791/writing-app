@@ -4,6 +4,7 @@ import dynamic from "next/dynamic"
 import type { ReactNode } from "react"
 
 import type { EditorStep } from "@/features/course-editor/model/editor-step"
+import { orderAdminPreviewItems } from "@/features/course-editor/model/learner-step-preview-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
 import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
 import { MatchAnswer } from "@workspace/ui/components/learning/match-answer"
@@ -47,18 +48,12 @@ function renderStepPreview(step: EditorStep): ReactNode {
         />
       )
     case "COMPARE":
-      return (
-        <CompareStepView
-          analysis={step.analysis}
-          title={step.title}
-          versions={step.versions}
-        />
-      )
+      return <CompareStepView title={step.title} versions={step.versions} />
     case "MULTIPLE_CHOICE":
       return (
         <MultipleChoiceAnswer
           correctOptionId={step.correct}
-          options={step.options}
+          options={orderAdminPreviewItems(step.options, step.id)}
           question={step.question}
         />
       )
@@ -66,10 +61,14 @@ function renderStepPreview(step: EditorStep): ReactNode {
       return (
         <FillBlankAnswer
           blankCount={step.answer.length}
-          choices={step.wordIds.map((id, index) => ({
-            id,
-            text: step.words[index] ?? "",
-          }))}
+          choices={orderAdminPreviewItems(
+            step.wordIds.map((id, index) => ({
+              id,
+              text: step.words[index] ?? "",
+            })),
+            step.id,
+            step.answer
+          )}
           template={step.template}
         />
       )
@@ -89,10 +88,14 @@ function renderStepPreview(step: EditorStep): ReactNode {
       return (
         <OrderAnswer
           correctItemIds={step.correct}
-          items={step.itemIds.map((id, index) => ({
-            id,
-            text: step.items[index] ?? "",
-          }))}
+          items={orderAdminPreviewItems(
+            step.itemIds.map((id, index) => ({
+              id,
+              text: step.items[index] ?? "",
+            })),
+            step.id,
+            step.correct
+          )}
           seed={step.id}
           title={step.title}
         />
@@ -101,22 +104,28 @@ function renderStepPreview(step: EditorStep): ReactNode {
       return (
         <MatchAnswer
           connections={[]}
-          leftChoices={step.pairs.map((pair) => ({
-            id: pair.leftId,
-            text: pair.left,
-          }))}
-          rightChoices={step.pairs.map((pair) => ({
-            id: pair.rightId,
-            text: pair.right,
-          }))}
+          leftChoices={orderAdminPreviewItems(
+            step.pairs.map((pair) => ({
+              id: pair.leftId,
+              text: pair.left,
+            })),
+            step.id
+          )}
+          rightChoices={orderAdminPreviewItems(
+            step.pairs.map((pair) => ({
+              id: pair.rightId,
+              text: pair.right,
+            })),
+            step.id
+          )}
           title={step.title}
         />
       )
     case "CATEGORIZE":
       return (
         <CategorizeAnswer
-          categories={step.categories}
-          items={step.items}
+          categories={orderAdminPreviewItems(step.categories, step.id)}
+          items={orderAdminPreviewItems(step.items, step.id)}
           title={step.title}
         />
       )

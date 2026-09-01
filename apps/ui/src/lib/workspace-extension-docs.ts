@@ -83,16 +83,15 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     slug: "compare-step-view",
     title: "Compare Step View",
     moduleTitle: "Components/Lesson/CompareStepView",
-    description: "둘 이상의 글 version을 tab으로 전환하고 비교 분석을 제시합니다.",
+    description: "둘 이상의 글 version을 tab으로 전환하여 나란히 비교합니다.",
     importPath: "@workspace/ui/components/learning/compare-step-view",
     props: [
       { name: "title", type: "string", description: "비교 단계 제목입니다." },
       { name: "versions", type: "Version[]", description: "Tab으로 전환할 version 목록입니다." },
-      { name: "analysis", type: "string", description: "비교 뒤 생각해 볼 내용입니다." },
     ],
     usageNotes: [
       "각 version label은 짧고 서로 구분되게 작성합니다.",
-      "분석은 정답 판정이 아니라 관찰 방향을 제공합니다.",
+      "두 판본 대조 후 판정 및 해설은 뒤따르는 채점 스텝이 수행합니다.",
     ],
     accessibility: [
       "Tab과 panel의 관계를 semantic으로 연결합니다.",
