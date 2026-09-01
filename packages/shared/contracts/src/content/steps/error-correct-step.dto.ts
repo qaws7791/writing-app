@@ -1,6 +1,12 @@
 import { z } from "zod"
 
 import {
+  explanationSchema,
+  questionPromptSchema,
+  segmentTextSchema,
+  wordTextSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
+import {
   lessonStepBaseSchema,
   stableStepItemIdSchema,
 } from "#contracts/content/steps/lesson-step-fields"
@@ -8,14 +14,14 @@ import {
 export const errorCorrectStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("ERROR_CORRECT"),
-    question: z.string(),
-    segments: z.array(z.string()).min(2),
+    question: questionPromptSchema,
+    segments: z.array(segmentTextSchema).min(2),
     segmentIds: z.array(stableStepItemIdSchema).min(2),
     correctSegment: stableStepItemIdSchema,
-    fixes: z.array(z.string()).min(2),
+    fixes: z.array(wordTextSchema).min(2),
     fixIds: z.array(stableStepItemIdSchema).min(2),
     correctFix: stableStepItemIdSchema,
-    explanation: z.string(),
+    explanation: explanationSchema,
   })
   .superRefine((step, context) => {
     if (step.segmentIds.length !== step.segments.length) {

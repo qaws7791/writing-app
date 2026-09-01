@@ -1,5 +1,13 @@
 import { z } from "zod"
 
+import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
+import {
+  categorizeItemTextSchema,
+  categoryLabelSchema,
+  explanationSchema,
+  guideTextSchema,
+  stepTitleSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
 import {
   lessonStepBaseSchema,
   stableStepItemIdSchema,
@@ -8,26 +16,28 @@ import {
 export const categorizeStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("CATEGORIZE"),
-    title: z.string(),
-    guide: z.string(),
+    title: stepTitleSchema,
+    guide: guideTextSchema,
     categories: z
       .array(
         z.strictObject({
           id: stableStepItemIdSchema,
-          label: z.string(),
+          label: categoryLabelSchema,
         })
       )
-      .min(1),
+      .min(authoringLimits.categorizeCategoryCount.min)
+      .max(authoringLimits.categorizeCategoryCount.max),
     items: z
       .array(
         z.strictObject({
           id: stableStepItemIdSchema,
-          text: z.string(),
+          text: categorizeItemTextSchema,
           categoryId: stableStepItemIdSchema,
         })
       )
-      .min(1),
-    explanation: z.string(),
+      .min(authoringLimits.categorizeItemCount.min)
+      .max(authoringLimits.categorizeItemCount.max),
+    explanation: explanationSchema,
   })
   .superRefine((step, context) => {
     const categoryIds = step.categories.map((category) => category.id)

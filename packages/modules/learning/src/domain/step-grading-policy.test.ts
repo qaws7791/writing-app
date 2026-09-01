@@ -46,20 +46,26 @@ const matchWithDuplicateLabelsStep = {
       right: "같은 표시",
       rightId: "right-b",
     },
+    {
+      left: "다른 표시",
+      leftId: "left-c",
+      right: "또 다른",
+      rightId: "right-c",
+    },
   ],
   sortOrder: 1,
-  title: "짝",
+  title: "연결 짝짓기",
   type: "MATCH",
 } as const
 
 const orderStep = {
-  correct: ["item-b", "item-a"],
+  correct: ["item-b", "item-a", "item-c"],
   explanation: "ID 순서가 정답을 결정합니다.",
   id: "order-stable-id",
-  itemIds: ["item-a", "item-b"],
-  items: ["첫째", "둘째"],
+  itemIds: ["item-a", "item-b", "item-c"],
+  items: ["첫째", "둘째", "셋째"],
   sortOrder: 1,
-  title: "순서",
+  title: "순서 맞추기",
   type: "ORDER",
 } as const
 
@@ -79,8 +85,8 @@ const sentenceBuildStep = {
   id: "sentence-build-stable-id",
   question: "어절을 모아 문장을 만드세요.",
   sortOrder: 1,
-  tileIds: ["tile-a", "tile-b", "tile-c"],
-  tiles: ["나는", "아주", "쓴다"],
+  tileIds: ["tile-a", "tile-b", "tile-c", "tile-d"],
+  tiles: ["나는", "아주", "쓴다", "글을"],
   type: "SENTENCE_BUILD",
 } as const
 
@@ -129,6 +135,7 @@ describe("학습 단계 서버 채점 정책", () => {
         pairs: [
           { leftItemId: "left-a", rightItemId: "right-b" },
           { leftItemId: "left-b", rightItemId: "right-a" },
+          { leftItemId: "left-c", rightItemId: "right-c" },
         ],
         type: "MATCH",
       },
@@ -137,7 +144,7 @@ describe("학습 단계 서버 채점 정책", () => {
       step: matchWithDuplicateLabelsStep,
     },
     {
-      answer: { orderedItemIds: ["item-a", "item-b"], type: "ORDER" },
+      answer: { orderedItemIds: ["item-a", "item-b", "item-c"], type: "ORDER" },
       expectedKind: "retry",
       name: "ORDER 유효하지만 잘못된 ID 순서",
       step: orderStep,

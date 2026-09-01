@@ -1,6 +1,11 @@
 import { z } from "zod"
 
 import {
+  explanationSchema,
+  questionPromptSchema,
+  segmentTextSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
+import {
   lessonStepBaseSchema,
   optionalTextSchema,
   stableStepItemIdSchema,
@@ -9,11 +14,11 @@ import {
 export const selectStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("SELECT"),
-    question: z.string(),
-    segments: z.array(z.string()).min(1),
+    question: questionPromptSchema,
+    segments: z.array(segmentTextSchema).min(1),
     segmentIds: z.array(stableStepItemIdSchema).min(1),
     correct: z.array(stableStepItemIdSchema).min(1),
-    explanation: z.string(),
+    explanation: explanationSchema,
     layout: optionalTextSchema,
   })
   .superRefine((step, context) => {

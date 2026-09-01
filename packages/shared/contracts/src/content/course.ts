@@ -1,5 +1,14 @@
 import { z } from "zod"
 
+export {
+  DEFAULT_LESSON_ESTIMATED_MINUTES,
+  DEFAULT_LESSON_STEP_COUNT,
+  lessonDurationContract,
+  MAX_RECOMMENDED_LESSON_ESTIMATED_MINUTES,
+  MAX_RECOMMENDED_LESSON_STEP_COUNT,
+  MIN_RECOMMENDED_LESSON_ESTIMATED_MINUTES,
+  MIN_RECOMMENDED_LESSON_STEP_COUNT,
+} from "#contracts/content/authoring/authoring-limits"
 import {
   courseIdSchema,
   lessonIdSchema,
@@ -21,27 +30,6 @@ export {
   lessonStepDtoSchema,
   lessonStepTypeSchema,
 } from "#contracts/content/steps"
-
-/**
- * 레슨(세션) 길이 및 스텝 수 제품 계약:
- * 한 레슨(세션)은 5~10분의 짧은 마이크로러닝 세션으로 완결되며 기본 예상 시간은 5분이다.
- * 세션 스텝 수는 12스텝을 기본값으로 하며, 활동 난이도와 유형에 따라 8(최소)~15(최대)스텝 사이에서 유연하게 구성한다.
- */
-export const DEFAULT_LESSON_ESTIMATED_MINUTES = 5
-export const MIN_RECOMMENDED_LESSON_ESTIMATED_MINUTES = 5
-export const MAX_RECOMMENDED_LESSON_ESTIMATED_MINUTES = 10
-export const DEFAULT_LESSON_STEP_COUNT = 12
-export const MIN_RECOMMENDED_LESSON_STEP_COUNT = 8
-export const MAX_RECOMMENDED_LESSON_STEP_COUNT = 15
-
-export const lessonDurationContract = {
-  defaultMinutes: DEFAULT_LESSON_ESTIMATED_MINUTES,
-  defaultSteps: DEFAULT_LESSON_STEP_COUNT,
-  maxRecommendedMinutes: MAX_RECOMMENDED_LESSON_ESTIMATED_MINUTES,
-  maxRecommendedSteps: MAX_RECOMMENDED_LESSON_STEP_COUNT,
-  minRecommendedMinutes: MIN_RECOMMENDED_LESSON_ESTIMATED_MINUTES,
-  minRecommendedSteps: MIN_RECOMMENDED_LESSON_STEP_COUNT,
-} as const
 
 export const courseVisualKeyValues = [
   "basic-sentence-writing",

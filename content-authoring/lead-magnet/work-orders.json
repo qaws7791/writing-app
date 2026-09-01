@@ -1,0 +1,11 @@
+{
+  "courseId": "course-01-spelling",
+  "lessonsDirectory": "courses/course-01-spelling",
+  "orders": [
+    {
+      "lessonId": "lesson-spelling-roseo",
+      "layout": ["TF", "Cp", "MC", "Sl", "FB", "TF", "MC", "EC"],
+      "stepCount": 8
+    }
+  ]
+}

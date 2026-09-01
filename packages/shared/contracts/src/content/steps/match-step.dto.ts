@@ -1,5 +1,12 @@
 import { z } from "zod"
 
+import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
+import {
+  explanationSchema,
+  guideTextSchema,
+  pairTextSchema,
+  stepTitleSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
 import {
   lessonStepBaseSchema,
   stableStepItemIdSchema,
@@ -8,19 +15,20 @@ import {
 export const matchStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("MATCH"),
-    title: z.string(),
-    guide: z.string(),
+    title: stepTitleSchema,
+    guide: guideTextSchema,
     pairs: z
       .array(
         z.strictObject({
-          left: z.string(),
+          left: pairTextSchema,
           leftId: stableStepItemIdSchema,
-          right: z.string(),
+          right: pairTextSchema,
           rightId: stableStepItemIdSchema,
         })
       )
-      .min(1),
-    explanation: z.string(),
+      .min(authoringLimits.matchPairCount.min)
+      .max(authoringLimits.matchPairCount.max),
+    explanation: explanationSchema,
   })
   .superRefine((step, context) => {
     if (

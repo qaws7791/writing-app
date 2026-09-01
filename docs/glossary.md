@@ -6,6 +6,8 @@
 - 관리자: 어드민에서 커리큘럼과 사용자를 관리하는 owner 역할의 사용자.
 - owner: 현재 지원하는 유일한 관리자 역할.
 - 콘텐츠: 코스, 유닛, 레슨과 학습 스텝으로 이루어진 학습 자료.
+- 집필 품질 계약: 스텝 필드 상·하한, 레슨 구조, 템플릿 배치, 정답 분포를 코드로 강제하는 Zod 계약. [`packages/shared/contracts/src/content/authoring/`](../../packages/shared/contracts/src/content/authoring/)이 소유한다.
+- 작업 지시서: 코스 집필 시 레슨별 `template` 또는 `layout`, `lessonId`, 스텝 수를 담은 `work-orders.json`. 검증 CLI가 레슨 JSON과 대조한다.
 - 커리큘럼 버전: 학습자가 시작한 콘텐츠 구성을 일관되게 유지하기 위한 버전 단위.
 - 학습 진행: 학습자의 현재 위치, 답안, 완료 상태와 활동 기록.
 - 학습 날짜 경계: 학습 활동일과 일일 한도를 판정하는 플랫폼 논리 날짜의 기준 시간대.
@@ -38,13 +40,14 @@
 
 각 개념의 값과 규칙은 아래 코드가 소유한다. 문서는 값을 복제하지 않고 위치만 가리킨다.
 
-| 개념                 | 정본 위치                                                                                                                               | 금지                                    |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| 학습 날짜 경계       | [`kernel/src/day-boundary.ts`](../packages/shared/kernel/src/day-boundary.ts)                                                           | 시간대·offset 리터럴 재선언             |
-| 식별자 브랜드        | [`types/src/ids.ts`](../packages/shared/types/src/ids.ts)                                                                               | 모듈 내 브랜드 재선언                   |
-| 식별자 스키마 팩토리 | [`contracts/src/identifier.ts`](../packages/shared/contracts/src/identifier.ts)                                                         | ID 스키마 팩토리 중복 정의              |
-| 실패 표현            | [`kernel/src/failure.ts`](../packages/shared/kernel/src/failure.ts)                                                                     | 계층별 실패 타입 재선언                 |
-| Result               | [`kernel/src/result.ts`](../packages/shared/kernel/src/result.ts)                                                                       | 성공 flag 형태의 결과 shape             |
-| 학습자 화면 모델     | [`apps/web/src/features/lesson-session/model/lesson-view-model.ts`](../apps/web/src/features/lesson-session/model/lesson-view-model.ts) | `Dto as Lesson` 등 전송 DTO 도메인 별칭 |
-| wire 스키마          | [`contracts/src`](../packages/shared/contracts/src)                                                                                     | 앱에서 요청·응답 스키마 재선언          |
-| 레슨 길이 계약       | [`contracts/src/content/course.ts`](../packages/shared/contracts/src/content/course.ts)                                                 | 레슨 길이·스텝 수 상하한 리터럴 재선언  |
+| 개념                 | 정본 위치                                                                                                                               | 금지                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| 학습 날짜 경계       | [`kernel/src/day-boundary.ts`](../packages/shared/kernel/src/day-boundary.ts)                                                           | 시간대·offset 리터럴 재선언                   |
+| 식별자 브랜드        | [`types/src/ids.ts`](../packages/shared/types/src/ids.ts)                                                                               | 모듈 내 브랜드 재선언                         |
+| 식별자 스키마 팩토리 | [`contracts/src/identifier.ts`](../packages/shared/contracts/src/identifier.ts)                                                         | ID 스키마 팩토리 중복 정의                    |
+| 실패 표현            | [`kernel/src/failure.ts`](../packages/shared/kernel/src/failure.ts)                                                                     | 계층별 실패 타입 재선언                       |
+| Result               | [`kernel/src/result.ts`](../packages/shared/kernel/src/result.ts)                                                                       | 성공 flag 형태의 결과 shape                   |
+| 학습자 화면 모델     | [`apps/web/src/features/lesson-session/model/lesson-view-model.ts`](../apps/web/src/features/lesson-session/model/lesson-view-model.ts) | `Dto as Lesson` 등 전송 DTO 도메인 별칭       |
+| wire 스키마          | [`contracts/src`](../packages/shared/contracts/src)                                                                                     | 앱에서 요청·응답 스키마 재선언                |
+| 레슨 길이 계약       | [`contracts/src/content/course.ts`](../packages/shared/contracts/src/content/course.ts)                                                 | 레슨 길이·스텝 수 상하한 리터럴 재선언        |
+| 집필 품질 계약       | [`contracts/src/content/authoring/`](../packages/shared/contracts/src/content/authoring/)                                               | 텍스트 길이·레슨 구조·정답 분포 리터럴 재선언 |

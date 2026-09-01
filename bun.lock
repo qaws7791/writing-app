@@ -8,6 +8,7 @@
         "@lhci/cli": "0.15.1",
         "@playwright/test": "^1.58.2",
         "@testing-library/dom": "^10.4.1",
+        "@workspace/content": "workspace:*",
         "@workspace/contracts": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
@@ -332,6 +333,7 @@
         "@workspace/types": "workspace:*",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",

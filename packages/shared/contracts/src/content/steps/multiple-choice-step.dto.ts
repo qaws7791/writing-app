@@ -1,5 +1,11 @@
 import { z } from "zod"
 
+import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
+import {
+  explanationSchema,
+  optionTextSchema,
+  questionPromptSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
 import {
   lessonStepBaseSchema,
   stableStepItemIdSchema,
@@ -8,17 +14,18 @@ import {
 export const multipleChoiceStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("MULTIPLE_CHOICE"),
-    question: z.string(),
+    question: questionPromptSchema,
     options: z
       .array(
         z.strictObject({
           id: stableStepItemIdSchema,
-          text: z.string(),
+          text: optionTextSchema,
         })
       )
-      .min(2),
+      .min(authoringLimits.multipleChoiceOptionCount.min)
+      .max(authoringLimits.multipleChoiceOptionCount.max),
     correct: stableStepItemIdSchema,
-    explanation: z.string(),
+    explanation: explanationSchema,
     wrong: z.string().optional(),
   })
   .superRefine((step, context) => {

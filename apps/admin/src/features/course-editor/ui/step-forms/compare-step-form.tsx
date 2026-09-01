@@ -26,13 +26,6 @@ export function CompareStepForm({ onChange, step }: StepFormProps<"COMPARE">) {
         }}
         value={step.versions}
       />
-      <StepTextField
-        id={`${step.id}-analysis`}
-        label="분석"
-        multiline
-        onChange={(analysis) => onChange({ ...step, analysis })}
-        value={step.analysis}
-      />
     </StepFormShell>
   )
 }

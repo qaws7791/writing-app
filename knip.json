@@ -56,6 +56,12 @@
         "src/lib/component-guides/types.ts": ["types"]
       }
     },
+    "packages/shared/contracts": {
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreIssues": {
+        "src/content/authoring/lesson-templates.ts": ["exports"]
+      }
+    },
     "packages/{config,infra,shared}/*": {
       "project": ["src/**/*.{ts,tsx}"]
     },

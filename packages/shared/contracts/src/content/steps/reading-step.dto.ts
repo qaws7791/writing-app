@@ -1,16 +1,21 @@
 import { z } from "zod"
 
 import {
+  readingBodySchema,
+  readingGuideSchema,
+  readingTitleSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
+import { contentAssetIdSchema } from "#contracts/content/ids"
+import {
   lessonStepBaseSchema,
   optionalTextSchema,
 } from "#contracts/content/steps/lesson-step-fields"
-import { contentAssetIdSchema } from "#contracts/content/ids"
 
 export const readingStepDtoSchema = lessonStepBaseSchema.extend({
-  body: z.string(),
-  guide: z.string(),
+  body: readingBodySchema,
+  guide: readingGuideSchema,
   illustrationAssetId: contentAssetIdSchema.optional(),
   source: optionalTextSchema,
-  title: z.string(),
+  title: readingTitleSchema,
   type: z.literal("READING"),
 })

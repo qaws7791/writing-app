@@ -44,12 +44,12 @@ describe("courseEditorReducer", () => {
               status: "active",
               steps: [
                 {
-                  body: "본문",
+                  body: "로서는 자격, 로써는 수단입니다. 헷갈리면 문맥에서 역할을 먼저 보세요.",
                   guide: "",
                   id: readingStepId,
                   sortOrder: 1,
                   status: "active",
-                  title: "읽기",
+                  title: "로서와 로써",
                   type: "READING",
                 },
               ],

@@ -1,5 +1,11 @@
 import { z } from "zod"
 
+import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
+import {
+  explanationSchema,
+  questionPromptSchema,
+  tileTextSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
 import {
   lessonStepBaseSchema,
   stableStepItemIdSchema,
@@ -8,11 +14,17 @@ import {
 export const sentenceBuildStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("SENTENCE_BUILD"),
-    question: z.string(),
-    tiles: z.array(z.string()).min(1),
-    tileIds: z.array(stableStepItemIdSchema).min(1),
+    question: questionPromptSchema,
+    tiles: z
+      .array(tileTextSchema)
+      .min(authoringLimits.sentenceBuildTileCount.min)
+      .max(authoringLimits.sentenceBuildTileCount.max),
+    tileIds: z
+      .array(stableStepItemIdSchema)
+      .min(authoringLimits.sentenceBuildTileCount.min)
+      .max(authoringLimits.sentenceBuildTileCount.max),
     correct: z.array(stableStepItemIdSchema).min(1),
-    explanation: z.string(),
+    explanation: explanationSchema,
   })
   .superRefine((step, context) => {
     if (step.tileIds.length !== step.tiles.length) {

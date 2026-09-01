@@ -1,0 +1,74 @@
+[
+  {
+    "type": "true_false",
+    "question": "맞는 문장은?",
+    "statement": "로서는 자격을 뜻한다.",
+    "correct": true,
+    "explanation": "'로서'가 맞아요."
+  },
+  {
+    "type": "compare",
+    "title": "두 표기 비교",
+    "versions": [
+      { "label": "A", "text": "자격으로서 적합하다." },
+      { "label": "B", "text": "수단으로써 해결했다." }
+    ],
+    "analysis": ""
+  },
+  {
+    "type": "multiple_choice",
+    "question": "빈칸에 맞는 말은?",
+    "options": [
+      { "id": "opt-a", "text": "자격으로서" },
+      { "id": "opt-b", "text": "수단으로써" },
+      { "id": "opt-c", "text": "이유로서" }
+    ],
+    "correct": "opt-b",
+    "explanation": "수단은 '로써'예요."
+  },
+  {
+    "type": "select",
+    "question": "틀린 표기는?",
+    "segments": ["자격으로서", " ", "적합하다."],
+    "segmentIds": ["seg-a", "seg-space", "seg-b"],
+    "correct": ["seg-a"],
+    "explanation": "자격은 '로서'예요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "수단___ 해결했다.",
+    "words": ["으로써", "로서", "에서", "에게"],
+    "wordIds": ["w1", "w2", "w3", "w4"],
+    "answer": ["w1"],
+    "explanation": "수단은 '로써'예요."
+  },
+  {
+    "type": "true_false",
+    "question": "맞는 문장은?",
+    "statement": "수단으로서 일을 끝냈다.",
+    "correct": false,
+    "explanation": "'로써'가 맞아요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어색한 문장은?",
+    "options": [
+      { "id": "opt-a", "text": "자격으로서 적합" },
+      { "id": "opt-b", "text": "수단으로써 해결" }
+    ],
+    "correct": "opt-a",
+    "explanation": "자격은 '로서'예요."
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 구간을 고르세요",
+    "segments": ["수단", "으로서", "해결했다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["으로서", "으로써"],
+    "fixIds": ["fix-a", "fix-b"],
+    "correctFix": "fix-b",
+    "explanation": "수단은 '로써'예요."
+  }
+]

@@ -4,6 +4,7 @@ import {
   type CourseVisualKey,
 } from "#content/domain/content-model"
 import { normalizeVersionedStepContentOrThrow } from "#content/domain/content-normalization"
+import { collectAuthoringIssuesFromSeedCourses } from "#content/authoring/validate-content-seed-authoring"
 
 type ContentSeedStepType =
   | "reading"
@@ -216,6 +217,25 @@ async function readContentSeedData(): Promise<readonly ContentSeedCourse[]> {
   const seedUrl = new URL("./content-seed-data.json", import.meta.url)
 
   return (await Bun.file(seedUrl).json()) as readonly ContentSeedCourse[]
+}
+
+export async function validateSeed(input?: {
+  readonly authoringCourseIds?: readonly string[]
+}): Promise<void> {
+  const courses = await readContentSeedData()
+  createContentSeedRows(courses)
+
+  if (input?.authoringCourseIds === undefined) return
+
+  const issues = collectAuthoringIssuesFromSeedCourses(courses, {
+    courseIds: input.authoringCourseIds,
+  })
+  if (issues.length > 0) {
+    const summary = issues
+      .map((issue) => `${issue.path}: ${issue.message}`)
+      .join("\n")
+    throw new Error(`시드 집필 검증 실패 ${issues.length}건\n${summary}`)
+  }
 }
 
 export async function createDefaultContentSeedRows(): Promise<ContentSeedRows> {

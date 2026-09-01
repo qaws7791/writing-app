@@ -1,5 +1,9 @@
 import { z } from "zod"
 
+export {
+  authoringLimits,
+  lessonDurationContract,
+} from "#contracts/content/authoring/authoring-limits"
 import { categorizeStepDtoSchema } from "#contracts/content/steps/categorize-step.dto"
 import { compareStepDtoSchema } from "#contracts/content/steps/compare-step.dto"
 import { errorCorrectStepDtoSchema } from "#contracts/content/steps/error-correct-step.dto"

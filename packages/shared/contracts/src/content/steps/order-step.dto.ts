@@ -1,5 +1,11 @@
 import { z } from "zod"
 
+import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
+import {
+  explanationSchema,
+  segmentTextSchema,
+  stepTitleSchema,
+} from "#contracts/content/authoring/authoring-text-schemas"
 import {
   lessonStepBaseSchema,
   stableStepItemIdSchema,
@@ -8,11 +14,20 @@ import {
 export const orderStepDtoSchema = lessonStepBaseSchema
   .extend({
     type: z.literal("ORDER"),
-    title: z.string(),
-    items: z.array(z.string()).min(1),
-    itemIds: z.array(stableStepItemIdSchema).min(1),
-    correct: z.array(stableStepItemIdSchema).min(1),
-    explanation: z.string(),
+    title: stepTitleSchema,
+    items: z
+      .array(segmentTextSchema)
+      .min(authoringLimits.orderItemCount.min)
+      .max(authoringLimits.orderItemCount.max),
+    itemIds: z
+      .array(stableStepItemIdSchema)
+      .min(authoringLimits.orderItemCount.min)
+      .max(authoringLimits.orderItemCount.max),
+    correct: z
+      .array(stableStepItemIdSchema)
+      .min(authoringLimits.orderItemCount.min)
+      .max(authoringLimits.orderItemCount.max),
+    explanation: explanationSchema,
   })
   .superRefine((step, context) => {
     if (step.itemIds.length !== step.items.length) {

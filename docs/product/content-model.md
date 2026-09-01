@@ -49,6 +49,7 @@ Course
 - 선택형 스텝의 option·segment·item·pair는 버전 사이에서 유지되는 stable ID를 가지며 정답 참조는 배열 위치나 문구 대신 ID를 사용한다.
 - 스텝 상태는 코스 상태와 같은 `active`, `archived`를 사용한다.
 - 스텝 wire 계약은 `packages/shared/contracts/src/content/steps`의 타입별 파일과 `steps/index.ts`의 명시 조합으로 관리한다.
+- 집필 분량·품질 상·하한은 [`authoring-limits.ts`](../../packages/shared/contracts/src/content/authoring/authoring-limits.ts)와 [`authoring-text-schemas.ts`](../../packages/shared/contracts/src/content/authoring/authoring-text-schemas.ts)가 소유하며, 스텝 DTO schema에 포함된다.
 - 새 스텝 타입을 추가할 때는 DTO schema, 완료 방식, draft·서버 평가 정책, 학습 답변 schema, DB seed 정규화, API OpenAPI schema, web renderer와 admin 편집 폼을 함께 검토한다.
 - `lessonStepDefinitions`는 타입별 DTO schema, 완료 방식, draft 가능 여부와 서버 평가 여부를 같은 계약으로 묶어 누락을 빠르게 드러내기 위한 기준이다.
 
