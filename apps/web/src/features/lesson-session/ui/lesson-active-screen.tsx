@@ -3,7 +3,6 @@
 import type { Ref } from "react"
 
 import type { LessonStepAnswerPayload } from "@/features/lesson-session/model/lesson-logic"
-import { useLessonContentEndReached } from "@/features/lesson-session/hooks/use-lesson-content-end-reached"
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
 import {
   getLessonStepActionLabel,
@@ -89,17 +88,6 @@ export function LessonActiveScreen({
   readonly showExit: boolean
   readonly visibleStepNumber: number
 }) {
-  const shouldGateAcknowledge =
-    checked === false &&
-    (currentStep.type === "COMPARE" || currentStep.type === "READING")
-  const hasReachedContentEnd = useLessonContentEndReached({
-    contentRef,
-    enabled: shouldGateAcknowledge,
-    stepId: currentStep.id,
-  })
-  const canSubmit = isReady && (!shouldGateAcknowledge || hasReachedContentEnd)
-  const readEndHintId = "lesson-read-end-hint"
-
   return (
     <LessonShell
       contentRef={contentRef}
@@ -107,21 +95,11 @@ export function LessonActiveScreen({
         checked === false ? (
           <LessonFooter aria-label="레슨 행동">
             <LessonActions>
-              {shouldGateAcknowledge && !hasReachedContentEnd ? (
-                <span className="sr-only" id={readEndHintId}>
-                  본문 끝까지 내린 뒤에 이해할 수 있습니다
-                </span>
-              ) : null}
               <Button
-                aria-describedby={
-                  shouldGateAcknowledge && !hasReachedContentEnd
-                    ? readEndHintId
-                    : undefined
-                }
-                disabled={!canSubmit || isSubmitting}
+                disabled={!isReady || isSubmitting}
                 onClick={onSubmitCurrentStep}
                 size="lg"
-                variant={canSubmit ? "default" : "secondary"}
+                variant={isReady ? "default" : "secondary"}
               >
                 {isSubmitting
                   ? getLessonStepPendingLabel(currentStep)
