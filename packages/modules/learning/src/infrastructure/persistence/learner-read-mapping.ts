@@ -470,6 +470,8 @@ export function presentLearnerStep(
       }
     case "MULTIPLE_CHOICE":
       return {
+        correct: step.correct,
+        explanation: step.explanation,
         id: step.id,
         options: order(
           step.options.map((option) => ({
@@ -483,6 +485,7 @@ export function presentLearnerStep(
       }
     case "FILL_BLANK":
       return {
+        answer: step.answer,
         blankCount: step.answer.length,
         choices: orderAvoidingPrefix(
           step.words.map((text, index) => ({
@@ -491,6 +494,7 @@ export function presentLearnerStep(
           })),
           step.answer
         ),
+        explanation: step.explanation,
         id: step.id,
         sortOrder: step.sortOrder,
         template: step.template,
@@ -498,6 +502,8 @@ export function presentLearnerStep(
       }
     case "SELECT":
       return {
+        correct: step.correct,
+        explanation: step.explanation,
         id: step.id,
         items: step.segments.map((text, index) => ({
           id: requireParallelItemId(step.segmentIds, index, step.id),
@@ -510,6 +516,8 @@ export function presentLearnerStep(
       }
     case "ORDER":
       return {
+        correct: step.correct,
+        explanation: step.explanation,
         id: step.id,
         items: orderAvoidingPrefix(
           step.items.map((text, index) => ({
@@ -524,6 +532,7 @@ export function presentLearnerStep(
       }
     case "MATCH":
       return {
+        explanation: step.explanation,
         id: step.id,
         leftItems: order(
           step.pairs.map((pair) => ({
@@ -531,6 +540,10 @@ export function presentLearnerStep(
             text: pair.left,
           }))
         ),
+        pairs: step.pairs.map((pair) => ({
+          leftId: pair.leftId,
+          rightId: pair.rightId,
+        })),
         rightItems: order(
           step.pairs.map((pair) => ({
             id: pair.rightId,
@@ -549,9 +562,11 @@ export function presentLearnerStep(
             text: category.label,
           }))
         ),
+        explanation: step.explanation,
         id: step.id,
         items: order(
           step.items.map((item) => ({
+            categoryId: item.categoryId,
             id: item.id,
             text: item.text,
           }))
@@ -562,6 +577,8 @@ export function presentLearnerStep(
       }
     case "TRUE_FALSE":
       return {
+        correct: step.correct,
+        explanation: step.explanation,
         id: step.id,
         question: step.question,
         sortOrder: step.sortOrder,
@@ -570,6 +587,8 @@ export function presentLearnerStep(
       }
     case "SENTENCE_BUILD":
       return {
+        correct: step.correct,
+        explanation: step.explanation,
         id: step.id,
         question: step.question,
         sortOrder: step.sortOrder,
@@ -585,6 +604,9 @@ export function presentLearnerStep(
       }
     case "ERROR_CORRECT":
       return {
+        correctFix: step.correctFix,
+        correctSegment: step.correctSegment,
+        explanation: step.explanation,
         fixes: order(
           step.fixes.map((text, index) => ({
             id: requireParallelItemId(step.fixIds, index, step.id),
@@ -605,16 +627,18 @@ export function presentLearnerStep(
   return assertNever(step)
 }
 
-function requireContentAssetReference(
+function requireContentAssetReference<
+  TKind extends LearnerContentAssetReference["kind"],
+>(
   references: ReadonlyMap<string, LearnerContentAssetReference> | undefined,
   assetId: string,
-  expectedKind: LearnerContentAssetReference["kind"]
-): LearnerContentAssetReference {
+  expectedKind: TKind
+): LearnerContentAssetReference & { kind: TKind } {
   const reference = references?.get(assetId)
   if (reference === undefined || reference.kind !== expectedKind) {
     throw new Error(`Published content asset is missing: ${assetId}`)
   }
-  return reference
+  return reference as LearnerContentAssetReference & { kind: TKind }
 }
 
 function createPresentationScope(
@@ -629,11 +653,11 @@ function createPresentationScope(
   })
 }
 
-function requireParallelItemId(
-  ids: readonly string[],
+function requireParallelItemId<TId extends string>(
+  ids: readonly TId[],
   index: number,
   stepId: string
-): string {
+): TId {
   const id = ids[index]
   if (id === undefined) {
     throw new Error(`Missing stable item ID for ${stepId} at ${index}`)

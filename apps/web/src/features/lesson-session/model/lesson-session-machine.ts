@@ -1,22 +1,28 @@
 import type {
-  LessonCompleteStepResult,
+  LessonCompleteLessonResult,
   LessonStepDraftAnswer,
   LessonStepEvaluation,
 } from "@/features/lesson-session/model/lesson-view-model"
 
-type PendingAcceptedTransition = Exclude<
-  LessonCompleteStepResult,
-  { readonly status: "retry" }
->
+type LessonCheckedState =
+  | false
+  | {
+      readonly correct: boolean
+      readonly evaluation?: LessonStepEvaluation | null | undefined
+      readonly explanation?: string | undefined
+    }
 
 type ActiveLessonSession = {
   readonly activity: "idle" | "submitting"
   readonly answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
-  readonly checked: false | NonNullable<LessonStepEvaluation>
-  readonly currentStepIndex: number
-  readonly pendingTransition: PendingAcceptedTransition | null
+  readonly checked: LessonCheckedState
+  readonly completedStepIds: readonly string[]
+  readonly currentQueueIndex: number
+  readonly mistakeCount: number
   readonly progressPercent: number
+  readonly stepQueue: readonly string[]
   readonly submitError: null | string
+  readonly totalAttempts: number
 }
 
 export type LessonSessionState =
@@ -24,10 +30,7 @@ export type LessonSessionState =
   | { readonly status: "starting" }
   | (ActiveLessonSession & { readonly status: "active" })
   | {
-      readonly completion: Extract<
-        LessonCompleteStepResult,
-        { readonly status: "lesson_completed" }
-      > | null
+      readonly completion: LessonCompleteLessonResult | null
       readonly currentStepIndex: number
       readonly status: "complete"
     }
@@ -37,6 +40,7 @@ export type LessonSessionEvent =
   | {
       readonly answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
       readonly currentStepIndex: number
+      readonly initialStepIds: readonly string[]
       readonly progressPercent: number
       readonly type: "START_SUCCEEDED"
     }
@@ -51,18 +55,21 @@ export type LessonSessionEvent =
       readonly stepId: string
       readonly type: "DRAFT_RECONCILED"
     }
-  | { readonly type: "SUBMIT_REQUESTED" }
-  | { readonly message: string; readonly type: "SUBMIT_FAILED" }
   | {
-      readonly evaluation: NonNullable<LessonStepEvaluation>
-      readonly type: "STEP_RETRY"
+      readonly evaluation?: LessonStepEvaluation | null | undefined
+      readonly explanation?: string | undefined
+      readonly isCorrect: boolean
+      readonly stepId: string
+      readonly totalOriginalSteps: number
+      readonly type: "STEP_EVALUATED"
     }
+  | { readonly type: "CONTINUE_REQUESTED" }
+  | { readonly type: "COMPLETE_LESSON_REQUESTED" }
+  | { readonly message: string; readonly type: "COMPLETE_LESSON_FAILED" }
   | {
-      readonly transition: PendingAcceptedTransition
-      readonly type: "STEP_ACCEPTED"
+      readonly completion: LessonCompleteLessonResult
+      readonly type: "COMPLETE_LESSON_SUCCEEDED"
     }
-  | { readonly stepId: string; readonly type: "RETRY_EDIT_REQUESTED" }
-  | { readonly type: "ACCEPTED_CONTINUE_REQUESTED" }
 
 class LessonSessionTransitionError extends Error {
   constructor(state: LessonSessionState, event: LessonSessionEvent) {
@@ -76,46 +83,85 @@ class LessonSessionTransitionError extends Error {
 export function createLessonSessionState(
   currentStepIndex: number,
   hasStarted: boolean,
-  isComplete = false,
-  initialAnswerPayloads: Readonly<Record<string, LessonStepDraftAnswer>> = {},
-  initialProgressPercent = 0
+  isComplete: boolean,
+  initialDrafts: Readonly<Record<string, LessonStepDraftAnswer>>,
+  initialProgressPercent: number,
+  initialStepIds: readonly string[]
 ): LessonSessionState {
   if (isComplete) {
-    return { completion: null, currentStepIndex, status: "complete" }
+    return {
+      completion: null,
+      currentStepIndex,
+      status: "complete",
+    }
   }
-  return hasStarted
-    ? createActiveLessonSession(
-        currentStepIndex,
-        initialAnswerPayloads,
-        initialProgressPercent
-      )
-    : { startError: null, status: "not-started" }
+
+  if (!hasStarted) {
+    return {
+      startError: null,
+      status: "not-started",
+    }
+  }
+
+  return {
+    activity: "idle",
+    answerPayloads: initialDrafts,
+    checked: false,
+    completedStepIds: [],
+    currentQueueIndex: 0,
+    mistakeCount: 0,
+    progressPercent: initialProgressPercent,
+    status: "active",
+    stepQueue: initialStepIds,
+    submitError: null,
+    totalAttempts: 0,
+  }
 }
 
 export function transitionLessonSession(
   state: LessonSessionState,
   event: LessonSessionEvent
 ): LessonSessionState {
-  if (state.status === "not-started") {
-    if (event.type === "START_REQUESTED") return { status: "starting" }
-    throw new LessonSessionTransitionError(state, event)
+  if (event.type === "START_REQUESTED") {
+    if (state.status !== "not-started") {
+      throw new LessonSessionTransitionError(state, event)
+    }
+
+    return { status: "starting" }
   }
 
-  if (state.status === "starting") {
-    if (event.type === "START_SUCCEEDED") {
-      return createActiveLessonSession(
-        event.currentStepIndex,
-        event.answerPayloads,
-        event.progressPercent
-      )
+  if (event.type === "START_FAILED") {
+    if (state.status !== "starting") {
+      throw new LessonSessionTransitionError(state, event)
     }
-    if (event.type === "START_FAILED") {
-      return { startError: event.message, status: "not-started" }
+
+    return {
+      startError: event.message,
+      status: "not-started",
     }
-    throw new LessonSessionTransitionError(state, event)
   }
 
-  if (state.status === "complete") {
+  if (event.type === "START_SUCCEEDED") {
+    if (state.status !== "starting") {
+      throw new LessonSessionTransitionError(state, event)
+    }
+
+    return {
+      activity: "idle",
+      answerPayloads: event.answerPayloads,
+      checked: false,
+      completedStepIds: [],
+      currentQueueIndex: 0,
+      mistakeCount: 0,
+      progressPercent: event.progressPercent,
+      status: "active",
+      stepQueue: event.initialStepIds,
+      submitError: null,
+      totalAttempts: 0,
+    }
+  }
+
+  if (state.status !== "active") {
     throw new LessonSessionTransitionError(state, event)
   }
 
@@ -126,106 +172,119 @@ export function transitionLessonSession(
         ...state.answerPayloads,
         [event.stepId]: event.payload,
       },
-      checked: false,
-      submitError: null,
     }
   }
 
-  if (event.type === "DRAFT_RECONCILED") {
-    const answerPayloads =
-      event.payload === null
-        ? Object.fromEntries(
-            Object.entries(state.answerPayloads).filter(
-              ([stepId]) => stepId !== event.stepId
-            )
-          )
-        : {
-            ...state.answerPayloads,
-            [event.stepId]: event.payload,
-          }
+  if (event.type === "DRAFT_RECONCILED" && state.activity === "idle") {
+    if (event.payload === null) {
+      if (state.answerPayloads[event.stepId] === undefined) {
+        return state
+      }
 
-    return { ...state, answerPayloads }
-  }
-
-  if (event.type === "SUBMIT_REQUESTED" && state.activity === "idle") {
-    return { ...state, activity: "submitting", submitError: null }
-  }
-
-  if (event.type === "SUBMIT_FAILED" && state.activity === "submitting") {
-    return { ...state, activity: "idle", submitError: event.message }
-  }
-
-  if (event.type === "STEP_RETRY" && state.activity === "submitting") {
-    return {
-      ...state,
-      activity: "idle",
-      checked: event.evaluation,
-      pendingTransition: null,
-    }
-  }
-
-  if (event.type === "STEP_ACCEPTED") {
-    return {
-      ...state,
-      activity: "idle",
-      checked: event.transition.evaluation ?? false,
-      pendingTransition: event.transition,
-      progressPercent:
-        event.transition.status === "lesson_completed"
-          ? 100
-          : event.transition.learning.progressPercent,
-      submitError: null,
-    }
-  }
-
-  if (event.type === "RETRY_EDIT_REQUESTED" && state.checked !== false) {
-    return {
-      ...state,
-      answerPayloads: Object.fromEntries(
-        Object.entries(state.answerPayloads).filter(
-          ([stepId]) => stepId !== event.stepId
-        )
-      ),
-      checked: false,
-      submitError: null,
-    }
-  }
-
-  if (
-    event.type === "ACCEPTED_CONTINUE_REQUESTED" &&
-    state.pendingTransition !== null
-  ) {
-    if (state.pendingTransition.status === "lesson_completed") {
+      const answerPayloads = { ...state.answerPayloads }
+      delete answerPayloads[event.stepId]
       return {
-        completion: state.pendingTransition,
-        currentStepIndex: state.currentStepIndex,
-        status: "complete",
+        ...state,
+        answerPayloads,
       }
     }
 
-    return createActiveLessonSession(
-      state.pendingTransition.learning.currentStepIndex,
-      state.answerPayloads,
-      state.progressPercent
-    )
+    return {
+      ...state,
+      answerPayloads: {
+        ...state.answerPayloads,
+        [event.stepId]: event.payload,
+      },
+    }
+  }
+
+  if (event.type === "STEP_EVALUATED" && state.activity === "idle") {
+    const totalAttempts = state.totalAttempts + 1
+    if (event.isCorrect) {
+      const completedStepIds = state.completedStepIds.includes(event.stepId)
+        ? state.completedStepIds
+        : [...state.completedStepIds, event.stepId]
+      const progressPercent =
+        event.totalOriginalSteps > 0
+          ? Math.round(
+              (completedStepIds.length / event.totalOriginalSteps) * 100
+            )
+          : 100
+
+      return {
+        ...state,
+        checked: {
+          correct: true,
+          evaluation: event.evaluation,
+          explanation: event.explanation,
+        },
+        completedStepIds,
+        progressPercent,
+        submitError: null,
+        totalAttempts,
+      }
+    }
+
+    // When incorrect: re-queue current step to the end of the queue
+    const stepQueue = [...state.stepQueue, event.stepId]
+    const mistakeCount = state.mistakeCount + 1
+
+    return {
+      ...state,
+      checked: {
+        correct: false,
+        evaluation: event.evaluation,
+        explanation: event.explanation,
+      },
+      mistakeCount,
+      stepQueue,
+      submitError: null,
+      totalAttempts,
+    }
+  }
+
+  if (event.type === "CONTINUE_REQUESTED" && state.activity === "idle") {
+    const nextQueueIndex = state.currentQueueIndex + 1
+    if (nextQueueIndex < state.stepQueue.length) {
+      const nextStepId = state.stepQueue[nextQueueIndex]
+      // Clear answer payload for next step if it's a re-queued step
+      const answerPayloads = { ...state.answerPayloads }
+      if (nextStepId !== undefined) {
+        delete answerPayloads[nextStepId]
+      }
+
+      return {
+        ...state,
+        answerPayloads,
+        checked: false,
+        currentQueueIndex: nextQueueIndex,
+        submitError: null,
+      }
+    }
+    return state
+  }
+
+  if (event.type === "COMPLETE_LESSON_REQUESTED" && state.activity === "idle") {
+    return { ...state, activity: "submitting", submitError: null }
+  }
+
+  if (
+    event.type === "COMPLETE_LESSON_FAILED" &&
+    state.activity === "submitting"
+  ) {
+    return { ...state, activity: "idle", submitError: event.message }
+  }
+
+  if (
+    event.type === "COMPLETE_LESSON_SUCCEEDED" &&
+    state.activity === "submitting"
+  ) {
+    return {
+      completion: event.completion,
+      currentStepIndex: state.stepQueue.length - 1,
+      status: "complete",
+    }
   }
 
   throw new LessonSessionTransitionError(state, event)
-}
-
-function createActiveLessonSession(
-  currentStepIndex: number,
-  answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>,
-  progressPercent: number
-): Extract<LessonSessionState, { readonly status: "active" }> {
-  return {
-    activity: "idle",
-    answerPayloads,
-    checked: false,
-    currentStepIndex,
-    pendingTransition: null,
-    progressPercent,
-    status: "active",
-    submitError: null,
-  }
 }

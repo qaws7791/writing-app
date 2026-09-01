@@ -4,7 +4,11 @@ import type {
   LessonStepEvaluation,
 } from "@/features/lesson-session/model/lesson-view-model"
 
-export type LessonStepCheckedState = NonNullable<LessonStepEvaluation>
+export type LessonStepCheckedState = {
+  readonly correct: boolean
+  readonly evaluation?: LessonStepEvaluation | null | undefined
+  readonly explanation?: string | undefined
+}
 
 export function isLessonStepSubmittable(
   step: LessonStep,
@@ -72,12 +76,4 @@ export function isLessonStepCheckedCorrect(
   checked: LessonStepCheckedState
 ): boolean {
   return checked.correct
-}
-
-export function lessonCompletedProgressPercent(
-  currentStepIndex: number,
-  totalStepCount: number
-): number {
-  if (totalStepCount <= 0) return 0
-  return Math.round((currentStepIndex / totalStepCount) * 100)
 }

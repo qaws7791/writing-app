@@ -11,51 +11,101 @@
 - 2026-07-24: 8개 활동의 완료 방식·draft·서버 평가 정책과 stable item ID를 canonical 계약으로 묶고, 서버·클라이언트 학습 상태 책임을 확정했다.
 - 2026-07-24: 웹 초안을 서버 autosave·복구·충돌 조정으로 전환하고 브라우저 저장소와 로그아웃 정리 경로를 제거했다.
 - 2026-07-24: learning application을 조회·시작·초안 저장·단계 제출 transaction use case로 압축하고 전달 전용 service·query wrapper를 제거했다.
+- 2026-09-01: 스텝별 동기 서버 채점 방식을 클라이언트 주도 0ms 즉시 채점과 동적 재시도 큐, 단일 원자적 레슨 완료 동기화(`completeLesson`) 모델로 전면 전환했다.
 
 ## 경계
 
-- `@workspace/contracts/content/steps`는 8개 활동 DTO와 각 타입의 완료 방식·draft 가능 여부·서버 평가 정책을 소유한다. admin form registry와 learner renderer registry는 이 같은 타입 집합을 빠짐없이 소비한다.
-- `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`은 공개 레슨, 타입별 final answer·부분 draft, stable item ID 제출, 서버 평가와 학습 상태 전이 계약을 소유한다.
-- `@workspace/learning`은 채점, 순서, 잠금, 진도, 레슨·코스 완료를 소유한다.
-- application 공개 경계는 `readLearnerHome`, `readCourseCatalog`, `readCourseDetail`, `readLesson`, `startLesson`, `saveStepDraft`, `submitStep`을 중심으로 구성한다. HTTP route는 application을 다시 감싸는 전달 전용 query·command factory 없이 이 use case를 호출한다.
-- 학습 시작 정책은 lesson scope, 잠금, 기존 진행과 정렬된 step ID snapshot만 받아 rejection·start·replay와 readonly effect를 결정한다. Drizzle repository는 한 transaction에서 load → decide → apply만 수행한다.
-- 일반 단계 완료 정책은 rejection·retry·replay·step/lesson acceptance를 구분하고, 답안 저장 → step/lesson 전진 → 필요한 course 완료 → 활동 집계 effect를 SQL·table 이름 없이 계획한다. interpreter는 이 순서를 한 transaction에서 적용한다.
-- `@workspace/learning`은 현재 스텝의 서버 드래프트 접근·revision·version 검증을 소유한다. 드래프트 저장은 `BEGIN IMMEDIATE` transaction에서 compare-and-swap으로 처리하고, 답변 제출 성공 시 답안 저장과 드래프트 삭제를 같은 transaction에서 확정한다.
-- 학습자 레슨 조회는 `presentLearnerStep`이 객관식 선택지, 빈칸 낱말, 순서 항목, 매칭 양쪽, 분류 항목, 문장 조립 타일, 오류 교정 교정안을 HMAC 결정적 순열로 배열한다. 빈칸·문장 조립·순서 항목은 앞에서부터 고르면 정답이 되는 배열이면 한 칸 돌린다. 순열 함수는 `@workspace/contracts/learning/step-presentation-order`가 소유한다.
-- `apps/admin` 미리보기는 같은 순열 함수를 `admin-preview:<stepId>` 범위로 사용한다.
-- `apps/web/src/features/lesson-session`은 loading, editing, saving, checking, advancing, 복구 가능한 오류, 아직 전송하지 않은 입력과 시각 컴포넌트 조립만 소유한다. 내부 machine event와 서버 transition DTO를 분리하며 revision, 현재 스텝, 채점, 잠금과 완료를 계산하지 않는다.
-- `apps/web/src/features/lesson-session/model/lesson-match-presentation.ts`와 `ui/lesson-match-answer.tsx`는 매칭 choice ID, 결정적 shuffle, pending·일대일 selection 전이, 서버 evaluation 기반 tone과 stable item-ID payload를 소유한다.
-- `apps/web/src/features/lesson-session/hooks/use-lesson-draft-sync.ts`는 입력 debounce, 즉시 flush, 서버 version 조정과 화면에 표시할 저장 상태만 소유한다. 초안의 권위와 충돌 판정은 서버 응답을 따른다.
-- `packages/shared/ui/src/components/learning`은 API 계약과 채점 규칙을 import하지 않는 순수 props 기반 시각 컴포넌트만 제공한다. `MatchAnswer`는 controlled choice·connection·pending 값과 선택 callback을 받아 버튼 접근성과 연결선 DOM 측정만 담당한다.
-- `apps/admin` 코스 편집기는 내부 콘텐츠 계약을 검증하고 8개 스텝 편집 폼과 학습자 미리보기를 제공한다.
+- `@workspace/contracts/content/steps`는 9개 상호작용 활동 DTO와 각 타입의 완료 방식·draft 가능 여부·평가 정책을 소유한다. admin form registry와 learner renderer registry는 이 같은 타입 집합을 빠짐없이 소비한다.
+- `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`은 공개 레슨, 정답 키와 해설을 포함한 스텝 투영, 타입별 draft answer, stable item ID 제출, 평가 결과 및 레슨 완료 전이 계약을 소유한다.
+- `@workspace/contracts/learning/step-grading`은 9개 상호작용 스텝의 정답 여부와 항목별 verdict를 0ms 순수 함수로 판정하는 `evaluateStepSubmission`을 소유한다.
+- `@workspace/learning`은 레슨 전체 완료, 정답률 및 소요시간 계산, 진도율 산정, 잠금 해제, 코스 완료 및 학습 활동 기록을 소유한다.
+- application 공개 경계는 `readLearnerHome`, `readCourseCatalog`, `readCourseDetail`, `readLesson`, `startLesson`, `saveStepDraft`, `completeLesson`을 중심으로 구성한다. HTTP route는 application을 직접 호출한다.
+- 레슨 완료 정책(`planCompleteLesson`)은 lesson scope, 잠금, 기존 진행, 제출된 완료 스텝 목록과 시도/오답 횟수 snapshot을 받아 정답률 산정, 레슨 완료, 코스 완료, 학습 활동 일자 기록 effect를 계획한다. Drizzle repository는 한 transaction에서 load → decide → apply를 수행한다.
+- 학습자 레슨 조회는 `presentLearnerStep`이 정답 키와 해설을 포함하여 클라이언트에 투영하며, 선택지·낱말·타일 등은 HMAC 결정적 순열로 배열한다.
+
+## 세션 라이프사이클과 동적 재시도 큐
+
+### 세션 상태 전이 흐름
+
+```mermaid
+stateDiagram-v2
+    [*] --> NotStarted: 레슨 진입
+    NotStarted --> Starting: startLesson 요청
+    Starting --> Active: 세션 큐 초기화 (stepQueue)
+
+    state Active {
+        [*] --> Idle: 스텝 표시
+        Idle --> Idle: 답안 입력 (초안 debounce)
+        Idle --> Checked: 확인하기 클릭 (0ms 즉시 채점)
+
+        state Checked {
+            [*] --> CorrectVerdict: 정답
+            [*] --> IncorrectVerdict: 오답
+
+            CorrectVerdict --> ContinueReady: 진도율 상승, 완료 목록 추가
+            IncorrectVerdict --> RequeueStep: 실패 문항 큐 후미 추가 (stepQueue.push)
+        }
+
+        ContinueReady --> Idle: 계속하기 (다음 큐 문항)
+        RequeueStep --> Idle: 계속하기 (다음 큐 문항)
+    }
+
+    Active --> Completing: 큐 소진 시 완료 요청
+    Completing --> Complete: POST /learning/lessons/{id}/complete 성공
+    Complete --> [*]: 완료 화면 (정답률, 스트릭, 다음 레슨)
+```
+
+### 상호작용 및 통신 시퀀스
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Learner as 학습자
+    participant Web as 웹 클라이언트 (Machine/State)
+    participant Engine as 순수 채점기 (step-grading)
+    participant API as 학습 API 서버 (learning)
+    participant DB as SQLite DB
+
+    Learner->>Web: 레슨 시작 클릭
+    Web->>API: POST /learning/lessons/{id}/start
+    API->>DB: 트랜잭션 시작 (시작 시각 기록)
+    API-->>Web: 레슨 데이터 반환 (스텝 목록, 정답 키, 해설)
+    Web->>Web: 세션 큐 초기화 (stepQueue = [step1, step2, ...])
+
+    loop 세션 큐 소진 시까지 (0ms 즉시 피드백)
+        Learner->>Web: 답안 선택/입력
+        Learner->>Web: [확인하기] 클릭
+        Web->>Engine: evaluateStepSubmission(step, answer)
+        Engine-->>Web: 평가 결과 (correct, items verdict, explanation)
+        alt 정답인 경우
+            Web-->>Learner: 녹색 피드백 + 진도율 전진 + [계속하기] 노출
+            Learner->>Web: [계속하기] 클릭 -> 다음 큐 문항으로 이동
+        else 오답인 경우
+            Web->>Web: stepQueue.push(currentStepId) (큐 후미 재배치)
+            Web-->>Learner: 빨간 피드백 + 해설 + 단일 [계속하기] 노출
+            Learner->>Web: [계속하기] 클릭 -> 다음 큐 문항으로 이동
+        end
+    end
+
+    Note over Web,API: 큐의 모든 문항을 완료했을 때 단 1회 원자적 동기화
+    Web->>API: POST /learning/lessons/{id}/complete (attempts, mistakes, duration)
+    API->>DB: 레슨 완료 트랜잭션 (정답률 계산, 진도율 100%, 코스 완료, 스트릭 반영)
+    API-->>Web: 완료 결과 (accuracyPercent, streakDays, nextLesson)
+    Web-->>Learner: 축하 화면 렌더링
+```
 
 ## 학습자 동작
 
-- 레슨 시작은 `startLesson`, 현재 단계 초안 저장은 `saveStepDraft`, 일반 단계 제출은 `submitStep`으로 수행한다.
-- 레슨 조회와 시작 응답은 해당 학습자와 고정 curriculum revision의 드래프트를 포함한다. 새 드래프트는 `expectedVersion: null`로 version 0을 만들고, 이후 저장은 현재 version이 일치할 때만 version을 증가시킨다.
-- 웹은 서버의 `retry`, `advanced`, `lesson_completed` 결과와 `learning.currentStepId`를 그대로 소비한다.
-- 오답 첫 제출은 `retry`로 머문다. 오답 오버레이의 `계속하기`는 같은 답안을 `acceptIncorrect: true`로 재제출해 `advanced` 또는 `lesson_completed`를 받는다.
-- 정답, 해설, 진도율, 다음 레슨과 완료 여부를 프론트엔드에서 다시 계산하지 않는다.
-- 낙관적 UI는 사용자 입력과 요청 중 상태에만 적용한다. 응답을 받으면 서버의 evaluation, learning state와 draft version으로 조정하며, 충돌이나 네트워크 실패에서도 로컬 미전송 입력을 보존한다.
-- 입력 변경은 800ms debounce로 저장하고 blur, hidden, pagehide, 레슨 나가기와 답안 제출에서는 대기 중인 저장을 즉시 flush한다. focus·reconnect에서는 서버를 다시 읽으며 visible 상태에서만 30초 간격으로 조정한다. 같은 스텝의 진행 중 저장은 한 건으로 제한하고 후속 변경을 합친다.
-- hidden·pagehide flush는 `keepalive` 요청으로 보내 탭 종료·페이지 언로드 뒤에도 전송이 완료된다. 브라우저의 keepalive 본문 상한(64KiB)을 넘는 초안은 이 보장 밖이며 일반 요청으로 보낸다. 그 밖의 모든 요청은 화면을 벗어날 때 취소한다.
-- 코스의 다음 레슨과 잠금 상태는 active 유닛의 `sortOrder`, 그 안의 active 레슨 `sortOrder` 순으로 서버가 계산한다.
-- 코스와 진행 목록은 `{ items, nextCursor }`를 사용하며 다음 cursor가 있을 때만 추가 로딩을 제공한다.
-- 레슨 조회·시작 응답의 서버 초안을 reducer 초기값으로 사용해 첫 render부터 복원한다. 로그아웃은 서버 초안을 삭제하지 않으므로 재로그인과 다른 기기에서도 이어 쓸 수 있다.
-- 저장 상태는 `saving`, `saved`, `offline`, 일반 오류와 version 충돌로 표시한다. 네트워크 실패 중 입력은 reducer에 유지하고, 충돌 시 최신 서버 초안과 로컬 미전송 값을 함께 보존해 한쪽을 선택하거나 최신 version으로 다시 저장한다.
-- 매칭 선택지는 같은 입력에서 같은 `left-N`·`right-N` ID와 오른쪽 순서를 사용한다. 중복 label도 콘텐츠 item ID로 구분하며 오른쪽 선택지는 한 왼쪽에만 연결되고 같은 짝 재선택은 연결을 해제한다.
-- `FILL_BLANK`와 `ORDER` 시각 컴포넌트도 ID가 있는 항목을 직접 유지한다. 표시 문자열에서 ID를 역추론하지 않으므로 중복 문구가 답안 identity에 영향을 주지 않는다.
+- 레슨 시작은 `startLesson`, 세션 완료는 `completeLesson` 단일 원자적 호출로 수행한다.
+- 모든 스텝 채점은 서버 왕복 없이 클라이언트 순수 함수(`evaluateStepSubmission`)를 통해 0ms 즉시 이루어진다.
+- 오답 발생 시 즉시 빨간 피드백과 해설을 제공하며, 액션 버튼은 판단 부담이 없는 단일 **[계속하기]** 버튼만 노출된다.
+- 틀린 문항은 세션 큐 맨 뒤에 자동으로 재배치되어 세션 후반부에 다시 출제된다.
+- 큐에 남은 모든 문항을 해결했을 때 1회의 `completeLesson` 요청으로 학습 소요 시간, 총 시도 횟수, 오답 횟수를 서버에 원자적으로 커밋한다.
+- 서버는 제출된 기록을 바탕으로 세션 정답률을 계산하고 코스 진행도 및 연속 학습일(스트릭)을 갱신한다.
 
 ## 검증
 
-- 8개 공개 step schema가 제출 전에 solution을 노출하지 않는지 계약 테스트로 확인한다.
-- 8개 콘텐츠 타입의 valid·invalid 계약, 6개 상호작용 타입의 final answer·부분 draft·server evaluation과 두 registry의 canonical key 일치를 계약·앱 테스트로 확인한다.
-- stable ID 제출과 타입별 평가, 오답 재시도, 원자적 전이와 동시성은 learning module 테스트로 확인한다.
-- 학습 전이 SQLite characterization은 잠금·version·순서 거절의 무변경, accepted/replay의 단일 답안·활동 집계, 마지막 활성 레슨의 코스 완료를 반환 결과와 영속 row 양쪽에서 확인한다.
-- 학습 시작 테스트는 별도 SQLite connection의 동시 요청이 unique conflict 뒤 같은 진행으로 수렴하는지, replay가 row·counter를 중복하지 않고 활동 시각만 갱신하는지, activity 저장 실패가 course·lesson 시작 전체를 rollback하는지 확인한다.
-- 일반 단계 완료 테스트는 순수 plan의 effect 순서, rejection·retry·replay의 빈 effect, lesson/course/activity 결과와 마지막 activity fault에서 답안·lesson·course·activity 전체 rollback을 확인한다.
-- 서버 드래프트 SQLite 테스트는 사용자·revision·레슨·스텝 격리, 크기·version 제약, 낙관적 충돌, 조회·시작 복구, 부모 삭제 cascade와 제출 실패 시 답안·드래프트 rollback을 확인한다.
-- 레슨 세션이 서버 전이 결과만으로 이동하는지 web 테스트로 확인한다.
-- 웹 초안 테스트는 debounce·즉시 flush·진행 중 저장 합치기, 네트워크 재시도, stale version 충돌의 양쪽 값 보존, focus 조정과 첫 render 복원을 확인한다. Chromium과 Safari smoke는 새로고침·다른 탭·재로그인 복구와 debounce 전 탭 종료 복구를 확인한다.
-- 매칭 정책의 결정성·중복 label·일대일 재배정·재선택·정답 tone·item-ID payload는 web 테스트로, controlled 표시·keyboard callback·접근성 상태는 UI와 Astro UI 문서의 browser 테스트로 확인한다.
-- step 시각 상태는 Astro UI 문서의 lesson fixture로, 어드민 편집 union은 editor 테스트로 확인한다.
+- 9개 상호작용 스텝의 정답/오답/오류 판정 및 해설 생성은 contracts 단위 테스트(`step-grading.test.ts`)로 검증한다.
+- 동적 재시도 큐 및 세션 머신 상태 전이는 web 단위 테스트(`lesson-session-machine.test.ts`)로 검증한다.
+- 레슨 완료 플래너 및 정답률 산정, 코스 완료 연계는 learning module 단위 테스트(`complete-lesson-effect-plan.test.ts`)로 검증한다.
+- 전체 정적 분석(`ci:static`), 유닛/통합 테스트(`ci:tests`), 프로덕션 빌드(`build`)를 통해 무결성을 보장한다.

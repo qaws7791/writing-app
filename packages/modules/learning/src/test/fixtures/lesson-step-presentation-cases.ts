@@ -59,6 +59,8 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      correct: "option-b",
+      explanation: "둘째가 정답이에요.",
       id: "choice-1",
       options: [
         { id: "option-a", text: "첫째" },
@@ -86,12 +88,14 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      answer: ["word-a", "word-c"],
       blankCount: 2,
       choices: [
         { id: "word-a", text: "나는" },
         { id: "word-b", text: "글을" },
         { id: "word-c", text: "쓴다" },
       ],
+      explanation: "서버 전용 빈칸 해설",
       id: "blank-1",
       sortOrder: 4,
       template: "___ ___",
@@ -111,6 +115,8 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      correct: ["segment-a"],
+      explanation: "서버 전용 선택 해설",
       id: "select-1",
       items: [
         { id: "segment-a", text: "주어" },
@@ -137,6 +143,8 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      correct: ["item-a", "item-b", "item-c"],
+      explanation: "서버 전용 순서 해설",
       id: "order-1",
       items: [
         { id: "item-a", text: "나는" },
@@ -161,11 +169,17 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      explanation: "서버 전용 매칭 해설",
       id: "match-1",
       leftItems: [
         { id: "left-a", text: "그러나" },
         { id: "left-b", text: "따라서" },
         { id: "left-c", text: "또한" },
+      ],
+      pairs: [
+        { leftId: "left-a", rightId: "right-a" },
+        { leftId: "left-b", rightId: "right-b" },
+        { leftId: "left-c", rightId: "right-c" },
       ],
       rightItems: [
         { id: "right-a", text: "역접" },
@@ -212,12 +226,13 @@ export const learnerStepPresentationCases = [
         { id: "category-b", text: "근거" },
         { id: "category-c", text: "예시" },
       ],
+      explanation: "서버 전용 분류 해설",
       id: "categorize-1",
       items: [
-        { id: "cat-item-a", text: "첫 문장" },
-        { id: "cat-item-b", text: "둘째 문장" },
-        { id: "cat-item-c", text: "셋째 문장" },
-        { id: "cat-item-d", text: "넷째 문장" },
+        { categoryId: "category-a", id: "cat-item-a", text: "첫 문장" },
+        { categoryId: "category-b", id: "cat-item-b", text: "둘째 문장" },
+        { categoryId: "category-c", id: "cat-item-c", text: "셋째 문장" },
+        { categoryId: "category-a", id: "cat-item-d", text: "넷째 문장" },
       ],
       sortOrder: 8,
       title: "항목 분류",
@@ -245,6 +260,8 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      correct: false,
+      explanation: "서버 전용 판정 해설이에요.",
       id: "true-false-1",
       question: "참인지 거짓인지 판단하세요.",
       sortOrder: 9,
@@ -264,6 +281,8 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      correct: ["tile-a", "tile-d"],
+      explanation: "서버 전용 조립 해설",
       id: "sentence-build-1",
       question: "어절을 모아 문장을 만드세요.",
       sortOrder: 10,
@@ -290,6 +309,9 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      correctFix: "fix-b",
+      correctSegment: "segment-b",
+      explanation: "서버 전용 교정 해설",
       fixes: [
         { id: "fix-a", text: "주장을 되풀이하며" },
         { id: "fix-b", text: "사실과 사례를 들며" },

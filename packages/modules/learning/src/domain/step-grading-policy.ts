@@ -26,41 +26,41 @@ export function gradeLearnerStep(
       : { kind: "invalid" }
   }
   const graded: StepGradingResult = (() => {
-    switch (completion.submission.type) {
+    switch (step.type) {
       case "MULTIPLE_CHOICE":
-        return step.type === completion.submission.type
+        return completion.submission.type === "MULTIPLE_CHOICE"
           ? gradeMultipleChoice(step, completion.submission)
           : { kind: "invalid" }
       case "FILL_BLANK":
-        return step.type === completion.submission.type
+        return completion.submission.type === "FILL_BLANK"
           ? gradeFillBlank(step, completion.submission)
           : { kind: "invalid" }
       case "SELECT":
-        return step.type === completion.submission.type
+        return completion.submission.type === "SELECT"
           ? gradeSelect(step, completion.submission)
           : { kind: "invalid" }
       case "ORDER":
-        return step.type === completion.submission.type
+        return completion.submission.type === "ORDER"
           ? gradeOrder(step, completion.submission)
           : { kind: "invalid" }
       case "MATCH":
-        return step.type === completion.submission.type
+        return completion.submission.type === "MATCH"
           ? gradeMatch(step, completion.submission)
           : { kind: "invalid" }
       case "CATEGORIZE":
-        return step.type === completion.submission.type
+        return completion.submission.type === "CATEGORIZE"
           ? gradeCategorize(step, completion.submission)
           : { kind: "invalid" }
       case "TRUE_FALSE":
-        return step.type === completion.submission.type
+        return completion.submission.type === "TRUE_FALSE"
           ? gradeTrueFalse(step, completion.submission)
           : { kind: "invalid" }
       case "SENTENCE_BUILD":
-        return step.type === completion.submission.type
+        return completion.submission.type === "SENTENCE_BUILD"
           ? gradeSentenceBuild(step, completion.submission)
           : { kind: "invalid" }
       case "ERROR_CORRECT":
-        return step.type === completion.submission.type
+        return completion.submission.type === "ERROR_CORRECT"
           ? gradeErrorCorrect(step, completion.submission)
           : { kind: "invalid" }
       default:
@@ -71,8 +71,8 @@ export function gradeLearnerStep(
 }
 
 function gradeMultipleChoice(
-  step: Extract<LearningStep, { readonly type: "MULTIPLE_CHOICE" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "MULTIPLE_CHOICE" }>
+  step: Extract<LearningStep, { type: "MULTIPLE_CHOICE" }>,
+  answer: Extract<LearnerStepSubmission, { type: "MULTIPLE_CHOICE" }>
 ): StepGradingResult {
   if (!step.options.some((option) => option.id === answer.selectedOptionId)) {
     return { kind: "invalid" }
@@ -95,8 +95,8 @@ function gradeMultipleChoice(
 }
 
 function gradeFillBlank(
-  step: Extract<LearningStep, { readonly type: "FILL_BLANK" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "FILL_BLANK" }>
+  step: Extract<LearningStep, { type: "FILL_BLANK" }>,
+  answer: Extract<LearnerStepSubmission, { type: "FILL_BLANK" }>
 ): StepGradingResult {
   const ids = step.wordIds
   if (ids.length !== step.words.length) {
@@ -125,8 +125,8 @@ function gradeFillBlank(
 }
 
 function gradeSelect(
-  step: Extract<LearningStep, { readonly type: "SELECT" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "SELECT" }>
+  step: Extract<LearningStep, { type: "SELECT" }>,
+  answer: Extract<LearnerStepSubmission, { type: "SELECT" }>
 ): StepGradingResult {
   const ids = step.segmentIds
   if (ids.length !== step.segments.length) {
@@ -155,8 +155,8 @@ function gradeSelect(
 }
 
 function gradeOrder(
-  step: Extract<LearningStep, { readonly type: "ORDER" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "ORDER" }>
+  step: Extract<LearningStep, { type: "ORDER" }>,
+  answer: Extract<LearnerStepSubmission, { type: "ORDER" }>
 ): StepGradingResult {
   const ids = step.itemIds
   if (ids.length !== step.items.length) {
@@ -185,8 +185,8 @@ function gradeOrder(
 }
 
 function gradeMatch(
-  step: Extract<LearningStep, { readonly type: "MATCH" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "MATCH" }>
+  step: Extract<LearningStep, { type: "MATCH" }>,
+  answer: Extract<LearnerStepSubmission, { type: "MATCH" }>
 ): StepGradingResult {
   const solution = step.pairs.map((pair) => {
     return { leftItemId: pair.leftId, rightItemId: pair.rightId }
@@ -231,8 +231,8 @@ function gradeMatch(
 }
 
 function gradeCategorize(
-  step: Extract<LearningStep, { readonly type: "CATEGORIZE" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "CATEGORIZE" }>
+  step: Extract<LearningStep, { type: "CATEGORIZE" }>,
+  answer: Extract<LearnerStepSubmission, { type: "CATEGORIZE" }>
 ): StepGradingResult {
   const itemIds = step.items.map((item) => item.id)
   const categoryIds = step.categories.map((category) => category.id)
@@ -272,8 +272,8 @@ function gradeCategorize(
 }
 
 function gradeTrueFalse(
-  step: Extract<LearningStep, { readonly type: "TRUE_FALSE" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "TRUE_FALSE" }>
+  step: Extract<LearningStep, { type: "TRUE_FALSE" }>,
+  answer: Extract<LearnerStepSubmission, { type: "TRUE_FALSE" }>
 ): StepGradingResult {
   const correct = answer.selectedAnswer === step.correct
   return evaluatedResult(answer, correct, {
@@ -285,8 +285,8 @@ function gradeTrueFalse(
 }
 
 function gradeSentenceBuild(
-  step: Extract<LearningStep, { readonly type: "SENTENCE_BUILD" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "SENTENCE_BUILD" }>
+  step: Extract<LearningStep, { type: "SENTENCE_BUILD" }>,
+  answer: Extract<LearnerStepSubmission, { type: "SENTENCE_BUILD" }>
 ): StepGradingResult {
   const ids = step.tileIds
   if (
@@ -312,8 +312,8 @@ function gradeSentenceBuild(
 }
 
 function gradeErrorCorrect(
-  step: Extract<LearningStep, { readonly type: "ERROR_CORRECT" }>,
-  answer: Extract<LearnerStepSubmission, { readonly type: "ERROR_CORRECT" }>
+  step: Extract<LearningStep, { type: "ERROR_CORRECT" }>,
+  answer: Extract<LearnerStepSubmission, { type: "ERROR_CORRECT" }>
 ): StepGradingResult {
   if (
     !step.segmentIds.includes(answer.selectedSegmentId) ||

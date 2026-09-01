@@ -9,11 +9,9 @@ import {
 import {
   Lesson,
   LessonFeedback,
-  LessonFeedbackActions,
   LessonFeedbackBody,
   LessonFeedbackContinueButton,
   LessonFeedbackDescription,
-  LessonFeedbackRetryButton,
   LessonFeedbackTitle,
   LessonClose,
   LessonFooter,
@@ -97,12 +95,10 @@ export function LessonCheckedFooter({
   checked,
   isSubmitting,
   onContinue,
-  onRetry,
 }: {
   readonly checked: Exclude<LessonCheckedState, false>
   readonly isSubmitting: boolean
   readonly onContinue: () => void
-  readonly onRetry: () => void
 }) {
   const feedback = getCheckedFeedback(checked)
   const tone = feedback.isCorrect ? "correct" : "incorrect"
@@ -122,29 +118,13 @@ export function LessonCheckedFooter({
               </LessonFeedbackDescription>
             )}
           </div>
-          {feedback.isCorrect ? (
-            <LessonFeedbackContinueButton
-              disabled={isSubmitting}
-              onClick={onContinue}
-              tone="correct"
-            >
-              {isSubmitting ? "계속하는 중…" : "계속하기"}
-            </LessonFeedbackContinueButton>
-          ) : (
-            <LessonFeedbackActions>
-              <LessonFeedbackRetryButton
-                disabled={isSubmitting}
-                onClick={onRetry}
-              />
-              <LessonFeedbackContinueButton
-                disabled={isSubmitting}
-                onClick={onContinue}
-                tone="incorrect"
-              >
-                {isSubmitting ? "계속하는 중…" : "계속하기"}
-              </LessonFeedbackContinueButton>
-            </LessonFeedbackActions>
-          )}
+          <LessonFeedbackContinueButton
+            disabled={isSubmitting}
+            onClick={onContinue}
+            tone={tone}
+          >
+            {isSubmitting ? "계속하는 중…" : "계속하기"}
+          </LessonFeedbackContinueButton>
         </LessonFeedbackBody>
       </LessonFeedback>
     </LessonFooter>
@@ -157,15 +137,17 @@ function getCheckedFeedback(checked: Exclude<LessonCheckedState, false>): {
   readonly title: string
 } {
   const isCorrect = isLessonStepCheckedCorrect(checked)
-  const explanation = "explanation" in checked ? checked.explanation : ""
-  const wrongCount =
-    "items" in checked
-      ? checked.items.filter((item) => item.verdict === "incorrect").length
-      : 0
-  const missedCount =
-    "items" in checked
-      ? checked.items.filter((item) => item.verdict === "missed").length
-      : 0
+  const explanation = checked.explanation ?? ""
+  const evalItems =
+    checked.evaluation && "items" in checked.evaluation
+      ? checked.evaluation.items
+      : []
+  const wrongCount = evalItems.filter(
+    (item) => item.verdict === "incorrect"
+  ).length
+  const missedCount = evalItems.filter(
+    (item) => item.verdict === "missed"
+  ).length
 
   return {
     body: isCorrect

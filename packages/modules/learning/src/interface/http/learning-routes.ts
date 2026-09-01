@@ -7,6 +7,7 @@ import type { MiddlewareHandler } from "hono"
 
 import { apiErrorSchema } from "@workspace/contracts/api-error"
 import {
+  learnerCompleteLessonResponseSchema,
   learnerCompleteStepResponseSchema,
   learnerCourseCategoriesResponseSchema,
   learnerCourseDetailResponseSchema,
@@ -21,6 +22,7 @@ import {
   learnerStartLessonResponseSchema,
 } from "@workspace/contracts/learning/learner-api"
 import {
+  completeLearnerLessonBodySchema,
   completeLearnerStepBodySchema,
   completeLearnerStepParamsSchema,
   saveLearnerStepDraftBodySchema,
@@ -42,6 +44,7 @@ import {
   decodeLearnerProgressListQuery,
   encodeLearnerCoursePage,
   encodeLearnerProgressPage,
+  presentCompleteLessonResult,
   presentCompleteStepResult,
   unwrapLearningResult,
 } from "#learning/interface/http/learning-http-mapper"
@@ -81,6 +84,7 @@ export function registerLearningRoutes<TEnv extends LearningHonoEnv>(
   registerStartLessonRoute(app, input, authenticated)
   registerSaveStepDraftRoute(app, input, authenticated)
   registerCompleteStepRoute(app, input, authenticated)
+  registerCompleteLessonRoute(app, input, authenticated)
 }
 
 function registerListCoursesRoute<TEnv extends LearningHonoEnv>(
@@ -397,6 +401,60 @@ function registerSaveStepDraftRoute<TEnv extends LearningHonoEnv>(
     })
     return context.json(
       learnerSaveStepDraftResponseSchema.parse(unwrapLearningResult(result)),
+      200
+    )
+  })
+}
+
+function registerCompleteLessonRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: LearningRouteDependencies,
+  authenticated: AuthenticatedRouteOptions
+): void {
+  const route = createRoute({
+    method: "post",
+    operationId: "completeLearnerLesson",
+    path: "/learning/lessons/{lessonId}/complete",
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: completeLearnerLessonBodySchema },
+        },
+        required: true,
+      },
+      params: learnerLessonParamsSchema,
+    },
+    responses: authenticatedResponses(
+      jsonResponse(
+        "레슨 완료와 보상 결과입니다.",
+        learnerCompleteLessonResponseSchema
+      ),
+      {
+        400: errorResponse("잘못된 요청입니다."),
+        404: errorResponse("레슨을 찾을 수 없습니다."),
+        409: errorResponse("커리큘럼 버전이 변경되었습니다."),
+      }
+    ),
+    summary: "레슨 전체 완료 및 제출",
+    ...authenticated,
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const params = context.req.valid("param")
+    const body = context.req.valid("json")
+    const result = await input.application.completeLesson({
+      answers: body.answers,
+      completedStepIds: body.completedStepIds,
+      durationSeconds: body.durationSeconds,
+      expectedCurriculumVersionId: body.expectedCurriculumVersionId,
+      learnerId: context.var.learningLearner.learnerId,
+      lessonId: params.lessonId,
+      mistakeCount: body.mistakeCount,
+      totalAttempts: body.totalAttempts,
+    })
+    return context.json(
+      learnerCompleteLessonResponseSchema.parse(
+        presentCompleteLessonResult(unwrapLearningResult(result))
+      ),
       200
     )
   })

@@ -10,6 +10,8 @@ import type {
 } from "@workspace/types/ids"
 
 import type {
+  CompleteLearnerLessonCommand,
+  CompleteLearnerLessonTransitionResult,
   CompleteLearnerStepCommand,
   CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
@@ -63,6 +65,12 @@ type LearnerPinnedScope = Readonly<{
 }>
 
 export type LearningTransitionRepository = Readonly<{
+  completeLesson: (
+    command: CompleteLearnerLessonCommand,
+    curriculum: LearningCurriculum
+  ) => Promise<
+    Result<CompleteLearnerLessonTransitionResult, LearnerTransitionError>
+  >
   completeStep: (
     command: CompleteLearnerStepCommand,
     curriculum: LearningCurriculum

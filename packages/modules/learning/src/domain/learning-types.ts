@@ -4,126 +4,12 @@ import type {
   CurriculumVersionId,
   LessonId,
   LessonStepId,
-  LessonStepItemId,
   UnitId,
 } from "@workspace/types/ids"
 
-type LearningStepBase = Readonly<{
-  id: LessonStepId
-  sortOrder: number
-}>
+import type { LessonStepDto } from "@workspace/contracts/content/steps"
 
-export type LearningStep =
-  | (LearningStepBase &
-      Readonly<{
-        body: string
-        illustrationAssetId?: ContentAssetId
-        source?: string
-        title: string
-        type: "READING"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        title: string
-        type: "COMPARE"
-        versions: readonly Readonly<{ label: string; text: string }>[]
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        correct: string
-        explanation: string
-        options: readonly Readonly<{
-          id: string
-          text: string
-        }>[]
-        question: string
-        type: "MULTIPLE_CHOICE"
-        wrong?: string
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        answer: readonly string[]
-        explanation: string
-        template: string
-        type: "FILL_BLANK"
-        wordIds: readonly string[]
-        words: readonly string[]
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        correct: readonly string[]
-        explanation: string
-        layout?: string
-        question: string
-        segmentIds: readonly string[]
-        segments: readonly string[]
-        type: "SELECT"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        correct: readonly string[]
-        explanation: string
-        itemIds: readonly string[]
-        items: readonly string[]
-        title: string
-        type: "ORDER"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        explanation: string
-        pairs: readonly Readonly<{
-          left: string
-          leftId: string
-          right: string
-          rightId: string
-        }>[]
-        title: string
-        type: "MATCH"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        categories: readonly Readonly<{
-          id: string
-          label: string
-        }>[]
-        explanation: string
-        items: readonly Readonly<{
-          categoryId: string
-          id: string
-          text: string
-        }>[]
-        title: string
-        type: "CATEGORIZE"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        correct: boolean
-        explanation: string
-        question: string
-        statement: string
-        type: "TRUE_FALSE"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        correct: readonly string[]
-        explanation: string
-        question: string
-        tileIds: readonly string[]
-        tiles: readonly string[]
-        type: "SENTENCE_BUILD"
-      }>)
-  | (LearningStepBase &
-      Readonly<{
-        correctFix: string
-        correctSegment: string
-        explanation: string
-        fixIds: readonly string[]
-        fixes: readonly string[]
-        question: string
-        segmentIds: readonly string[]
-        segments: readonly string[]
-        type: "ERROR_CORRECT"
-      }>)
+export type LearningStep = LessonStepDto
 
 type LearningCurriculumLesson = Readonly<{
   category: string | null
@@ -182,95 +68,19 @@ export type LearningCourseSummary = Readonly<{
   visualKey: LearningCurriculum["visualKey"]
 }>
 
-export type LearnerStepSubmission =
-  | Readonly<{
-      selectedOptionId: LessonStepItemId
-      type: "MULTIPLE_CHOICE"
-    }>
-  | Readonly<{
-      selectedChoiceIds: readonly LessonStepItemId[]
-      type: "FILL_BLANK"
-    }>
-  | Readonly<{
-      selectedItemIds: readonly LessonStepItemId[]
-      type: "SELECT"
-    }>
-  | Readonly<{
-      orderedItemIds: readonly LessonStepItemId[]
-      type: "ORDER"
-    }>
-  | Readonly<{
-      pairs: readonly Readonly<{
-        leftItemId: LessonStepItemId
-        rightItemId: LessonStepItemId
-      }>[]
-      type: "MATCH"
-    }>
-  | Readonly<{
-      assignments: readonly Readonly<{
-        categoryId: LessonStepItemId
-        itemId: LessonStepItemId
-      }>[]
-      type: "CATEGORIZE"
-    }>
-  | Readonly<{
-      selectedAnswer: boolean
-      type: "TRUE_FALSE"
-    }>
-  | Readonly<{
-      selectedTileIds: readonly LessonStepItemId[]
-      type: "SENTENCE_BUILD"
-    }>
-  | Readonly<{
-      selectedFixId: LessonStepItemId
-      selectedSegmentId: LessonStepItemId
-      type: "ERROR_CORRECT"
-    }>
+import type {
+  LearnerStepDraftAnswer,
+  LearnerStepSubmission,
+  StepEvaluation,
+  StepItemVerdict,
+} from "@workspace/contracts/learning/learner-transition"
 
-export type LearnerStepDraftAnswer =
-  | Readonly<{
-      selectedOptionId: LessonStepItemId | null
-      type: "MULTIPLE_CHOICE"
-    }>
-  | Readonly<{
-      selectedChoiceIds: readonly LessonStepItemId[]
-      type: "FILL_BLANK"
-    }>
-  | Readonly<{
-      selectedItemIds: readonly LessonStepItemId[]
-      type: "SELECT"
-    }>
-  | Readonly<{
-      orderedItemIds: readonly LessonStepItemId[]
-      type: "ORDER"
-    }>
-  | Readonly<{
-      pairs: readonly Readonly<{
-        leftItemId: LessonStepItemId
-        rightItemId: LessonStepItemId
-      }>[]
-      type: "MATCH"
-    }>
-  | Readonly<{
-      assignments: readonly Readonly<{
-        categoryId: LessonStepItemId
-        itemId: LessonStepItemId
-      }>[]
-      type: "CATEGORIZE"
-    }>
-  | Readonly<{
-      selectedAnswer: boolean | null
-      type: "TRUE_FALSE"
-    }>
-  | Readonly<{
-      selectedTileIds: readonly LessonStepItemId[]
-      type: "SENTENCE_BUILD"
-    }>
-  | Readonly<{
-      selectedFixId: LessonStepItemId | null
-      selectedSegmentId: LessonStepItemId | null
-      type: "ERROR_CORRECT"
-    }>
+export type {
+  LearnerStepDraftAnswer,
+  LearnerStepSubmission,
+  StepEvaluation,
+  StepItemVerdict,
+}
 
 export type LearnerStepDraft = Readonly<{
   answer: LearnerStepDraftAnswer
@@ -278,57 +88,6 @@ export type LearnerStepDraft = Readonly<{
   updatedAt: string
   version: number
 }>
-
-export type StepItemVerdict = "correct" | "incorrect" | "missed"
-
-type ChoiceStepEvaluation = Readonly<{
-  correct: boolean
-  correctItemIds: readonly string[]
-  explanation: string
-  items: readonly Readonly<{
-    id: string
-    verdict: StepItemVerdict
-  }>[]
-  type: "FILL_BLANK" | "MULTIPLE_CHOICE" | "ORDER" | "SELECT" | "SENTENCE_BUILD"
-}>
-
-export type StepEvaluation =
-  | ChoiceStepEvaluation
-  | Readonly<{
-      correct: boolean
-      explanation: string
-      items: readonly Readonly<{
-        expectedRightItemId: string
-        leftItemId: string
-        rightItemId: string
-        verdict: StepItemVerdict
-      }>[]
-      type: "MATCH"
-    }>
-  | Readonly<{
-      correct: boolean
-      explanation: string
-      items: readonly Readonly<{
-        categoryId: string
-        expectedCategoryId: string
-        itemId: string
-        verdict: StepItemVerdict
-      }>[]
-      type: "CATEGORIZE"
-    }>
-  | Readonly<{
-      correct: boolean
-      correctAnswer: boolean
-      explanation: string
-      type: "TRUE_FALSE"
-    }>
-  | Readonly<{
-      correct: boolean
-      correctFixId: string
-      correctSegmentId: string
-      explanation: string
-      type: "ERROR_CORRECT"
-    }>
 
 export type CurriculumVersionRef = Readonly<{
   curriculumVersionId: CurriculumVersionId

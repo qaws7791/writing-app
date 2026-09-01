@@ -5,17 +5,17 @@ import {
   curriculumVersionIdSchema,
   lessonStepIdSchema,
 } from "#contracts/content/ids"
-import { lessonStepItemIdSchema } from "#contracts/learning/ids"
+import { stableStepItemIdSchema } from "#contracts/content/steps/lesson-step-fields"
 
-const answerItemIdListSchema = z.array(lessonStepItemIdSchema).min(1).max(100)
-const draftItemIdListSchema = z.array(lessonStepItemIdSchema).max(100)
+const answerItemIdListSchema = z.array(stableStepItemIdSchema).min(1).max(100)
+const draftItemIdListSchema = z.array(stableStepItemIdSchema).max(100)
 
 const multipleChoiceSubmissionSchema = z.strictObject({
-  selectedOptionId: lessonStepItemIdSchema,
+  selectedOptionId: stableStepItemIdSchema,
   type: z.literal("MULTIPLE_CHOICE"),
 })
 const multipleChoiceDraftSchema = z.strictObject({
-  selectedOptionId: lessonStepItemIdSchema.nullable(),
+  selectedOptionId: stableStepItemIdSchema.nullable(),
   type: z.literal("MULTIPLE_CHOICE"),
 })
 const fillBlankSubmissionSchema = z.strictObject({
@@ -44,8 +44,8 @@ const orderDraftSchema = z.strictObject({
 })
 
 const matchPairSchema = z.strictObject({
-  leftItemId: lessonStepItemIdSchema,
-  rightItemId: lessonStepItemIdSchema,
+  leftItemId: stableStepItemIdSchema,
+  rightItemId: stableStepItemIdSchema,
 })
 const matchSubmissionSchema = z.strictObject({
   pairs: z.array(matchPairSchema).min(1).max(100),
@@ -57,8 +57,8 @@ const matchDraftSchema = z.strictObject({
 })
 
 const categorizeAssignmentSchema = z.strictObject({
-  categoryId: lessonStepItemIdSchema,
-  itemId: lessonStepItemIdSchema,
+  categoryId: stableStepItemIdSchema,
+  itemId: stableStepItemIdSchema,
 })
 const categorizeSubmissionSchema = z.strictObject({
   assignments: z.array(categorizeAssignmentSchema).min(1).max(100),
@@ -88,28 +88,28 @@ const sentenceBuildDraftSchema = z.strictObject({
 })
 
 const errorCorrectSubmissionSchema = z.strictObject({
-  selectedFixId: lessonStepItemIdSchema,
-  selectedSegmentId: lessonStepItemIdSchema,
+  selectedFixId: stableStepItemIdSchema,
+  selectedSegmentId: stableStepItemIdSchema,
   type: z.literal("ERROR_CORRECT"),
 })
 const errorCorrectDraftSchema = z.strictObject({
-  selectedFixId: lessonStepItemIdSchema.nullable(),
-  selectedSegmentId: lessonStepItemIdSchema.nullable(),
+  selectedFixId: stableStepItemIdSchema.nullable(),
+  selectedSegmentId: stableStepItemIdSchema.nullable(),
   type: z.literal("ERROR_CORRECT"),
 })
 
 export const stepItemVerdictSchema = z.enum(["correct", "incorrect", "missed"])
 
 const evaluatedItemSchema = z.strictObject({
-  id: lessonStepItemIdSchema,
+  id: stableStepItemIdSchema,
   verdict: stepItemVerdictSchema,
 })
 
 const choiceEvaluationBaseSchema = z.strictObject({
   correct: z.boolean(),
-  correctItemIds: z.array(lessonStepItemIdSchema).min(1),
+  correctItemIds: z.array(stableStepItemIdSchema).min(1).readonly(),
   explanation: z.string(),
-  items: z.array(evaluatedItemSchema).min(1),
+  items: z.array(evaluatedItemSchema).min(1).readonly(),
 })
 
 const multipleChoiceEvaluationSchema = choiceEvaluationBaseSchema.extend({
@@ -127,27 +127,31 @@ const orderEvaluationSchema = choiceEvaluationBaseSchema.extend({
 const matchEvaluationSchema = z.strictObject({
   correct: z.boolean(),
   explanation: z.string(),
-  items: z.array(
-    z.strictObject({
-      expectedRightItemId: lessonStepItemIdSchema,
-      leftItemId: lessonStepItemIdSchema,
-      rightItemId: lessonStepItemIdSchema,
-      verdict: stepItemVerdictSchema,
-    })
-  ),
+  items: z
+    .array(
+      z.strictObject({
+        expectedRightItemId: stableStepItemIdSchema,
+        leftItemId: stableStepItemIdSchema,
+        rightItemId: stableStepItemIdSchema,
+        verdict: stepItemVerdictSchema,
+      })
+    )
+    .readonly(),
   type: z.literal("MATCH"),
 })
 const categorizeEvaluationSchema = z.strictObject({
   correct: z.boolean(),
   explanation: z.string(),
-  items: z.array(
-    z.strictObject({
-      categoryId: lessonStepItemIdSchema,
-      expectedCategoryId: lessonStepItemIdSchema,
-      itemId: lessonStepItemIdSchema,
-      verdict: stepItemVerdictSchema,
-    })
-  ),
+  items: z
+    .array(
+      z.strictObject({
+        categoryId: stableStepItemIdSchema,
+        expectedCategoryId: stableStepItemIdSchema,
+        itemId: stableStepItemIdSchema,
+        verdict: stepItemVerdictSchema,
+      })
+    )
+    .readonly(),
   type: z.literal("CATEGORIZE"),
 })
 const trueFalseEvaluationSchema = z.strictObject({
@@ -161,8 +165,8 @@ const sentenceBuildEvaluationSchema = choiceEvaluationBaseSchema.extend({
 })
 const errorCorrectEvaluationSchema = z.strictObject({
   correct: z.boolean(),
-  correctFixId: lessonStepItemIdSchema,
-  correctSegmentId: lessonStepItemIdSchema,
+  correctFixId: stableStepItemIdSchema,
+  correctSegmentId: stableStepItemIdSchema,
   explanation: z.string(),
   type: z.literal("ERROR_CORRECT"),
 })

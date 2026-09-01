@@ -75,6 +75,25 @@ export const completeLearnerStepResultSchema = z.discriminatedUnion("status", [
   }),
 ])
 
+export const completeLearnerLessonBodySchema = z.strictObject({
+  answers: z.array(learnerStepSubmissionSchema).optional(),
+  completedStepIds: z.array(lessonStepIdSchema),
+  durationSeconds: z.number().int().min(0),
+  expectedCurriculumVersionId: curriculumVersionIdSchema,
+  mistakeCount: z.number().int().min(0),
+  totalAttempts: z.number().int().min(0),
+})
+
+export const completeLearnerLessonResultSchema = z.strictObject({
+  accuracyPercent: z.number().int().min(0).max(100),
+  courseLearning: courseLearningStateSchema,
+  durationMinutes: z.number().int().min(0),
+  lessonCompletion: lessonCompletionSchema,
+  status: z.literal("lesson_completed"),
+  streakDays: z.number().int().min(0),
+  streakIncreased: z.boolean(),
+})
+
 const learnerStepDraftListField = {
   drafts: z.array(learnerStepDraftSchema),
 }
@@ -95,4 +114,10 @@ export type CompleteLearnerStepBody = z.infer<
 >
 export type CompleteLearnerStepResult = z.infer<
   typeof completeLearnerStepResultSchema
+>
+export type CompleteLearnerLessonBody = z.infer<
+  typeof completeLearnerLessonBodySchema
+>
+export type CompleteLearnerLessonResult = z.infer<
+  typeof completeLearnerLessonResultSchema
 >

@@ -19,6 +19,7 @@ import type {
   LearnerReadModelPage,
 } from "#learning/application/ports/learner-read-model-repository"
 import type {
+  CompleteLearnerLessonTransitionResult,
   CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
   SaveLearnerStepDraftResult,
@@ -34,6 +35,17 @@ type StartLearningLessonCommand = Readonly<{
   expectedCurriculumVersionId: CurriculumVersionId
   learnerId: LearnerId
   lessonId: LessonId
+}>
+
+type CompleteLearningLessonCommand = Readonly<{
+  answers?: readonly LearnerStepSubmission[]
+  completedStepIds: readonly LessonStepId[]
+  durationSeconds: number
+  expectedCurriculumVersionId: CurriculumVersionId
+  learnerId: LearnerId
+  lessonId: LessonId
+  mistakeCount: number
+  totalAttempts: number
 }>
 
 type SubmitLearningStepCommand = Readonly<{
@@ -78,6 +90,11 @@ export type LearningReadError =
   | Readonly<{ kind: "lesson-not-found" }>
 
 export type LearningApplication = Readonly<{
+  completeLesson: (
+    command: CompleteLearningLessonCommand
+  ) => Promise<
+    Result<CompleteLearnerLessonTransitionResult, LearningCommandError>
+  >
   readCourseCatalog: (
     query: LearnerCourseReadQuery
   ) => Promise<LearnerReadModelPage<LearnerCourseSummary>>
@@ -189,6 +206,32 @@ export function createLearningApplication(
       )
       if (committed.isErr()) return err(committed.error)
       return ok(committed.value)
+    },
+    async completeLesson(command) {
+      const authorization = await authorizeLearner(
+        dependencies,
+        command.learnerId
+      )
+      if (authorization.isErr()) return err(authorization.error)
+      const curriculum = await readLessonCurriculum(dependencies, command)
+      if (curriculum === null) {
+        return err({ kind: "lesson-not-found", lessonId: command.lessonId })
+      }
+      const committed = await dependencies.transitionRepository.completeLesson(
+        {
+          answers: command.answers,
+          completedStepIds: command.completedStepIds,
+          durationSeconds: command.durationSeconds,
+          expectedCurriculumVersionId: command.expectedCurriculumVersionId,
+          lessonId: command.lessonId,
+          mistakeCount: command.mistakeCount,
+          occurredAt: dependencies.clock.now(),
+          totalAttempts: command.totalAttempts,
+          userId: command.learnerId,
+        },
+        curriculum
+      )
+      return committed.isErr() ? err(committed.error) : ok(committed.value)
     },
     async submitStep(command) {
       const authorization = await authorizeLearner(

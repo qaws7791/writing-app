@@ -1,7 +1,15 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react"
-
+import { evaluateStepSubmission } from "@workspace/contracts/learning/step-grading"
+import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/learner-transition"
+import type { LessonStepId } from "@workspace/contracts/content/ids"
+import type {
+  Lesson,
+  LessonStep,
+  LessonStepDraft,
+  LessonStepDraftAnswer,
+} from "@/features/lesson-session/model/lesson-view-model"
 import {
   getLessonStep,
   type LessonStepAnswerPayload,
@@ -13,18 +21,7 @@ import {
   transitionLessonSession,
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
-import {
-  isLessonStepSubmittable,
-  lessonCompletedProgressPercent,
-} from "@/features/lesson-session/model/lesson-step-policy"
-import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/learner-transition"
-import type {
-  Lesson,
-  LessonCompleteStepBody,
-  LessonStep,
-  LessonStepDraft,
-  LessonStepDraftAnswer,
-} from "@/features/lesson-session/model/lesson-view-model"
+import { isLessonStepSubmittable } from "@/features/lesson-session/model/lesson-step-policy"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const LESSON_START_ERROR = "잠시 후 다시 시도해 주세요."
@@ -45,6 +42,8 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   )
   const [sessionState, send] = useReducer(transitionLessonSession, initialState)
   const sessionStateRef = useRef(sessionState)
+  const sessionStartTimeRef = useRef<number | null>(null)
+
   const applyServerDraft = useCallback(
     (stepId: string, answer: LessonStepDraftAnswer | null) => {
       if (sessionStateRef.current.status !== "active") return
@@ -52,6 +51,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     },
     [send]
   )
+
   const {
     applyServerDrafts,
     discardSubmittedDraft,
@@ -79,31 +79,59 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   }, [sessionState])
 
   const isActive = sessionState.status === "active"
+
+  useEffect(() => {
+    if (isActive && sessionStartTimeRef.current === null) {
+      sessionStartTimeRef.current = Date.now()
+    }
+  }, [isActive])
+
+  const currentStepId = isActive
+    ? sessionState.stepQueue[sessionState.currentQueueIndex]
+    : undefined
+  const currentStep =
+    (currentStepId !== undefined
+      ? lesson.steps.find((s) => s.id === currentStepId)
+      : null) ??
+    (sessionState.status === "complete"
+      ? getLessonStep(lesson, sessionState.currentStepIndex)
+      : null)
+
   const currentStepIndex =
-    sessionState.status === "active" || sessionState.status === "complete"
-      ? sessionState.currentStepIndex
+    currentStep !== null
+      ? lesson.steps.findIndex((s) => s.id === currentStep.id)
       : 0
-  const currentStep = getLessonStep(lesson, currentStepIndex)
+
   const currentAnswerPayload =
     isActive && currentStep !== null
       ? sessionState.answerPayloads[currentStep.id]
       : undefined
+
   const checked = isActive ? sessionState.checked : false
-  const hasPendingTransition =
-    isActive && sessionState.pendingTransition !== null
   const isReady =
     currentStep !== null &&
-    (hasPendingTransition ||
+    (checked !== false ||
       isLessonStepSubmittable(currentStep, currentAnswerPayload))
-  const visibleStepNumber = currentStepIndex + 1
+
+  const visibleStepNumber = isActive
+    ? Math.min(sessionState.completedStepIds.length + 1, lesson.steps.length)
+    : 1
+
   const progress =
     sessionState.status === "complete"
       ? 100
-      : lessonCompletedProgressPercent(currentStepIndex, lesson.steps.length)
+      : isActive
+        ? lesson.steps.length > 0
+          ? Math.round(
+              (sessionState.completedStepIds.length / lesson.steps.length) * 100
+            )
+          : 0
+        : 0
 
   const startLesson = useCallback(async (): Promise<void> => {
     if (sessionStateRef.current.status !== "not-started") return
 
+    sessionStartTimeRef.current = Date.now()
     send({ type: "START_REQUESTED" })
     const result = await effects.start()
     if (!isMountedRef.current) return
@@ -125,10 +153,11 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     send({
       answerPayloads: toDraftAnswerPayloads(result.learning.drafts),
       currentStepIndex: result.learning.currentStepIndex,
+      initialStepIds: lesson.steps.map((s) => s.id),
       progressPercent: result.learning.progressPercent,
       type: "START_SUCCEEDED",
     })
-  }, [applyServerDrafts, effects, send])
+  }, [applyServerDrafts, effects, lesson.steps, send])
 
   const saveAnswer = useCallback(
     ({
@@ -144,83 +173,87 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     [send, stageDraft]
   )
 
-  async function submitCurrentStep(): Promise<void> {
+  function submitCurrentStep(): void {
     const state = sessionStateRef.current
     if (state.status !== "active" || state.activity !== "idle") return
-    const step = getLessonStep(lesson, state.currentStepIndex)
+    const step = currentStep
     if (step === null || state.checked !== false) return
 
-    const request = createCompleteStepRequest(
-      step,
+    if (step.type === "READING" || step.type === "COMPARE") {
+      send({
+        evaluation: null,
+        isCorrect: true,
+        stepId: step.id,
+        totalOriginalSteps: lesson.steps.length,
+        type: "STEP_EVALUATED",
+      })
+      return
+    }
+
+    const submission = learnerStepSubmissionSchema.safeParse(
       state.answerPayloads[step.id]
     )
-    if (request === null) return
+    if (!submission.success) return
 
-    await completeStepRequest(step.id, request)
+    const evaluation = evaluateStepSubmission(step, submission.data)
+    send({
+      evaluation: evaluation ?? null,
+      explanation: evaluation?.explanation,
+      isCorrect: evaluation?.correct ?? true,
+      stepId: step.id,
+      totalOriginalSteps: lesson.steps.length,
+      type: "STEP_EVALUATED",
+    })
   }
 
-  function continueLessonStep(): void {
+  async function continueLessonStep(): Promise<void> {
     const state = sessionStateRef.current
     if (state.status !== "active" || state.activity !== "idle") return
-    if (state.pendingTransition === null) return
-    send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
-  }
 
-  function retryLessonStep(): void {
-    const state = sessionStateRef.current
-    if (state.status !== "active" || state.activity !== "idle") return
-    const step = getLessonStep(lesson, state.currentStepIndex)
-    if (step === null || state.checked === false) return
-    send({ stepId: step.id, type: "RETRY_EDIT_REQUESTED" })
-  }
+    // If there are more steps in queue, advance to the next step
+    if (state.currentQueueIndex + 1 < state.stepQueue.length) {
+      if (currentStep !== null) {
+        discardSubmittedDraft(currentStep.id)
+      }
+      send({ type: "CONTINUE_REQUESTED" })
+      return
+    }
 
-  async function skipIncorrectLessonStep(): Promise<void> {
-    const state = sessionStateRef.current
-    if (state.status !== "active" || state.activity !== "idle") return
-    const step = getLessonStep(lesson, state.currentStepIndex)
-    if (step === null || state.checked === false) return
+    // All steps in queue completed! Complete the entire lesson session atomically
+    if (currentStep !== null) {
+      discardSubmittedDraft(currentStep.id)
+    }
+    await flushAll()
 
-    const request = createCompleteStepRequest(
-      step,
-      state.answerPayloads[step.id],
-      true
+    send({ type: "COMPLETE_LESSON_REQUESTED" })
+    const durationSeconds = calculateDurationSeconds(
+      sessionStartTimeRef.current
     )
-    if (request === null) return
 
-    await completeStepRequest(step.id, request, { autoContinue: true })
-  }
+    const result = await effects.completeLesson({
+      request: {
+        completedStepIds: [...state.completedStepIds] as LessonStepId[],
+        durationSeconds,
+        expectedCurriculumVersionId: lesson.version.curriculumVersionId,
+        mistakeCount: state.mistakeCount,
+        totalAttempts: state.totalAttempts,
+      },
+    })
 
-  async function completeStepRequest(
-    stepId: string,
-    request: LessonCompleteStepBody,
-    options?: { readonly autoContinue?: boolean }
-  ): Promise<void> {
-    await flushStepDraft(stepId)
-    send({ type: "SUBMIT_REQUESTED" })
-    const result = await effects.completeStep({ request, stepId })
     if (!isMountedRef.current) return
 
     if (result.status === "error") {
       send({
         message: result.message || LESSON_STEP_ERROR,
-        type: "SUBMIT_FAILED",
+        type: "COMPLETE_LESSON_FAILED",
       })
       return
     }
 
-    if (result.transition.status === "retry") {
-      send({ evaluation: result.transition.evaluation, type: "STEP_RETRY" })
-      return
-    }
-
-    discardSubmittedDraft(stepId)
-    send({ transition: result.transition, type: "STEP_ACCEPTED" })
-    if (
-      options?.autoContinue === true ||
-      result.transition.evaluation === null
-    ) {
-      send({ type: "ACCEPTED_CONTINUE_REQUESTED" })
-    }
+    send({
+      completion: result.completion,
+      type: "COMPLETE_LESSON_SUCCEEDED",
+    })
   }
 
   return {
@@ -229,6 +262,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     completeError: isActive ? sessionState.submitError : null,
     completion:
       sessionState.status === "complete" ? sessionState.completion : null,
+    continueLessonStep,
     currentAnswerPayload,
     currentStep,
     currentStepIndex,
@@ -236,63 +270,49 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
       currentStep === null ? Promise.resolve() : flushStepDraft(currentStep.id),
     hasStarted: isActive || sessionState.status === "complete",
     isComplete: sessionState.status === "complete",
-    isSubmitting: isActive && sessionState.activity === "submitting",
     isQuizStep: currentStep !== null && isEvaluatedChoiceStep(currentStep),
     isReady,
     isSavingStart: sessionState.status === "starting",
-    progress,
+    isSubmitting: isActive && sessionState.activity === "submitting",
     prepareToLeave: flushAll,
+    progress,
     renderRevision:
       currentStep === null ? 0 : (renderRevisionByStepId[currentStep.id] ?? 0),
     saveAnswer,
     startError:
       sessionState.status === "not-started" ? sessionState.startError : null,
     startLesson,
-    continueLessonStep,
-    retryLessonStep,
-    skipIncorrectLessonStep,
     submitCurrentStep,
     visibleStepNumber,
   }
 }
 
 function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
+  const stepIds = lesson.steps.map((s) => s.id)
   switch (lesson.learning.status) {
     case "not_started":
-      return createLessonSessionState(0, false)
+      return createLessonSessionState(0, false, false, {}, 0, stepIds)
     case "in_progress":
       return createLessonSessionState(
         lesson.learning.currentStepIndex,
         true,
         false,
         toDraftAnswerPayloads(lesson.drafts),
-        lesson.learning.progressPercent
+        lesson.learning.progressPercent,
+        stepIds
       )
     case "completed":
-      return createLessonSessionState(lesson.steps.length - 1, true, true)
+      return createLessonSessionState(
+        lesson.steps.length - 1,
+        true,
+        true,
+        {},
+        100,
+        stepIds
+      )
     case "locked":
-      return createLessonSessionState(0, false)
+      return createLessonSessionState(0, false, false, {}, 0, stepIds)
   }
-}
-
-function createCompleteStepRequest(
-  step: LessonStep,
-  answer: LessonStepAnswerPayload | undefined,
-  acceptIncorrect = false
-): LessonCompleteStepBody | null {
-  if (step.type === "READING" || step.type === "COMPARE") {
-    return { kind: "acknowledge" as const }
-  }
-
-  const submission = learnerStepSubmissionSchema.safeParse(answer)
-  if (!submission.success) return null
-  return acceptIncorrect
-    ? {
-        acceptIncorrect: true,
-        answer: submission.data,
-        kind: "answer" as const,
-      }
-    : { answer: submission.data, kind: "answer" as const }
 }
 
 function toDraftAnswerPayloads(
@@ -313,4 +333,9 @@ function isEvaluatedChoiceStep(step: LessonStep): boolean {
     step.type === "SENTENCE_BUILD" ||
     step.type === "TRUE_FALSE"
   )
+}
+
+function calculateDurationSeconds(startTime: number | null): number {
+  if (startTime === null) return 1
+  return Math.max(1, Math.round((Date.now() - startTime) / 1000))
 }

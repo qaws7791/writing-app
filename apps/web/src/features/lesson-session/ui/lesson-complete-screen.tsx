@@ -2,7 +2,7 @@
 
 import type {
   Lesson as LessonViewModel,
-  LessonCompleteStepResult,
+  LessonCompleteLessonResult,
 } from "@/features/lesson-session/model/lesson-view-model"
 import { CheckCircleIcon } from "@workspace/ui/components/icons/authentication-icons"
 import { Button } from "@workspace/ui/components/primitives/button"
@@ -13,18 +13,13 @@ import {
   InsightList,
 } from "@workspace/ui/components/learning/insight"
 
-type LessonCompletionTransition = Extract<
-  LessonCompleteStepResult,
-  { readonly status: "lesson_completed" }
->
-
 export function LessonCompleteScreen({
   completion,
   lesson,
   onCourse,
   onNext,
 }: {
-  readonly completion: LessonCompletionTransition | null
+  readonly completion: LessonCompleteLessonResult | null
   readonly lesson: LessonViewModel
   readonly onCourse: () => void
   readonly onNext: (nextLessonId: string) => void

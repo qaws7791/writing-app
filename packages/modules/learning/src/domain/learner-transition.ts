@@ -88,6 +88,18 @@ export type LearnerTransitionError =
       readonly stepId: LessonStepId
     }
 
+export type CompleteLearnerLessonCommand = {
+  readonly answers?: readonly LearnerStepSubmission[]
+  readonly completedStepIds: readonly LessonStepId[]
+  readonly durationSeconds: number
+  readonly expectedCurriculumVersionId: CurriculumVersionId
+  readonly lessonId: LessonId
+  readonly mistakeCount: number
+  readonly occurredAt: Date
+  readonly totalAttempts: number
+  readonly userId: LearnerId
+}
+
 export type StartLearnerLessonResult = LessonLearningState &
   Readonly<{ drafts: readonly LearnerStepDraft[] }>
 export type SaveLearnerStepDraftResult = LearnerStepDraft
@@ -112,3 +124,13 @@ export type CompleteLearnerStepTransitionResult =
       readonly streakDays: number
       readonly streakIncreased: boolean
     }
+
+export type CompleteLearnerLessonTransitionResult = {
+  readonly accuracyPercent: number
+  readonly courseLearning: CourseLearningState
+  readonly durationMinutes: number
+  readonly kind: "lesson-completed"
+  readonly lessonCompletion: LessonCompletion
+  readonly streakDays: number
+  readonly streakIncreased: boolean
+}

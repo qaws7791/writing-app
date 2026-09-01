@@ -4,9 +4,12 @@ import {
   type LearnerLessonStep,
 } from "@workspace/contracts/learning/learner-content"
 import {
+  completeLearnerLessonResultSchema,
   completeLearnerStepResultSchema,
   learnerStepDraftSchema,
   startLearnerLessonResponseSchema,
+  type CompleteLearnerLessonBody,
+  type CompleteLearnerLessonResult,
   type CompleteLearnerStepBody,
   type CompleteLearnerStepResult,
   type LearnerStepDraft,
@@ -22,6 +25,8 @@ export type LessonStepDraftAnswer = LearnerStepDraftAnswer
 export type LessonStepEvaluation = StepEvaluation
 export type LessonCompleteStepBody = CompleteLearnerStepBody
 export type LessonCompleteStepResult = CompleteLearnerStepResult
+export type LessonCompleteLessonBody = CompleteLearnerLessonBody
+export type LessonCompleteLessonResult = CompleteLearnerLessonResult
 export type LessonStartResult = z.infer<typeof startLearnerLessonResponseSchema>
 
 export function toLessonViewModel(wire: unknown): Lesson {
@@ -36,6 +41,12 @@ export function toLessonCompleteStepResult(
   wire: unknown
 ): LessonCompleteStepResult {
   return completeLearnerStepResultSchema.parse(wire)
+}
+
+export function toLessonCompleteLessonResult(
+  wire: unknown
+): LessonCompleteLessonResult {
+  return completeLearnerLessonResultSchema.parse(wire)
 }
 
 export function parseLessonStepDrafts(

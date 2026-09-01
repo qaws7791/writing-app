@@ -51,8 +51,6 @@ export function LessonActiveScreen({
   onDraftFlush,
   onExit,
   onContinueLessonStep,
-  onRetryLessonStep,
-  onSkipIncorrectLessonStep,
   onSubmitCurrentStep,
   progress,
   renderRevision,
@@ -80,8 +78,6 @@ export function LessonActiveScreen({
   readonly onContinueLessonStep: () => void
   readonly onDraftFlush: () => void
   readonly onExit: () => void
-  readonly onRetryLessonStep: () => void
-  readonly onSkipIncorrectLessonStep: () => void
   readonly onSubmitCurrentStep: () => void
   readonly progress: number
   readonly renderRevision: number
@@ -111,14 +107,7 @@ export function LessonActiveScreen({
           <LessonCheckedFooter
             checked={checked}
             isSubmitting={isSubmitting}
-            onContinue={() => {
-              if (checked.correct) {
-                onContinueLessonStep()
-                return
-              }
-              void onSkipIncorrectLessonStep()
-            }}
-            onRetry={onRetryLessonStep}
+            onContinue={onContinueLessonStep}
           />
         )
       }

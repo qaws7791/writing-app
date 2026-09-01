@@ -9,7 +9,9 @@ import {
   learnerProgressPageSchema,
 } from "@workspace/contracts/learning/learner-content"
 import {
+  completeLearnerLessonResultSchema,
   completeLearnerStepResultSchema,
+  type CompleteLearnerLessonResult,
   type CompleteLearnerStepResult,
 } from "@workspace/contracts/learning/learner-transition"
 import {
@@ -36,7 +38,10 @@ import type {
   LearnerCursorCodec,
   LearnerCursorPosition,
 } from "#learning/infrastructure/persistence/learner-cursor"
-import type { CompleteLearnerStepTransitionResult } from "#learning/domain/learner-transition"
+import type {
+  CompleteLearnerLessonTransitionResult,
+  CompleteLearnerStepTransitionResult,
+} from "#learning/domain/learner-transition"
 
 export type LearnerReadTransportError = Readonly<{ kind: "invalid-cursor" }>
 
@@ -164,6 +169,20 @@ export function presentCompleteStepResult(
       break
   }
   return completeLearnerStepResultSchema.parse(presented)
+}
+
+export function presentCompleteLessonResult(
+  result: CompleteLearnerLessonTransitionResult
+): CompleteLearnerLessonResult {
+  return completeLearnerLessonResultSchema.parse({
+    accuracyPercent: result.accuracyPercent,
+    courseLearning: result.courseLearning,
+    durationMinutes: result.durationMinutes,
+    lessonCompletion: result.lessonCompletion,
+    status: "lesson_completed",
+    streakDays: result.streakDays,
+    streakIncreased: result.streakIncreased,
+  })
 }
 
 function mapLearningError(

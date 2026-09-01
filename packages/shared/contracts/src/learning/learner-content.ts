@@ -12,8 +12,8 @@ import { courseVisualKeySchema } from "#contracts/content/course"
 import {
   nonNegativeIntegerSchema,
   positiveSortOrderSchema,
+  stableStepItemIdSchema,
 } from "#contracts/content/steps/lesson-step-fields"
-import { lessonStepItemIdSchema } from "#contracts/learning/ids"
 import { learnerStepDraftSchema } from "#contracts/learning/learner-step-answer"
 import { contentStatusSchema } from "#contracts/content/status"
 
@@ -105,12 +105,13 @@ const learnerStepBaseSchema = z.strictObject({
 })
 
 const learnerStepItemSchema = z.strictObject({
-  id: lessonStepItemIdSchema,
+  id: stableStepItemIdSchema,
   text: z.string(),
 })
 
 const learnerReadingStepSchema = learnerStepBaseSchema.extend({
   body: z.string(),
+  explanation: z.string().optional(),
   illustration: contentAssetReferenceDtoSchema
     .extend({ kind: z.literal("reading-illustration") })
     .optional(),
@@ -120,70 +121,105 @@ const learnerReadingStepSchema = learnerStepBaseSchema.extend({
 })
 
 const learnerCompareStepSchema = learnerStepBaseSchema.extend({
+  explanation: z.string().optional(),
   title: z.string(),
   type: z.literal("COMPARE"),
   versions: z
     .array(z.strictObject({ label: z.string(), text: z.string() }))
-    .min(2),
+    .min(2)
+    .readonly(),
 })
 
 const learnerMultipleChoiceStepSchema = learnerStepBaseSchema.extend({
-  options: z.array(learnerStepItemSchema).min(2),
+  correct: stableStepItemIdSchema,
+  explanation: z.string(),
+  options: z.array(learnerStepItemSchema).min(2).readonly(),
   question: z.string(),
   type: z.literal("MULTIPLE_CHOICE"),
 })
 
 const learnerFillBlankStepSchema = learnerStepBaseSchema.extend({
+  answer: z.array(stableStepItemIdSchema).min(1).readonly(),
   blankCount: z.number().int().positive(),
-  choices: z.array(learnerStepItemSchema).min(1),
+  choices: z.array(learnerStepItemSchema).min(1).readonly(),
+  explanation: z.string(),
   template: z.string(),
   type: z.literal("FILL_BLANK"),
 })
 
 const learnerSelectStepSchema = learnerStepBaseSchema.extend({
-  items: z.array(learnerStepItemSchema).min(1),
+  correct: z.array(stableStepItemIdSchema).min(1).readonly(),
+  explanation: z.string(),
+  items: z.array(learnerStepItemSchema).min(1).readonly(),
   layout: z.string().optional(),
   question: z.string(),
   type: z.literal("SELECT"),
 })
 
 const learnerOrderStepSchema = learnerStepBaseSchema.extend({
-  items: z.array(learnerStepItemSchema).min(1),
+  correct: z.array(stableStepItemIdSchema).min(1).readonly(),
+  explanation: z.string(),
+  items: z.array(learnerStepItemSchema).min(1).readonly(),
   title: z.string(),
   type: z.literal("ORDER"),
 })
 
 const learnerMatchStepSchema = learnerStepBaseSchema.extend({
-  leftItems: z.array(learnerStepItemSchema).min(1),
-  rightItems: z.array(learnerStepItemSchema).min(1),
+  explanation: z.string(),
+  leftItems: z.array(learnerStepItemSchema).min(1).readonly(),
+  pairs: z
+    .array(
+      z.strictObject({
+        leftId: stableStepItemIdSchema,
+        rightId: stableStepItemIdSchema,
+      })
+    )
+    .min(1)
+    .readonly(),
+  rightItems: z.array(learnerStepItemSchema).min(1).readonly(),
   title: z.string(),
   type: z.literal("MATCH"),
 })
 
 const learnerCategorizeStepSchema = learnerStepBaseSchema.extend({
-  categories: z.array(learnerStepItemSchema).min(1),
-  items: z.array(learnerStepItemSchema).min(1),
+  categories: z.array(learnerStepItemSchema).min(1).readonly(),
+  explanation: z.string(),
+  items: z
+    .array(
+      learnerStepItemSchema.extend({
+        categoryId: stableStepItemIdSchema,
+      })
+    )
+    .min(1)
+    .readonly(),
   title: z.string(),
   type: z.literal("CATEGORIZE"),
 })
 
 const learnerTrueFalseStepSchema = learnerStepBaseSchema.extend({
+  correct: z.boolean(),
+  explanation: z.string(),
   question: z.string(),
   statement: z.string(),
   type: z.literal("TRUE_FALSE"),
 })
 
 const learnerSentenceBuildStepSchema = learnerStepBaseSchema.extend({
+  correct: z.array(stableStepItemIdSchema).min(1).readonly(),
+  explanation: z.string(),
   question: z.string(),
   tileCount: z.number().int().positive(),
-  tiles: z.array(learnerStepItemSchema).min(1),
+  tiles: z.array(learnerStepItemSchema).min(1).readonly(),
   type: z.literal("SENTENCE_BUILD"),
 })
 
 const learnerErrorCorrectStepSchema = learnerStepBaseSchema.extend({
-  fixes: z.array(learnerStepItemSchema).min(2),
+  correctFix: stableStepItemIdSchema,
+  correctSegment: stableStepItemIdSchema,
+  explanation: z.string(),
+  fixes: z.array(learnerStepItemSchema).min(2).readonly(),
   question: z.string(),
-  segments: z.array(learnerStepItemSchema).min(2),
+  segments: z.array(learnerStepItemSchema).min(2).readonly(),
   type: z.literal("ERROR_CORRECT"),
 })
 

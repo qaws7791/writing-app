@@ -9,6 +9,7 @@ import {
   learnerProgressPageSchema,
 } from "#contracts/learning/learner-content"
 import {
+  completeLearnerLessonResultSchema,
   completeLearnerStepResultSchema,
   saveLearnerStepDraftResponseSchema,
   startLearnerLessonResponseSchema,
@@ -25,6 +26,8 @@ export const learnerStartLessonResponseSchema = startLearnerLessonResponseSchema
 export const learnerSaveStepDraftResponseSchema =
   saveLearnerStepDraftResponseSchema
 export const learnerCompleteStepResponseSchema = completeLearnerStepResultSchema
+export const learnerCompleteLessonResponseSchema =
+  completeLearnerLessonResultSchema
 
 export const learnerCourseParamsSchema = z.strictObject({
   courseId: courseIdSchema,
@@ -55,4 +58,10 @@ export type LearnerStartLessonResponse = z.infer<
 >
 export type LearnerSaveStepDraftResponse = z.infer<
   typeof learnerSaveStepDraftResponseSchema
+>
+export type LearnerCompleteLessonResponse = z.infer<
+  typeof learnerCompleteLessonResponseSchema
+>
+export type LearnerCompleteStepResponse = z.infer<
+  typeof learnerCompleteStepResponseSchema
 >

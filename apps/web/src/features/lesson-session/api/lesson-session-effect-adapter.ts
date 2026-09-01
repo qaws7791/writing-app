@@ -1,12 +1,16 @@
 import {
+  completeLearnerLesson,
   completeLearnerStep,
   startLearnerLesson,
 } from "@workspace/http-client/learner"
 
 import { getLessonUserMessage } from "@/features/lesson-session/model/lesson-user-message"
 import {
+  toLessonCompleteLessonResult,
   toLessonCompleteStepResult,
   toLessonStartResult,
+  type LessonCompleteLessonBody,
+  type LessonCompleteLessonResult,
   type LessonCompleteStepBody,
   type LessonCompleteStepResult,
   type LessonStartResult,
@@ -21,6 +25,13 @@ type TransitionEffectOutcome =
   | {
       readonly status: "ok"
       readonly transition: LessonCompleteStepResult
+    }
+
+type LessonCompleteOutcome =
+  | { readonly status: "error"; readonly message: string }
+  | {
+      readonly completion: LessonCompleteLessonResult
+      readonly status: "ok"
     }
 
 type ApiCompleteLearnerStepBody = Parameters<typeof completeLearnerStep>[2]
@@ -47,6 +58,9 @@ function toApiCompleteLearnerStepBody(
 }
 
 export type LessonSessionEffects = {
+  readonly completeLesson: (input: {
+    readonly request: LessonCompleteLessonBody
+  }) => Promise<LessonCompleteOutcome>
   readonly completeStep: (input: {
     readonly request: LessonCompleteStepBody
     readonly stepId: string
@@ -66,6 +80,39 @@ export function createLessonSessionEffects(input: {
   readonly readAbortSignal: () => AbortSignal
 }): LessonSessionEffects {
   return {
+    async completeLesson({ request }) {
+      const result = await settleLearnerApiRequest(
+        completeLearnerLesson(
+          input.lessonId,
+          {
+            ...(request.answers !== undefined
+              ? { answers: request.answers }
+              : {}),
+            completedStepIds: request.completedStepIds,
+            durationSeconds: request.durationSeconds,
+            expectedCurriculumVersionId: input.expectedCurriculumVersionId,
+            mistakeCount: request.mistakeCount,
+            totalAttempts: request.totalAttempts,
+          },
+          {
+            signal: input.readAbortSignal(),
+          }
+        )
+      )
+
+      return result.status === "error"
+        ? {
+            message: getLessonUserMessage(
+              "complete",
+              readLearnerApiErrorCode(result.error)
+            ),
+            status: "error",
+          }
+        : {
+            completion: toLessonCompleteLessonResult(result.value),
+            status: "ok",
+          }
+    },
     async completeStep({ request, stepId }) {
       const result = await settleLearnerApiRequest(
         completeLearnerStep(

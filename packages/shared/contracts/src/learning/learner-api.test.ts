@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { learnerLessonResponseSchema } from "#contracts/learning/learner-api"
 import {
+  completeLearnerLessonBodySchema,
   completeLearnerStepBodySchema,
   learnerStepSubmissionSchema,
   saveLearnerStepDraftBodySchema,
@@ -64,20 +65,26 @@ describe("learner API wire invariants", () => {
     ).toBe(false)
   })
 
-  it("학습자 레슨 응답에서 정답과 해설 필드를 거절한다", () => {
+  it("학습자 레슨 응답에서 정답과 해설 필드를 포함한 스텝을 검증한다", () => {
     const lesson = aLearnerLessonResponse()
 
     expect(learnerLessonResponseSchema.safeParse(lesson).success).toBe(true)
+  })
+
+  it("레슨 완료 요청 스키마를 검증한다", () => {
+    const body = {
+      completedStepIds: ["step-1"],
+      durationSeconds: 120,
+      expectedCurriculumVersionId: "course-1-v1",
+      mistakeCount: 1,
+      totalAttempts: 3,
+    }
+
+    expect(completeLearnerLessonBodySchema.safeParse(body).success).toBe(true)
     expect(
-      learnerLessonResponseSchema.safeParse({
-        ...lesson,
-        steps: [
-          {
-            ...lesson.steps[0],
-            correct: "option-1",
-            explanation: "정답 해설",
-          },
-        ],
+      completeLearnerLessonBodySchema.safeParse({
+        ...body,
+        durationSeconds: -1,
       }).success
     ).toBe(false)
   })
@@ -98,6 +105,8 @@ function aLearnerLessonResponse() {
     },
     steps: [
       {
+        correct: "option-1",
+        explanation: "첫째가 정답입니다.",
         id: "step-1",
         options: [
           { id: "option-1", text: "첫째" },

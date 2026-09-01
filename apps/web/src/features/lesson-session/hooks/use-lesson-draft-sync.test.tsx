@@ -238,6 +238,8 @@ function createLesson(
     },
     steps: [
       {
+        correct: "option-1",
+        explanation: "해설",
         id: "step-mc",
         options: [
           { id: "option-1", text: "선택 1" },

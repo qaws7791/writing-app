@@ -94,9 +94,7 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
           setExitError(null)
           setShowExit(true)
         }}
-        onContinueLessonStep={() => session.continueLessonStep()}
-        onRetryLessonStep={() => session.retryLessonStep()}
-        onSkipIncorrectLessonStep={() => void session.skipIncorrectLessonStep()}
+        onContinueLessonStep={() => void session.continueLessonStep()}
         onSubmitCurrentStep={() => void session.submitCurrentStep()}
         progress={session.progress}
         renderRevision={session.renderRevision}

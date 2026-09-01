@@ -5,128 +5,105 @@ import {
   transitionLessonSession,
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
-import { learnerCompleteStepResponseSchema } from "@workspace/contracts/learning/learner-api"
-import {
-  learnerStepSubmissionSchema,
-  stepEvaluationSchema,
-} from "@workspace/contracts/learning/learner-transition"
+import { completeLearnerLessonResultSchema } from "@workspace/contracts/learning/learner-transition"
 
-describe("lesson session machine", () => {
-  it("제출 실패는 현재 step과 입력을 보존한다", () => {
-    const failed = transitionLessonSession(createSubmittingSession(), {
-      message: "제출을 완료하지 못했습니다.",
-      type: "SUBMIT_FAILED",
+describe("lesson session machine (client-driven queue)", () => {
+  it("정답 평가 시 완료 목록에 추가되고 정답 상태가 된다", () => {
+    const active = createActiveSession(["step-1", "step-2"])
+    const evaluated = transitionLessonSession(active, {
+      isCorrect: true,
+      stepId: "step-1",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
     })
 
-    expect(failed).toMatchObject({
+    expect(evaluated).toMatchObject({
       activity: "idle",
-      answerPayloads: {
-        "step-1": { selectedOptionId: "option-1", type: "MULTIPLE_CHOICE" },
-      },
-      currentStepIndex: 0,
+      checked: { correct: true },
+      completedStepIds: ["step-1"],
+      progressPercent: 50,
       status: "active",
-      submitError: "제출을 완료하지 못했습니다.",
+      totalAttempts: 1,
     })
   })
 
-  it("오답 결과는 현재 step에 머문다", () => {
-    const retry = transitionLessonSession(createSubmittingSession(), {
-      evaluation: createIncorrectEvaluation(),
-      type: "STEP_RETRY",
+  it("오답 평가 시 stepQueue 맨 뒤에 재시도 스텝이 추가된다", () => {
+    const active = createActiveSession(["step-1", "step-2"])
+    const evaluated = transitionLessonSession(active, {
+      explanation: "해설입니다",
+      isCorrect: false,
+      stepId: "step-1",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
     })
 
-    expect(retry).toMatchObject({
+    expect(evaluated).toMatchObject({
       activity: "idle",
-      currentStepIndex: 0,
+      checked: { correct: false, explanation: "해설입니다" },
+      completedStepIds: [],
+      mistakeCount: 1,
+      stepQueue: ["step-1", "step-2", "step-1"],
       status: "active",
+      totalAttempts: 1,
     })
   })
 
-  it("계속하기는 server가 반환한 다음 step index를 적용한다", () => {
-    const accepted = transitionLessonSession(
-      createLessonSessionState(7, true),
-      { transition: createAdvancedTransitionFixture(), type: "STEP_ACCEPTED" }
-    )
-    const continued = transitionLessonSession(accepted, {
-      type: "ACCEPTED_CONTINUE_REQUESTED",
+  it("계속하기 시 큐의 다음 스텝으로 이동한다", () => {
+    const active = createActiveSession(["step-1", "step-2"])
+    const evaluated = transitionLessonSession(active, {
+      isCorrect: true,
+      stepId: "step-1",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
+    })
+
+    const continued = transitionLessonSession(evaluated, {
+      type: "CONTINUE_REQUESTED",
     })
 
     expect(continued).toMatchObject({
-      currentStepIndex: 3,
-      progressPercent: 50,
+      checked: false,
+      currentQueueIndex: 1,
       status: "active",
     })
   })
 
-  it("완료 계속하기는 server의 완료 결과를 세션 완료 상태에 보존한다", () => {
-    const completion = createLessonCompletedTransitionFixture()
-    const accepted = transitionLessonSession(
-      createLessonSessionState(1, true),
-      { transition: completion, type: "STEP_ACCEPTED" }
-    )
-    const completed = transitionLessonSession(accepted, {
-      type: "ACCEPTED_CONTINUE_REQUESTED",
+  it("레슨 완료 성공 시 완료 결과와 상태를 저장한다", () => {
+    const completion = createLessonCompletedResultFixture()
+    const active = createActiveSession(["step-1"])
+    const submitting = transitionLessonSession(active, {
+      type: "COMPLETE_LESSON_REQUESTED",
+    })
+    const completed = transitionLessonSession(submitting, {
+      completion,
+      type: "COMPLETE_LESSON_SUCCEEDED",
     })
 
     expect(completed).toEqual({
       completion,
-      currentStepIndex: 1,
+      currentStepIndex: 0,
       status: "complete",
     })
   })
 })
 
-function createSubmittingSession(): LessonSessionState {
-  const active = transitionLessonSession(createLessonSessionState(0, true), {
-    payload: learnerStepSubmissionSchema.parse({
-      selectedOptionId: "option-1",
-      type: "MULTIPLE_CHOICE",
-    }),
-    stepId: "step-1",
-    type: "ANSWER_PAYLOAD_CHANGED",
+function createActiveSession(stepIds: string[]): LessonSessionState {
+  const notStarted = createLessonSessionState(0, false, false, {}, 0, stepIds)
+  const starting = transitionLessonSession(notStarted, {
+    type: "START_REQUESTED",
   })
-
-  return transitionLessonSession(active, { type: "SUBMIT_REQUESTED" })
-}
-
-function createIncorrectEvaluation() {
-  return stepEvaluationSchema.parse({
-    correct: false,
-    correctItemIds: ["option-2"],
-    explanation: "다시 시도하세요.",
-    items: [
-      { id: "option-1", verdict: "incorrect" },
-      { id: "option-2", verdict: "missed" },
-    ],
-    type: "MULTIPLE_CHOICE",
+  return transitionLessonSession(starting, {
+    answerPayloads: {},
+    currentStepIndex: 0,
+    initialStepIds: stepIds,
+    progressPercent: 0,
+    type: "START_SUCCEEDED",
   })
 }
 
-function createAdvancedTransitionFixture() {
-  const transition = learnerCompleteStepResponseSchema.parse({
-    evaluation: null,
-    learning: {
-      completedSteps: 2,
-      currentStepId: "step-4",
-      currentStepIndex: 3,
-      progressPercent: 50,
-      status: "in_progress",
-      totalSteps: 4,
-      version: { curriculumVersionId: "version-1", revision: 1 },
-    },
-    status: "advanced",
-  })
-
-  if (transition.status === "retry") {
-    throw new Error("advanced 전이 fixture가 필요합니다.")
-  }
-
-  return transition
-}
-
-function createLessonCompletedTransitionFixture() {
+function createLessonCompletedResultFixture() {
   const completedAt = "2026-08-10T00:00:00.000Z"
-  const transition = learnerCompleteStepResponseSchema.parse({
+  return completeLearnerLessonResultSchema.parse({
     accuracyPercent: 100,
     courseLearning: {
       completedAt,
@@ -139,16 +116,9 @@ function createLessonCompletedTransitionFixture() {
       version: { curriculumVersionId: "version-1", revision: 1 },
     },
     durationMinutes: 5,
-    evaluation: null,
     lessonCompletion: { completedAt, totalSteps: 2 },
     status: "lesson_completed",
     streakDays: 1,
     streakIncreased: true,
   })
-
-  if (transition.status !== "lesson_completed") {
-    throw new Error("lesson_completed 전이 fixture가 필요합니다.")
-  }
-
-  return transition
 }

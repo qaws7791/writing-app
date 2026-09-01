@@ -239,8 +239,8 @@ function renderStep({
       return (
         <StepRenderer
           checked={checkedVisual}
-          {...(checked !== false && checked.type === "MATCH"
-            ? { evaluationItems: checked.items }
+          {...(checked !== false && checked.evaluation?.type === "MATCH"
+            ? { evaluationItems: checked.evaluation.items }
             : {})}
           initialPairs={
             answerPayload?.type === "MATCH" ? answerPayload.pairs : []
@@ -270,9 +270,9 @@ function renderStep({
     case "CATEGORIZE": {
       const StepRenderer = lessonStepRendererByType.CATEGORIZE
       const expectedCategoryByItemId =
-        checked !== false && checked.type === "CATEGORIZE"
+        checked !== false && checked.evaluation?.type === "CATEGORIZE"
           ? new Map(
-              checked.items.map((item) => [
+              checked.evaluation.items.map((item) => [
                 item.itemId,
                 item.expectedCategoryId,
               ])
@@ -296,7 +296,8 @@ function renderStep({
               : {}
           }
           items={step.items.map((item) => ({
-            categoryId: expectedCategoryByItemId.get(item.id) ?? "",
+            categoryId:
+              expectedCategoryByItemId.get(item.id) ?? item.categoryId,
             id: item.id,
             text: item.text,
           }))}
@@ -322,8 +323,8 @@ function renderStep({
         <StepRenderer
           checked={checkedVisual}
           correctAnswer={
-            checked !== false && checked.type === "TRUE_FALSE"
-              ? checked.correctAnswer
+            checked !== false && checked.evaluation?.type === "TRUE_FALSE"
+              ? checked.evaluation.correctAnswer
               : false
           }
           defaultSelected={
@@ -366,7 +367,9 @@ function renderStep({
     case "ERROR_CORRECT": {
       const StepRenderer = lessonStepRendererByType.ERROR_CORRECT
       const evaluation =
-        checked !== false && checked.type === "ERROR_CORRECT" ? checked : null
+        checked !== false && checked.evaluation?.type === "ERROR_CORRECT"
+          ? checked.evaluation
+          : null
       return (
         <StepRenderer
           checked={checkedVisual}

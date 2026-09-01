@@ -26,6 +26,7 @@ const learnerDependencies = {
   },
   learning: {
     application: {
+      completeLesson: contractOnly,
       readCourseCatalog: contractOnly,
       readCourseCategories: contractOnly,
       readCourseDetail: contractOnly,

@@ -1,4 +1,4 @@
-import type { LearnerId } from "@workspace/types/ids"
+import type { ContentAssetId, LearnerId } from "@workspace/types/ids"
 
 import type {
   CourseLearningState,
@@ -9,7 +9,7 @@ import type {
 
 export type LearnerContentAssetReference = Readonly<{
   altText: string
-  id: string
+  id: ContentAssetId
   kind: "course-cover" | "reading-illustration"
   url: string
 }>
@@ -77,91 +77,9 @@ export type LearnerCourseDetail = LearnerCourseSummary &
     }>[]
   }>
 
-type LearnerStepBase = Readonly<{
-  id: string
-  sortOrder: number
-}>
+import type { LearnerLessonStep } from "@workspace/contracts/learning/learner-content"
 
-type LearnerStepItem = Readonly<{
-  id: string
-  text: string
-}>
-
-export type LearnerLessonStep =
-  | (LearnerStepBase &
-      Readonly<{
-        body: string
-        illustration?: LearnerContentAssetReference
-        source?: string
-        title: string
-        type: "READING"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        title: string
-        type: "COMPARE"
-        versions: readonly Readonly<{ label: string; text: string }>[]
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        options: readonly LearnerStepItem[]
-        question: string
-        type: "MULTIPLE_CHOICE"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        blankCount: number
-        choices: readonly LearnerStepItem[]
-        template: string
-        type: "FILL_BLANK"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        items: readonly LearnerStepItem[]
-        layout?: string
-        question: string
-        type: "SELECT"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        items: readonly LearnerStepItem[]
-        title: string
-        type: "ORDER"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        leftItems: readonly LearnerStepItem[]
-        rightItems: readonly LearnerStepItem[]
-        title: string
-        type: "MATCH"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        categories: readonly LearnerStepItem[]
-        items: readonly LearnerStepItem[]
-        title: string
-        type: "CATEGORIZE"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        question: string
-        statement: string
-        type: "TRUE_FALSE"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        question: string
-        tileCount: number
-        tiles: readonly LearnerStepItem[]
-        type: "SENTENCE_BUILD"
-      }>)
-  | (LearnerStepBase &
-      Readonly<{
-        fixes: readonly LearnerStepItem[]
-        question: string
-        segments: readonly LearnerStepItem[]
-        type: "ERROR_CORRECT"
-      }>)
+export type { LearnerLessonStep }
 
 export type LearnerLesson = Readonly<{
   category: string | null

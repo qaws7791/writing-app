@@ -15,29 +15,27 @@ export function toLessonStepCheckedVisual(
   checked: LessonStepCheckedState | false
 ): LessonStepCheckedPresentation {
   if (checked === false) return false
-  if (checked.type === "SELECT" && step.type === "SELECT") {
+  const evalState = checked.evaluation
+  if (evalState && evalState.type === "SELECT" && step.type === "SELECT") {
     const indexById = new Map(step.items.map((item, index) => [item.id, index]))
     return {
-      missed: checked.items.flatMap((item) =>
+      missed: evalState.items.flatMap((item) =>
         item.verdict === "missed" ? [indexById.get(item.id) ?? -1] : []
       ),
-      wrong: checked.items.flatMap((item) =>
+      wrong: evalState.items.flatMap((item) =>
         item.verdict === "incorrect" ? [indexById.get(item.id) ?? -1] : []
       ),
     }
   }
-  return "correct" in checked
-    ? checked.correct
-      ? "correct"
-      : "wrong"
-    : "correct"
+  return checked.correct ? "correct" : "wrong"
 }
 
 export function getCorrectLessonStepItemIds(
   checked: LessonStepCheckedState | false
 ): readonly string[] {
-  return checked !== false && "correctItemIds" in checked
-    ? checked.correctItemIds
+  if (checked === false || !checked.evaluation) return []
+  return "correctItemIds" in checked.evaluation
+    ? checked.evaluation.correctItemIds
     : []
 }
 

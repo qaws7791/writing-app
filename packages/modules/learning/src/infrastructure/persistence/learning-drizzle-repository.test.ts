@@ -134,12 +134,12 @@ const writingCurriculum: LearningCurriculum = {
       ...firstCurriculumLesson,
       steps: [
         {
-          correct: "option-b",
+          correct: lessonStepItemIdSchema.parse("option-b"),
           explanation: "해설",
           id: firstStepId,
           options: [
-            { id: "option-a", text: "첫째" },
-            { id: "option-b", text: "둘째" },
+            { id: lessonStepItemIdSchema.parse("option-a"), text: "첫째" },
+            { id: lessonStepItemIdSchema.parse("option-b"), text: "둘째" },
           ],
           question: "정답은?",
           sortOrder: 1,

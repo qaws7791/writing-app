@@ -32,10 +32,17 @@ import {
   type CompleteStepSnapshot,
 } from "#learning/domain/complete-step-effect-plan"
 import {
+  planCompleteLesson,
+  type CompleteLessonPlan,
+  type CompleteLessonSnapshot,
+} from "#learning/domain/complete-lesson-effect-plan"
+import {
   calculateCurrentStreakDays,
   type LearningDateKey,
 } from "#learning/domain/learning-date"
 import type {
+  CompleteLearnerLessonCommand,
+  CompleteLearnerLessonTransitionResult,
   CompleteLearnerStepCommand,
   CompleteLearnerStepTransitionResult,
   LearnerLessonScope,
@@ -79,6 +86,12 @@ export function createDrizzleLearnerTransitionRepository(
   db: WritingAppDatabase
 ): LearningTransitionRepository {
   return {
+    async completeLesson(command, curriculum) {
+      return db.transaction(
+        (transaction) => completeLesson(transaction, command, curriculum),
+        { behavior: "immediate" }
+      )
+    },
     async completeStep(command, curriculum) {
       return db.transaction(
         (transaction) => completeStep(transaction, command, curriculum),
@@ -358,6 +371,83 @@ function applyStartLessonEffect(
         userId: effect.userId,
       })
   }
+}
+
+function completeLesson(
+  transaction: LearningTransaction,
+  command: CompleteLearnerLessonCommand,
+  curriculum: LearningCurriculum
+): Result<CompleteLearnerLessonTransitionResult, LearnerTransitionError> {
+  const snapshot = loadCompleteLessonSnapshot(transaction, command, curriculum)
+  const plan = planCompleteLesson(command, snapshot)
+  return applyCompleteLessonPlan(transaction, plan, curriculum)
+}
+
+function loadCompleteLessonSnapshot(
+  transaction: LearningTransaction,
+  command: CompleteLearnerLessonCommand,
+  curriculum: LearningCurriculum
+): CompleteLessonSnapshot {
+  const scope = findPinnedLessonScope(transaction, command, curriculum)
+  if (scope === null) {
+    return {
+      kind: "lesson-scope-missing",
+      publishedLessonExists:
+        findCurriculumLesson(curriculum, command.lessonId) !== null,
+    }
+  }
+
+  const completedLessonIds = readCompletedLessonIds(
+    transaction,
+    command.userId,
+    scope
+  )
+  const progress = readLessonProgress(transaction, command.userId, scope)
+  return {
+    completedLessonIds,
+    courseCompletionLessonIds: readCourseCompletionLessonIds(curriculum),
+    kind: "lesson",
+    progress:
+      progress === null
+        ? { kind: "not-started" }
+        : progress.status === completedStatus
+          ? { kind: "completed" }
+          : {
+              currentStepId: lessonStepIdSchema.parse(progress.currentStepId),
+              kind: "in-progress",
+            },
+    scope,
+    steps: readLessonSteps(curriculum, scope).map((step) => step.content),
+  }
+}
+
+function applyCompleteLessonPlan(
+  transaction: LearningTransaction,
+  plan: CompleteLessonPlan,
+  curriculum: LearningCurriculum
+): Result<CompleteLearnerLessonTransitionResult, LearnerTransitionError> {
+  if (plan.kind === "rejected") return err(plan.error)
+
+  for (const effect of plan.effects) {
+    applyCompleteStepEffect(transaction, effect)
+  }
+  const steps = plan.stepIds.map((id) => ({ id }))
+  const completed = readCompletedResult(
+    transaction,
+    plan.userId,
+    plan.scope,
+    steps,
+    curriculum
+  )
+  return ok({
+    ...completed,
+    ...(plan.kind === "accept-lesson"
+      ? {
+          accuracyPercent: plan.accuracyPercent,
+          durationMinutes: plan.durationMinutes,
+        }
+      : {}),
+  })
 }
 
 function completeStep(
