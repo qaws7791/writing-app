@@ -21,7 +21,10 @@ import {
   transitionLessonSession,
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
-import { isLessonStepSubmittable } from "@/features/lesson-session/model/lesson-step-policy"
+import {
+  getLessonStepSubmissionMode,
+  isLessonStepSubmittable,
+} from "@/features/lesson-session/model/lesson-step-policy"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const LESSON_START_ERROR = "잠시 후 다시 시도해 주세요."
@@ -169,8 +172,34 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
     }) => {
       send({ payload, stepId, type: "ANSWER_PAYLOAD_CHANGED" })
       stageDraft(stepId, payload)
+
+      const state = sessionStateRef.current
+      if (
+        state.status === "active" &&
+        state.activity === "idle" &&
+        state.checked === false &&
+        currentStep !== null &&
+        currentStep.id === stepId &&
+        getLessonStepSubmissionMode(currentStep) === "instant"
+      ) {
+        const submission = learnerStepSubmissionSchema.safeParse(payload)
+        if (submission.success) {
+          const evaluation = evaluateStepSubmission(
+            currentStep,
+            submission.data
+          )
+          send({
+            evaluation: evaluation ?? null,
+            explanation: evaluation?.explanation,
+            isCorrect: evaluation?.correct ?? true,
+            stepId: currentStep.id,
+            totalOriginalSteps: lesson.steps.length,
+            type: "STEP_EVALUATED",
+          })
+        }
+      }
     },
-    [send, stageDraft]
+    [currentStep, lesson.steps.length, send, stageDraft]
   )
 
   function submitCurrentStep(): void {

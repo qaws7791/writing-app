@@ -10,6 +10,28 @@ export type LessonStepCheckedState = {
   readonly explanation?: string | undefined
 }
 
+export type LessonStepSubmissionMode = "instant" | "manual"
+
+export function getLessonStepSubmissionMode(
+  step: LessonStep
+): LessonStepSubmissionMode {
+  switch (step.type) {
+    case "MULTIPLE_CHOICE":
+    case "TRUE_FALSE":
+      return "instant"
+    case "CATEGORIZE":
+    case "COMPARE":
+    case "ERROR_CORRECT":
+    case "FILL_BLANK":
+    case "MATCH":
+    case "ORDER":
+    case "READING":
+    case "SELECT":
+    case "SENTENCE_BUILD":
+      return "manual"
+  }
+}
+
 export function isLessonStepSubmittable(
   step: LessonStep,
   payload: LessonStepDraftAnswer | undefined
