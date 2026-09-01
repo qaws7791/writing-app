@@ -64,10 +64,14 @@ export const completeLearnerStepResultSchema = z.discriminatedUnion("status", [
     status: z.literal("advanced"),
   }),
   z.strictObject({
+    accuracyPercent: z.number().int().min(0).max(100),
     courseLearning: courseLearningStateSchema,
+    durationMinutes: z.number().int().min(0),
     evaluation: stepEvaluationSchema.nullable(),
     lessonCompletion: lessonCompletionSchema,
     status: z.literal("lesson_completed"),
+    streakDays: z.number().int().min(0),
+    streakIncreased: z.boolean(),
   }),
 ])
 

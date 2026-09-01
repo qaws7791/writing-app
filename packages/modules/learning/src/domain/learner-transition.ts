@@ -103,8 +103,12 @@ export type CompleteLearnerStepTransitionResult =
       readonly learning: InProgressLessonLearningState
     }
   | {
+      readonly accuracyPercent: number
       readonly courseLearning: CourseLearningState
+      readonly durationMinutes: number
       readonly evaluation: StepEvaluation | null
       readonly kind: "lesson-completed"
       readonly lessonCompletion: LessonCompletion
+      readonly streakDays: number
+      readonly streakIncreased: boolean
     }

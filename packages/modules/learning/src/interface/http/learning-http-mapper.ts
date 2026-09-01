@@ -152,10 +152,14 @@ export function presentCompleteStepResult(
       break
     case "lesson-completed":
       presented = {
+        accuracyPercent: result.accuracyPercent,
         courseLearning: result.courseLearning,
+        durationMinutes: result.durationMinutes,
         evaluation: result.evaluation,
         lessonCompletion: result.lessonCompletion,
         status: "lesson_completed",
+        streakDays: result.streakDays,
+        streakIncreased: result.streakIncreased,
       }
       break
   }
