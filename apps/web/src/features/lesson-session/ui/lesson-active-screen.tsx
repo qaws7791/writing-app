@@ -29,6 +29,7 @@ import {
   LessonActions,
   LessonFooter,
 } from "@workspace/ui/components/learning/lesson"
+import { Spinner } from "@workspace/ui/components/primitives/spinner"
 
 type LessonCheckedState = false | LessonStepCheckedState
 
@@ -54,6 +55,7 @@ export function LessonActiveScreen({
   onSubmitCurrentStep,
   progress,
   renderRevision,
+  sessionBootstrap,
   showExit,
   visibleStepNumber,
 }: {
@@ -81,9 +83,19 @@ export function LessonActiveScreen({
   readonly onSubmitCurrentStep: () => void
   readonly progress: number
   readonly renderRevision: number
+  readonly sessionBootstrap?:
+    | {
+        readonly error: null | string
+        readonly isStarting: boolean
+        readonly onRetry: () => void
+      }
+    | undefined
   readonly showExit: boolean
   readonly visibleStepNumber: number
 }) {
+  const isBootstrapping = sessionBootstrap !== undefined
+  const canInteract = !isBootstrapping
+
   return (
     <LessonShell
       contentRef={contentRef}
@@ -91,16 +103,51 @@ export function LessonActiveScreen({
         checked === false ? (
           <LessonFooter aria-label="레슨 행동">
             <LessonActions>
-              <Button
-                disabled={!isReady || isSubmitting}
-                onClick={onSubmitCurrentStep}
-                size="lg"
-                variant={isReady ? "default" : "secondary"}
-              >
-                {isSubmitting
-                  ? getLessonStepPendingLabel(currentStep)
-                  : getLessonStepActionLabel(currentStep)}
-              </Button>
+              {isBootstrapping && sessionBootstrap.error !== null ? (
+                <Button
+                  disabled={sessionBootstrap.isStarting}
+                  onClick={sessionBootstrap.onRetry}
+                  size="lg"
+                >
+                  {sessionBootstrap.isStarting ? (
+                    <>
+                      <Spinner aria-hidden data-icon="inline-start" />
+                      시작하는 중…
+                    </>
+                  ) : (
+                    "다시 시도"
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  aria-busy={
+                    isBootstrapping && sessionBootstrap.isStarting
+                      ? true
+                      : undefined
+                  }
+                  disabled={
+                    isBootstrapping
+                      ? sessionBootstrap.isStarting
+                      : !isReady || isSubmitting
+                  }
+                  onClick={onSubmitCurrentStep}
+                  size="lg"
+                  variant={
+                    isBootstrapping || !isReady ? "secondary" : "default"
+                  }
+                >
+                  {isBootstrapping && sessionBootstrap.isStarting ? (
+                    <>
+                      <Spinner aria-hidden data-icon="inline-start" />
+                      시작하는 중…
+                    </>
+                  ) : isSubmitting ? (
+                    getLessonStepPendingLabel(currentStep)
+                  ) : (
+                    getLessonStepActionLabel(currentStep)
+                  )}
+                </Button>
+              )}
             </LessonActions>
           </LessonFooter>
         ) : (
@@ -120,15 +167,27 @@ export function LessonActiveScreen({
         />
       }
     >
-      <div className="flex flex-col gap-4" onBlurCapture={onDraftFlush}>
+      <div
+        className="flex flex-col gap-4"
+        onBlurCapture={canInteract ? onDraftFlush : undefined}
+      >
         <LessonStepRenderer
           answerError={answerError}
           checked={checked}
-          onAnswerPayloadChange={onAnswerPayloadChange}
+          onAnswerPayloadChange={
+            canInteract ? onAnswerPayloadChange : () => undefined
+          }
           key={`${currentStepIndex}:${renderRevision}`}
           step={currentStep}
           {...(answerPayload === undefined ? {} : { answerPayload })}
         />
+        {sessionBootstrap?.error === null ||
+        sessionBootstrap?.error === undefined ? null : (
+          <Insight role="alert" tone="incorrect">
+            <InsightEyebrow>레슨을 시작하지 못했어요</InsightEyebrow>
+            <InsightDescription>{sessionBootstrap.error}</InsightDescription>
+          </Insight>
+        )}
         {completeError === null ? null : (
           <Insight role="alert" tone="incorrect">
             <InsightEyebrow>답을 확인하지 못했어요</InsightEyebrow>

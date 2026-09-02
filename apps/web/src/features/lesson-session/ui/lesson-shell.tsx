@@ -57,14 +57,6 @@ export function LessonShell({
   )
 }
 
-export function LessonIntroHeader({ onExit }: { readonly onExit: () => void }) {
-  return (
-    <LessonHeader className="shrink-0 pt-4 sm:pt-6">
-      <LessonClose aria-label="나가기" onClick={onExit} />
-    </LessonHeader>
-  )
-}
-
 export function LessonProgressHeader({
   currentStepNumber,
   onExit,

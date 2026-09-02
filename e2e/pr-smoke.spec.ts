@@ -25,7 +25,6 @@ test("학습자가 로그인해 서버가 확정한 레슨 완료를 다시 조�
   await loginLearner(page)
   await page.getByRole("link", { name: /E2E 상태 전이 코스/ }).click()
   await page.getByRole("link", { name: "학습 시작하기" }).click()
-  await page.getByRole("button", { name: "시작하기" }).click()
 
   await page.getByRole("radio", { name: "클라이언트가 채점한다" }).click()
   await page.getByRole("button", { name: "확인하기" }).click()
@@ -131,7 +130,6 @@ test("관리자가 발행한 코스를 별도 학습자가 읽는다", async ({
       .getByRole("link", { name: new RegExp(e2eAdminContentCourseTitle, "u") })
       .click()
     await learnerPage.getByRole("link", { name: "학습 시작하기" }).click()
-    await learnerPage.getByRole("button", { name: "시작하기" }).click()
 
     await expect(
       learnerPage.getByRole("heading", { name: e2eAdminContentReadingTitle })

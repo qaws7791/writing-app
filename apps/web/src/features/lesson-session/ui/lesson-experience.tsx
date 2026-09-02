@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation"
 
 import { LessonActiveScreen } from "@/features/lesson-session/ui/lesson-active-screen"
 import { LessonCompleteScreen } from "@/features/lesson-session/ui/lesson-complete-screen"
-import { LessonStartScreen } from "@/features/lesson-session/ui/lesson-start-screen"
 import { useLessonSession } from "@/features/lesson-session/hooks/use-lesson-session"
+import { getLessonStep } from "@/features/lesson-session/model/lesson-logic"
 import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"
 import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 
@@ -27,6 +27,23 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
   const [isLeaving, setIsLeaving] = useState(false)
   const [showExit, setShowExit] = useState(false)
   const session = useLessonSession({ lesson })
+  const { hasStarted, isSavingStart, startError, startLesson } = session
+
+  useEffect(() => {
+    if (!isHydrated) return
+    if (lesson.learning.status !== "not_started") return
+    if (hasStarted || isSavingStart) return
+    if (startError !== null) return
+
+    void startLesson()
+  }, [
+    isHydrated,
+    lesson.learning.status,
+    hasStarted,
+    isSavingStart,
+    startError,
+    startLesson,
+  ])
 
   useEffect(() => {
     if (!session.hasStarted) {
@@ -52,66 +69,69 @@ function LessonExperienceSession({ lesson }: LessonExperienceProps) {
     )
   }
 
-  if (session.hasStarted && session.currentStep !== null) {
-    return (
-      <LessonActiveScreen
-        answerError={session.answerError}
-        answerPayload={session.currentAnswerPayload}
-        checked={session.checked}
-        completeError={session.completeError}
-        contentRef={contentRef}
-        currentStep={session.currentStep}
-        currentStepIndex={session.currentStepIndex}
-        exitError={exitError}
-        isReady={session.isReady}
-        isLeaving={isLeaving}
-        isSubmitting={session.isSubmitting}
-        lesson={lesson}
-        onAnswerPayloadChange={session.saveAnswer}
-        onCancelExit={() => {
-          setExitError(null)
-          setShowExit(false)
-        }}
-        onConfirmExit={() => {
-          void (async () => {
-            if (isLeaving) return
-            setExitError(null)
-            setIsLeaving(true)
-            const result = await session.prepareToLeave()
-            if (result.status === "blocked") {
-              setExitError(
-                "지금은 나갈 수 없어요. 작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요."
-              )
-              setIsLeaving(false)
-              return
-            }
-            setShowExit(false)
-            router.push(`/app/courses/${lesson.courseId}`)
-          })()
-        }}
-        onDraftFlush={() => void session.flushCurrentDraft()}
-        onExit={() => {
-          setExitError(null)
-          setShowExit(true)
-        }}
-        onContinueLessonStep={() => void session.continueLessonStep()}
-        onSubmitCurrentStep={() => void session.submitCurrentStep()}
-        progress={session.progress}
-        renderRevision={session.renderRevision}
-        showExit={showExit}
-        visibleStepNumber={session.visibleStepNumber}
-      />
-    )
+  const activeStep = session.currentStep ?? getLessonStep(lesson, 0)
+  if (activeStep === null) {
+    return null
   }
 
+  const isBootstrapping = !session.hasStarted
+
   return (
-    <LessonStartScreen
-      isInteractive={isHydrated}
-      isSavingStart={session.isSavingStart}
+    <LessonActiveScreen
+      answerError={session.answerError}
+      answerPayload={session.currentAnswerPayload}
+      checked={session.checked}
+      completeError={session.completeError}
+      contentRef={contentRef}
+      currentStep={activeStep}
+      currentStepIndex={session.currentStepIndex}
+      exitError={exitError}
+      isReady={!isBootstrapping && session.isReady}
+      isLeaving={isLeaving}
+      isSubmitting={session.isSubmitting}
       lesson={lesson}
-      onExit={() => router.push(`/app/courses/${lesson.courseId}`)}
-      onStart={() => void session.startLesson()}
-      startError={session.startError}
+      onAnswerPayloadChange={session.saveAnswer}
+      onCancelExit={() => {
+        setExitError(null)
+        setShowExit(false)
+      }}
+      onConfirmExit={() => {
+        void (async () => {
+          if (isLeaving) return
+          setExitError(null)
+          setIsLeaving(true)
+          const result = await session.prepareToLeave()
+          if (result.status === "blocked") {
+            setExitError(
+              "지금은 나갈 수 없어요. 작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요."
+            )
+            setIsLeaving(false)
+            return
+          }
+          setShowExit(false)
+          router.push(`/app/courses/${lesson.courseId}`)
+        })()
+      }}
+      onDraftFlush={() => void session.flushCurrentDraft()}
+      onExit={() => {
+        setExitError(null)
+        setShowExit(true)
+      }}
+      onContinueLessonStep={() => void session.continueLessonStep()}
+      onSubmitCurrentStep={() => void session.submitCurrentStep()}
+      progress={session.progress}
+      renderRevision={session.renderRevision}
+      sessionBootstrap={
+        isBootstrapping
+          ? {
+              error: session.startError,
+              isStarting: session.isSavingStart,
+              onRetry: () => void session.startLesson(),
+            }
+          : undefined
+      }
+      showExit={showExit}
+      visibleStepNumber={session.visibleStepNumber}
     />
   )
 }
