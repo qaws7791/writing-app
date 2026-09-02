@@ -1,0 +1,222 @@
+[
+  {
+    "type": "compare",
+    "title": "문체 균형: 딱딱한 문어 vs 자연스러운 글",
+    "analysis": "낡은 한문투를 털어내면 뜻이 산뜻하고 분명해져요.",
+    "versions": [
+      {
+        "label": "경직된 문어",
+        "mark": "조속한 시일 내에 회신을 요망하오며",
+        "text": "본 건에 대하여 조속한 시일 내에 회신을 요망하오며 협조 바랍니다."
+      },
+      {
+        "label": "균형 잡힌 글",
+        "mark": "이번 주까지 답변해 주시면",
+        "text": "이번 건은 이번 주까지 답변해 주시면 업무에 큰 도움이 됩니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "문체에 관한 올바른 설명인가요?",
+    "statement": "공적인 글일수록 한자어와 번역 투를 많이 써야 품격이 산다.",
+    "correct": false,
+    "explanation": "낡은 한자어나 번역 투는 글을 무겁게 만들 뿐이에요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "업무 공유에 가장 알맞은 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "해봤는데 잘 안돼가지고요"
+      },
+      {
+        "id": "opt-2",
+        "text": "오차를 확인해 수정했습니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "오차 발생에 귀착된 바입니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "늘어지는 입말과 낡은 문어를 피해 명확히 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "문맥에서 늘어진 입말 구간은?",
+    "segments": [
+      "지난 분기 실적은 ",
+      "저희가 보니까 진짜 완전 ",
+      "목표치를 달성했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "보고서에는 감정적 추임새보다 구체적 수치를 써보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "늘어진 입말과 정밀한 표현 분류",
+    "categories": [
+      {
+        "id": "cat-spoken",
+        "label": "늘어진 입말"
+      },
+      {
+        "id": "cat-written",
+        "label": "정밀한 균형"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "되게 많이",
+        "categoryId": "cat-spoken"
+      },
+      {
+        "id": "item-2",
+        "text": "상당 부분",
+        "categoryId": "cat-written"
+      },
+      {
+        "id": "item-3",
+        "text": "~해가지고",
+        "categoryId": "cat-spoken"
+      },
+      {
+        "id": "item-4",
+        "text": "~하여",
+        "categoryId": "cat-written"
+      },
+      {
+        "id": "item-5",
+        "text": "완전 대박",
+        "categoryId": "cat-spoken"
+      },
+      {
+        "id": "item-6",
+        "text": "기대 이상의 성과",
+        "categoryId": "cat-written"
+      }
+    ],
+    "explanation": "말할 때 쓰는 습관적 군더더기를 단정하게 정돈해요."
+  },
+  {
+    "type": "true_false",
+    "question": "문체 균형에 맞는 원칙인가요?",
+    "statement": "말하듯 자연스러운 흐름에 정확한 단어를 얹는 것이 좋다.",
+    "correct": true,
+    "explanation": "생동감 있는 호흡에 정확한 단어를 쓸 때 가장 잘 읽혀요."
+  },
+  {
+    "type": "select",
+    "question": "딱딱하게 굳은 번역투 글말 구간은?",
+    "segments": [
+      "신규 서비스 기획은 ",
+      "성공에 다름 아닌 ",
+      "결과를 낳았습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'~에 다름 아니다' 대신 '분명한 성공'으로 써보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "경직된 문어와 자연스러운 표현",
+    "categories": [
+      {
+        "id": "cat-rigid",
+        "label": "경직된 문어"
+      },
+      {
+        "id": "cat-clear",
+        "label": "자연스러운 표현"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "사료됩니다",
+        "categoryId": "cat-rigid"
+      },
+      {
+        "id": "item-2",
+        "text": "생각합니다",
+        "categoryId": "cat-clear"
+      },
+      {
+        "id": "item-3",
+        "text": "회신을 요망함",
+        "categoryId": "cat-rigid"
+      },
+      {
+        "id": "item-4",
+        "text": "답변 부탁드립니다",
+        "categoryId": "cat-clear"
+      },
+      {
+        "id": "item-5",
+        "text": "귀착되는 바이다",
+        "categoryId": "cat-rigid"
+      },
+      {
+        "id": "item-6",
+        "text": "결과로 이어집니다",
+        "categoryId": "cat-clear"
+      }
+    ],
+    "explanation": "불필요하게 굳은 문어를 일상의 단정한 말로 풀어보세요."
+  },
+  {
+    "type": "select",
+    "question": "공식 안내문에 어색한 구어체 구간은?",
+    "segments": [
+      "시스템 점검 중에는 ",
+      "접속이 튕길 수 있으니 ",
+      "미리 저장해 주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'튕길 수' 대신 '중단될 수'처럼 단정하게 정돈해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "경직된 표현을 자연스럽게 고치세요.",
+    "segments": [
+      "고객님의 문의에 대해 ",
+      "신속한 답변을 ",
+      "요망하는 바입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["요망하는 바입니다.", "드리도록 하겠습니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'요망하다'라는 권위적 표현 대신 정중한 안내를 써요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "문맥에 맞춰 딱딱한 '거행하다' 대신 '___'을 씁니다.",
+    "words": ["진행하다", "요망하다", "귀착하다", "사료하다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "권위적인 의식 표현보다 일상적이고 명확한 말을 골라요."
+  },
+  {
+    "type": "select",
+    "question": "단정하고 명료한 균형 구간은?",
+    "segments": [
+      "기획서 초안은 ",
+      "핵심만 추려 담백하게 ",
+      "작성해 두었습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "군더더기 없는 수식으로 정확성과 생동감을 살려보세요.",
+    "layout": "inline"
+  }
+]

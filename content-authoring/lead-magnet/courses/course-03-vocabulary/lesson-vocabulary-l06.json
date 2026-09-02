@@ -1,0 +1,155 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "자연스러운 연어 결합 대조",
+    "analysis": "동작 명사에 불필요한 동사를 붙이지 않아야 깔끔해요.",
+    "versions": [
+      {
+        "label": "늘어진 문장",
+        "mark": "검토를 실시했습니다",
+        "text": "이번 분기 마케팅 성과에 대해 전면적인 검토를 실시했습니다."
+      },
+      {
+        "label": "자연스런 문장",
+        "mark": "검토했습니다",
+        "text": "이번 분기 마케팅 성과를 전면적으로 검토했습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "자연스러운 어휘 짝인가요?",
+    "statement": "긴급 안건을 다루고자 팀 회의를 개최했다.",
+    "correct": false,
+    "explanation": "일상 업무 회의는 '개최하다'보다 '열다'가 자연스러워요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "'눈길'과 짝을 이루는 말은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "받았습니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "끌었습니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "당겼습니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "'눈길'은 '끌다', '주목'은 '받다'와 짝을 이뤄 써요."
+  },
+  {
+    "type": "select",
+    "question": "어색하게 늘어진 서술어는?",
+    "segments": [
+      "고객 피드백을 ",
+      "바탕으로 신규 기능 ",
+      "개발을 진행했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'개발을 진행했습니다'는 '개발했습니다'로 줄여야 자연스러워요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "팀원들과 함께 뜻깊은 ___.",
+    "words": ["시간을 가졌습니다", "시간을 보냈습니다", "시간을 열었습니다"],
+    "wordIds": ["word-1", "word-2", "word-3"],
+    "answer": ["word-2"],
+    "explanation": "'시간을 가지다'는 영어 번역투라 '보내다'가 자연스러워요."
+  },
+  {
+    "type": "true_false",
+    "question": "문맥에 어울리는 문장인가요?",
+    "statement": "현장 반응을 살피고자 직접 인터뷰를 했다.",
+    "correct": true,
+    "explanation": "'인터뷰를 실시했다'보다 '인터뷰를 했다'가 알맞아요."
+  },
+  {
+    "type": "match",
+    "title": "자연스러운 어휘 짝 맞추기",
+    "pairs": [
+      {
+        "left": "회의를",
+        "leftId": "left-1",
+        "right": "열다",
+        "rightId": "right-1"
+      },
+      {
+        "left": "주목을",
+        "leftId": "left-2",
+        "right": "받다",
+        "rightId": "right-2"
+      },
+      {
+        "left": "눈길을",
+        "leftId": "left-3",
+        "right": "끌다",
+        "rightId": "right-3"
+      },
+      {
+        "left": "시간을",
+        "leftId": "left-4",
+        "right": "보내다",
+        "rightId": "right-4"
+      }
+    ],
+    "explanation": "한국어는 단어마다 자연스럽게 호응하는 고유한 짝이 있어요."
+  },
+  {
+    "type": "select",
+    "question": "군더더기를 덜어낼 표현은?",
+    "segments": [
+      "신규 서비스 수요를 ",
+      "파악하기 위해 ",
+      "설문 조사를 진행했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'설문 조사를 진행하다'는 '설문 조사하다'로 쓰면 명료해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 서술어를 바르게 고치면?",
+    "segments": [
+      "이번 신제품 발표회는 ",
+      "업계 관계자들의 ",
+      "큰 주목을 끌었습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["큰 주목을 받았습니다.", "큰 주목을 열었습니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'주목'은 '끌다'가 아니라 '받다'와 결합해야 자연스러워요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "그는 제안의 실현 가능성에 대해 ___.",
+    "words": ["의문을 품었다", "의문을 가졌다", "의문을 보았다"],
+    "wordIds": ["word-1", "word-2", "word-3"],
+    "answer": ["word-1"],
+    "explanation": "'의문'은 '가지다'보다 '품다'와 결합하는 것이 자연스러워요."
+  },
+  {
+    "type": "select",
+    "question": "가장 자연스러운 표현은?",
+    "segments": [
+      "내일 오전 팀원들과 ",
+      "회의를 개최하여 ",
+      "회의를 열어 ",
+      "대응책을 세우겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "늘어진 한자어 결합보다 '회의를 열다'가 훨씬 깔끔해요.",
+    "layout": "inline"
+  }
+]

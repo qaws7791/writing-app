@@ -1,0 +1,202 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "단어 정리 방식에 따른 문장 차이",
+    "analysis": "용례와 호응 관계를 함께 적어야 실전에서 자연스럽게 써요!",
+    "versions": [
+      {
+        "label": "뜻만 기록",
+        "mark": "개진시켰습니다",
+        "text": "기획 회의에서 팀원들의 솔직한 의견을 개진시켰습니다."
+      },
+      {
+        "label": "문맥도 기록",
+        "mark": "개진했습니다",
+        "text": "기획 회의에서 팀원들의 솔직한 의견을 개진했습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "어휘 사전 작성법이 맞나요?",
+    "statement": "단어는 사전 뜻뿐만 아니라 함께 쓰이는 문맥 예문도 적어야 해요.",
+    "correct": true,
+    "explanation": "어울리는 앞뒤 짝꿍말을 함께 기억해야 실전에서 바로 꺼내 써요!"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "어휘 사전에 꼭 함께 적을 요소는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "사전 속 첫 번째 뜻풀이"
+      },
+      {
+        "id": "opt-2",
+        "text": "실제 문장에서 쓰인 용례"
+      },
+      {
+        "id": "opt-3",
+        "text": "어려운 한자 획수와 음훈"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "실제 문맥과 짝꿍 어휘를 함께 기록해야 오용을 막을 수 있어요!"
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 어휘가 쓰인 구간은?",
+    "segments": [
+      "고객 센터에 접수된 ",
+      "불만과 개선 의견을 ",
+      "귀감으로 삼았습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'귀감'은 훌륭한 본보기이므로, 불만은 '반면교사'로 삼아야 해요!",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "글의 성격에 맞는 어휘 서랍 분류",
+    "categories": [
+      {
+        "id": "cat-report",
+        "label": "공식 보고서 서랍"
+      },
+      {
+        "id": "cat-chat",
+        "label": "친근한 일상 서랍"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "의견을 개진하다",
+        "categoryId": "cat-report"
+      },
+      {
+        "id": "item-2",
+        "text": "생각을 털어놓다",
+        "categoryId": "cat-chat"
+      },
+      {
+        "id": "item-3",
+        "text": "대안을 모색하다",
+        "categoryId": "cat-report"
+      },
+      {
+        "id": "item-4",
+        "text": "방법을 찾아보다",
+        "categoryId": "cat-chat"
+      }
+    ],
+    "explanation": "글의 목적과 독자에 따라 어울리는 단어 서랍에서 꺼내 써보세요!"
+  },
+  {
+    "type": "true_false",
+    "question": "어휘 수집 방식이 올바른가요?",
+    "statement": "사전 뜻만 외워두면 어떤 문맥에서도 어울리는 문장을 쓸 수 있다.",
+    "correct": false,
+    "explanation": "단어마다 호응하는 짝꿍과 뉘앙스가 달라 문맥 용례가 꼭 필요해요!"
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 어휘가 쓰인 구간은?",
+    "segments": [
+      "팀원들의 헌신으로 ",
+      "눈부신 성과를 야기해 ",
+      "큰 박수를 받았습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'야기하다'는 부정적 결과에 쓰므로 '창출해'가 자연스러워요!",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "문맥 분위기에 따른 어휘 분류",
+    "categories": [
+      {
+        "id": "cat-pos",
+        "label": "긍정적 상황·결과"
+      },
+      {
+        "id": "cat-neg",
+        "label": "부정적 사건·문제"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "성과를 창출하다",
+        "categoryId": "cat-pos"
+      },
+      {
+        "id": "item-2",
+        "text": "문제를 야기하다",
+        "categoryId": "cat-neg"
+      },
+      {
+        "id": "item-3",
+        "text": "결실을 맺다",
+        "categoryId": "cat-pos"
+      },
+      {
+        "id": "item-4",
+        "text": "갈등을 초래하다",
+        "categoryId": "cat-neg"
+      }
+    ],
+    "explanation": "단어의 호응 분위기를 함께 메모해 두면 어색한 오용을 막을 수 있어요!"
+  },
+  {
+    "type": "select",
+    "question": "문맥에 딱 맞게 쓰인 핵심 구간은?",
+    "segments": [
+      "소모적인 논쟁 끝에 ",
+      "극적인 접점을 도출해 ",
+      "최종 합의에 도달했다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'접점'과 '도출하다'가 호응하여 타협의 문맥을 정확히 표현해요!",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "문맥에 맞게 어휘를 고치세요.",
+    "segments": [
+      "이번 협업 프로젝트는 ",
+      "상호 신뢰를 바탕으로 ",
+      "큰 시너지를 초래했다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["시너지를 창출했다", "시너지를 초래했다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'초래하다'는 부정적 결과에 쓰이므로 '창출했다'로 고쳐보세요!"
+  },
+  {
+    "type": "fill_blank",
+    "template": "선배는 내 고민을 묵묵히 ___ 지친 마음을 따뜻하게 ___.",
+    "words": ["경청하며", "다독였다", "초래하며", "야기했다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1", "w-2"],
+    "explanation": "고민에는 '경청', 마음에는 '다독이다'가 찰떡처럼 어울려요!"
+  },
+  {
+    "type": "select",
+    "question": "문맥과 호응이 완벽한 구간은?",
+    "segments": [
+      "현장 목소리를 수렴하여 ",
+      "고객 불만을 귀감 삼고 ",
+      "사업 확장을 야기했다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "의견이나 목소리를 모아 받아들일 때는 '수렴하다'가 딱 맞아요!",
+    "layout": "inline"
+  }
+]

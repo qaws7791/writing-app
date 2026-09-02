@@ -1,0 +1,162 @@
+[
+  {
+    "type": "compare",
+    "title": "감정 강도에 맞는 단어 선택",
+    "analysis": "서운함은 아쉬움이고, 불쾌함은 선을 넘은 기분이에요.",
+    "versions": [
+      {
+        "label": "1단계 서운",
+        "mark": "서운했어요",
+        "text": "동료가 점심 약속을 깜빡해서 조금 서운했어요."
+      },
+      {
+        "label": "3단계 불쾌",
+        "mark": "불쾌했어요",
+        "text": "동료가 반말로 업무를 지시해서 몹시 불쾌했어요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "문맥에 맞는 단어인가요?",
+    "statement": "거래처의 무례한 요구에 서운함을 전했다.",
+    "correct": false,
+    "explanation": "공식 업무의 무례에는 '불쾌함'이나 '유감'이 알맞아요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "회의 피드백에 어울리는 표현은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "격앙된 마음이 들어요"
+      },
+      {
+        "id": "opt-b",
+        "text": "다소 언짢은 기분이에요"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "가벼운 불만은 '격앙'보다 '언짢다'가 적절해요."
+  },
+  {
+    "type": "select",
+    "question": "강도가 지나친 단어를 고르세요.",
+    "segments": [
+      "답장이 조금 ",
+      "늦어져서 ",
+      "격앙됐어요.",
+      "다음엔 미리 알려주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "단순한 지연에는 '서운했다'나 '아쉬웠다'가 어울려요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "감정 강도 척도와 단어 연결",
+    "pairs": [
+      {
+        "left": "1단계 아쉬움",
+        "leftId": "p-1-l",
+        "right": "서운하다",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "2단계 가벼운 불만",
+        "leftId": "p-2-l",
+        "right": "언짢다",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "3단계 무례에 반발",
+        "leftId": "p-3-l",
+        "right": "불쾌하다",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "5단계 극도의 흥분",
+        "leftId": "p-4-l",
+        "right": "격앙되다",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "감정의 고조 단계에 따라 알맞은 단어 눈금을 골라보세요."
+  },
+  {
+    "type": "true_false",
+    "question": "문맥에 알맞은 표현인가요?",
+    "statement": "거짓 보고를 듣고 팀장의 목소리가 격앙됐다.",
+    "correct": true,
+    "explanation": "감정이 극도로 고조된 상태에는 '격앙됐다'가 어울려요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "기대했던 축하 인사를 받지 못해 속으로 ___ 마음이 들었다.",
+    "words": ["격앙된", "분노한", "서운한", "불쾌한"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-3"],
+    "explanation": "친한 관계에서 기대가 빗나간 아쉬움은 '서운한'이 맞아요."
+  },
+  {
+    "type": "select",
+    "question": "상황에 맞지 않는 표현은?",
+    "segments": [
+      "식당 직원이 ",
+      "음식을 쏟고도 ",
+      "사과하지 않아 ",
+      "서운했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-4"],
+    "explanation": "타인의 명백한 잘못과 무례에는 '불쾌했다'가 적절해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 단어를 바르게 고치세요.",
+    "segments": [
+      "사소한 오해로 ",
+      "서로 언성이 높아지며 ",
+      "불쾌된 채 ",
+      "회의가 끝났습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correctSegment": "seg-3",
+    "fixes": ["불쾌된 채", "격앙된 채", "서운한 채"],
+    "fixIds": ["fix-1", "fix-2", "fix-3"],
+    "correctFix": "fix-2",
+    "explanation": "언성이 높아지며 흥분한 상태는 '격앙된 채'로 고쳐요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "사적인 자리에서 무례한 질문을 받아 몹시 ___ 표정을 지었다.",
+    "words": ["불쾌한", "서운한", "격앙된", "언짢은"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "무례한 행동으로 기분이 크게 상했을 때는 '불쾌한'을 써요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "정중한 항의 문장을 조립하세요.",
+    "tiles": ["일방적인", "일정 변경은", "다소", "언짢게", "느껴집니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "공식 관계에서 부드럽게 불만을 전할 땐 '언짢게'가 좋아요."
+  },
+  {
+    "type": "select",
+    "question": "공식 항의에 알맞은 표현은?",
+    "segments": [
+      "약속 파기에 대해 ",
+      "상대 측에 ",
+      "강한 유감과 불쾌감을 ",
+      "표명했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "공식 문서에서 단호한 입장을 낼 때는 '불쾌감'이 정확해요.",
+    "layout": "inline"
+  }
+]

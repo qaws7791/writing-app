@@ -1,0 +1,214 @@
+[
+  {
+    "type": "compare",
+    "title": "성별 편견을 지우는 호칭 대조",
+    "analysis": "'미망인'은 봉건적 표현이므로 '고인의 배우자'를 써요.",
+    "versions": [
+      {
+        "label": "기존 관행",
+        "mark": "미망인에게",
+        "text": "장례식장을 찾아 유가족과 미망인에게 조의를 표했습니다."
+      },
+      {
+        "label": "포용 어휘",
+        "mark": "고인의 배우자에게",
+        "text": "장례식장을 찾아 유가족과 고인의 배우자에게 조의를 표했습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 어휘 사용인가요?",
+    "statement": "'미망인'은 남편을 여읜 여성을 높여 부르는 경칭이다.",
+    "correct": false,
+    "explanation": "'아직 따라 죽지 못한 사람'이라는 뜻이 담겨 지양해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "상품 설명에 적절한 색상명은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "살색 스타킹"
+      },
+      {
+        "id": "opt-2",
+        "text": "살구색 스타킹"
+      },
+      {
+        "id": "opt-3",
+        "text": "인종색 스타킹"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "특정 피부색만을 가리키지 않도록 '살구색'을 써요."
+  },
+  {
+    "type": "select",
+    "question": "차별적 인식이 담긴 구간은?",
+    "segments": [
+      "정상인뿐만 아니라 ",
+      "장애인 직원 누구나 ",
+      "이용할 수 있는 시설입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "장애인의 반대말은 '정상인'이 아니라 '비장애인'이에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "성별 고정관념과 포용 어휘 분류",
+    "categories": [
+      {
+        "id": "cat-bias",
+        "label": "성별 고정관념"
+      },
+      {
+        "id": "cat-inclusive",
+        "label": "포용적 어휘"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "유모차",
+        "categoryId": "cat-bias"
+      },
+      {
+        "id": "item-2",
+        "text": "유아차",
+        "categoryId": "cat-inclusive"
+      },
+      {
+        "id": "item-3",
+        "text": "처녀작",
+        "categoryId": "cat-bias"
+      },
+      {
+        "id": "item-4",
+        "text": "첫 작품",
+        "categoryId": "cat-inclusive"
+      },
+      {
+        "id": "item-5",
+        "text": "학부형",
+        "categoryId": "cat-bias"
+      },
+      {
+        "id": "item-6",
+        "text": "학부모",
+        "categoryId": "cat-inclusive"
+      }
+    ],
+    "explanation": "성별 편견을 덜어내고 대상 중심의 포용 어휘를 써보세요."
+  },
+  {
+    "type": "true_false",
+    "question": "인권 감수성에 맞는 설명인가요?",
+    "statement": "'저출생'은 출산 주체보다 태어나는 아이 중심의 포용어다.",
+    "correct": true,
+    "explanation": "여성에게 출산 책임을 지우지 않고 사회 현상으로 봅니다."
+  },
+  {
+    "type": "select",
+    "question": "낙인 표현이 포함된 구간은?",
+    "segments": [
+      "사내 복지 기금은 ",
+      "도움이 필요한 ",
+      "결손가정에 지원됩니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'결손가정'은 편견을 주므로 '한부모가정'을 써요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "차별 표현과 권장 포용어 분류",
+    "categories": [
+      {
+        "id": "cat-exclude",
+        "label": "배제적 관행 표현"
+      },
+      {
+        "id": "cat-include",
+        "label": "권장 포용 어휘"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "장애우",
+        "categoryId": "cat-exclude"
+      },
+      {
+        "id": "item-2",
+        "text": "장애인",
+        "categoryId": "cat-include"
+      },
+      {
+        "id": "item-3",
+        "text": "집사람",
+        "categoryId": "cat-exclude"
+      },
+      {
+        "id": "item-4",
+        "text": "배우자",
+        "categoryId": "cat-include"
+      },
+      {
+        "id": "item-5",
+        "text": "결손가정",
+        "categoryId": "cat-exclude"
+      },
+      {
+        "id": "item-6",
+        "text": "한부모가정",
+        "categoryId": "cat-include"
+      }
+    ],
+    "explanation": "대상을 주체로 존중하는 포용적 어휘를 골라 써보세요."
+  },
+  {
+    "type": "select",
+    "question": "성별 고정관념이 담긴 구간은?",
+    "segments": ["전시관 입구에 ", "작가의 처녀작을 ", "나란히 전시했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'처녀작' 대신 '첫 작품'이나 '데뷔작'으로 써보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "성별 고정관념을 바르게 고치세요.",
+    "segments": ["자녀 동반 고객을 위해 ", "안내소에 ", "유모차를 비치했다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["유모차를 비치했다", "유아차를 비치했다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'유모차' 대신 성중립적인 '유아차'로 바꿔보세요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "다양한 피부색을 포용하기 위해 '살색'을 '___'(으)로 바꿨습니다.",
+    "words": ["살구색", "미망인", "정상인", "저출산"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "인종적 편견을 없애기 위해 표준 색채명인 '살구색'을 써요."
+  },
+  {
+    "type": "select",
+    "question": "존중과 포용이 돋보이는 구간은?",
+    "segments": [
+      "재취업을 희망하는 ",
+      "경력보유여성을 위한 ",
+      "지원을 아끼지 않습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'경단녀' 대신 성장을 인정하는 '경력보유여성'을 써요.",
+    "layout": "inline"
+  }
+]

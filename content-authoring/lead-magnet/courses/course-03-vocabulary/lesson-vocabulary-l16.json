@@ -1,0 +1,139 @@
+[
+  {
+    "type": "compare",
+    "title": "추상적 관념어 vs 구체적 장면",
+    "analysis": "추상적 평가보다 구체적 행동이 신뢰를 줘요.",
+    "versions": [
+      {
+        "label": "추상적 서술",
+        "mark": "성실한 태도로",
+        "text": "그는 항상 성실한 태도로 매일 회사에 출근했습니다."
+      },
+      {
+        "label": "구체적 장면",
+        "mark": "가장 먼저 사무실 불을 켰습니다",
+        "text": "그는 매일 아침 7시에 가장 먼저 사무실 불을 켰습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "추상어 쓰기에 관한 설명인가요?",
+    "statement": "'성실하다' 같은 말을 반복해야 글의 신뢰가 오른다.",
+    "correct": false,
+    "explanation": "추상어 강조보다 행동을 묘사해야 독자가 믿어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "감정을 행동으로 그린 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "그는 극도로 분노했다"
+      },
+      {
+        "id": "opt-2",
+        "text": "그는 주먹을 꽉 쥐었다"
+      },
+      {
+        "id": "opt-3",
+        "text": "그는 화가 몹시 났다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "'화났다'는 말 대신 신체 반응을 쓰면 실감 나요."
+  },
+  {
+    "type": "order",
+    "title": "추상어를 구체 장면으로 바꾸는 순서",
+    "items": [
+      "추상적 관념어를 찾기",
+      "관찰 가능한 행동 떠올리기",
+      "눈앞에 보이는 장면으로 쓰기"
+    ],
+    "itemIds": ["item-1", "item-2", "item-3"],
+    "correct": ["item-1", "item-2", "item-3"],
+    "explanation": "관념어를 포착하고 검증되는 장면으로 옮겨보세요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "팀원의 성실성을 전하려면 '___'처럼 쓰세요.",
+    "words": [
+      "정말 착하다",
+      "열정이 넘친다",
+      "지각 한 번 없었다",
+      "성격이 좋다"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-3"],
+    "explanation": "검증 가능한 객관적 사실을 적어야 신뢰가 생겨요."
+  },
+  {
+    "type": "select",
+    "question": "관찰 가능한 행동 묘사 구간은?",
+    "segments": [
+      "그는 조급한 성격이라서 ",
+      "항상 마음이 불안했고 ",
+      "연신 손목시계를 보았다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "시계를 확인하는 구체적 행동이 초조함을 드러내요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "구체적 묘사 원칙인가요?",
+    "statement": "감정어를 직접 쓰지 않아도 행동 묘사로 마음을 전할 수 있다.",
+    "correct": true,
+    "explanation": "주먹 쥐기나 한숨 같은 행동이 감정을 더 잘 보여줘요."
+  },
+  {
+    "type": "order",
+    "title": "슬픔을 장면으로 바꾸는 과정",
+    "items": [
+      "슬프다는 관념어 지우기",
+      "울컥할 때의 행동 떠올리기",
+      "고개를 떨군 장면 쓰기"
+    ],
+    "itemIds": ["item-1", "item-2", "item-3"],
+    "correct": ["item-1", "item-2", "item-3"],
+    "explanation": "설명하는 형용사를 지우고 눈에 보이는 움직임을 써요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "동료의 열정을 전할 땐 '___'처럼 써보세요.",
+    "words": [
+      "매일 리뷰를 남겼다",
+      "매우 열정적이다",
+      "애정이 각별하다",
+      "사명감이 투철하다"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "주관적 찬사보다 구체적 실천을 써야 능력이 보여요."
+  },
+  {
+    "type": "error_correct",
+    "question": "생생한 장면으로 교정해 보세요.",
+    "segments": [
+      "그는 합격 소식에 ",
+      "너무나 기뻐했다.",
+      " 모두에게 자랑했다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["참 행복했다.", "환호성을 질렀다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'기뻐했다' 대신 '환호성을 질렀다'로 쓰면 생생해요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "구체적 장면 문장으로 조립하세요.",
+    "tiles": ["그는", "분노 대신", "주먹을", "꽉 쥐며", "이를 악물었다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "신체 반응과 행동을 엮으면 감정이 눈에 보여요."
+  }
+]

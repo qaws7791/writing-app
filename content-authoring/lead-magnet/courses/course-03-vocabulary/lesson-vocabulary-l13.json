@@ -1,0 +1,217 @@
+[
+  {
+    "type": "compare",
+    "title": "본말과 준말의 문체 분위기 대조",
+    "analysis": "공문서에는 본말을, 칼럼에는 준말을 써요.",
+    "versions": [
+      {
+        "label": "공식 보고서",
+        "mark": "어찌 되었든",
+        "text": "어찌 되었든 이번 사업의 최종 책임은 부서에 있습니다."
+      },
+      {
+        "label": "대중 칼럼",
+        "mark": "어쨌든",
+        "text": "어쨌든 이번 일은 우리에게 큰 깨달음을 안겨주었다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "공문서 작성에 올바른 설명인가요?",
+    "statement": "공식 품의서에서는 준말을 쓰는 것이 더 격식 있다.",
+    "correct": false,
+    "explanation": "격식을 갖추는 공문서에는 본말이 훨씬 어울려요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "경영진 보고서에 어울리는 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "어쨌든"
+      },
+      {
+        "id": "opt-2",
+        "text": "어찌 되었든"
+      },
+      {
+        "id": "opt-3",
+        "text": "어찌됐든"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "중요한 공적 보고에는 본말을 써야 격식이 서요."
+  },
+  {
+    "type": "select",
+    "question": "경쾌한 수필에 어울리는 준말은?",
+    "segments": ["이번 여정은 ", "생각건대 ", "생각하건대 ", "참 특별했다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "수필이나 에세이에는 경쾌한 준말이 잘 맞아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "본말과 준말의 문체별 분류",
+    "categories": [
+      {
+        "id": "cat-formal",
+        "label": "공식 보고서(본말)"
+      },
+      {
+        "id": "cat-casual",
+        "label": "대중 칼럼(준말)"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "어찌 되었든",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-2",
+        "text": "어쨌든",
+        "categoryId": "cat-casual"
+      },
+      {
+        "id": "item-3",
+        "text": "적지 아니한",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-4",
+        "text": "적잖은",
+        "categoryId": "cat-casual"
+      },
+      {
+        "id": "item-5",
+        "text": "생각하건대",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-6",
+        "text": "생각건대",
+        "categoryId": "cat-casual"
+      }
+    ],
+    "explanation": "글의 목적과 격식 수준에 맞게 골라보세요."
+  },
+  {
+    "type": "true_false",
+    "question": "문체 선택에 관한 바른 설명인가요?",
+    "statement": "준말은 문장에 경쾌한 호흡과 친근감을 불어넣는다.",
+    "correct": true,
+    "explanation": "준말을 쓰면 독자와의 심리적 거리가 한결 좁혀져요."
+  },
+  {
+    "type": "select",
+    "question": "공식 입장문에 어울리는 구간은?",
+    "segments": [
+      "이번 사안은 ",
+      "적잖은 ",
+      "적지 아니한 ",
+      "파장을 불렀습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "무게감이 필요한 공식 문건에는 본말을 선택해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "격식체 본말과 친근한 준말 분류",
+    "categories": [
+      {
+        "id": "cat-formal",
+        "label": "공적 격식체(본말)"
+      },
+      {
+        "id": "cat-friendly",
+        "label": "친근한 일상체(준말)"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "만만하지 않다",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-2",
+        "text": "만만찮다",
+        "categoryId": "cat-friendly"
+      },
+      {
+        "id": "item-3",
+        "text": "그리하지 않다",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-4",
+        "text": "그렇잖다",
+        "categoryId": "cat-friendly"
+      },
+      {
+        "id": "item-5",
+        "text": "변변하지 못하다",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-6",
+        "text": "변변찮다",
+        "categoryId": "cat-friendly"
+      }
+    ],
+    "explanation": "말의 축약 여부에 따라 글의 온도가 달라져요."
+  },
+  {
+    "type": "select",
+    "question": "독자 칼럼에 알맞은 친근한 표현은?",
+    "segments": [
+      "시장 반응이 ",
+      "만만찮지만 ",
+      "만만하지 않지만 ",
+      "도전을 이어갑니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "독자와 편하게 소통할 때는 준말이 친근함을 줘요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "감사 보고서에 맞게 고쳐보세요.",
+    "segments": ["감사 결과, ", "어쨌든 ", "절차상 하자가 확인되었습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["어쨌든 ", "어찌 되었든 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "공식 감사 보고서에는 격식 있는 본말을 써요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "공식 기획서에는 '___'(을)를 쓰면 신뢰도가 높아져요.",
+    "words": ["어찌 되었든", "어쨌든간에", "아무튼간에", "어쩜"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "문서의 성격에 맞춰 본말과 준말을 구별해 써보세요."
+  },
+  {
+    "type": "select",
+    "question": "제안서에 어울리는 격식 있는 표현은?",
+    "segments": [
+      "이번 제안은 ",
+      "변변찮은 ",
+      "변변하지 못한 ",
+      "기획을 완전히 보완했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "공적 제안서에는 본말을 써서 신뢰감을 높여보세요.",
+    "layout": "inline"
+  }
+]

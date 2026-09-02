@@ -74,16 +74,16 @@
 
 ### A. 어문 규범과 정밀 표기 (A1~A8)
 
-|  ID  | 컨셉 및 학습 목표                | 스텝 | 추천 자리               | 스텝 배치 (Layout Sequence)              | 마무리 조작 |
-| :--: | :------------------------------- | :--: | :---------------------- | :--------------------------------------- | :---------: |
-| `A1` | 조항/원리 적용 근거 판별         |  11  | 어미·조사 3초 판별      | `TF Cp MC Mt Sl FB TF Cg Mt EC Sl`       |   지뢰 탭   |
-| `A2` | 3단계 층위 판별 (규범/허용/오류) |  12  | 표준어·맞춤법           | `Cp TF MC Cg Sl Cg TF MC Cg Sl EC Cg`    |  범주 분류  |
-| `A3` | 품사 판별과 결합 경계            |  12  | 띄어쓰기 경계, 동형이의 | `Sl TF MC Cg FB Sl TF Cg FB Sl EC SB`    |  문장 조립  |
-| `A4` | 실전문맥 표기 완성               |  10  | 표기 심화               | `TF FB MC FB Sl FB EC FB SB FB`          |  빈칸 완성  |
-| `A5` | 음운/형태 변화와 예외 포착       |  12  | 사이시옷·두음·축약      | `Cp TF MC Mt FB Sl TF Mt Cg FB EC MC`    |  실전 선택  |
-| `A6` | 문장부호 의미 전후 대조          |  10  | 문장부호 정밀 제어      | `Cp TF MC Sl Cp Sl TF Cg EC Sl`          |   부호 탭   |
-| `A7` | 검사기 누락 고난도 지뢰 탐지     |  13  | 종합 지뢰 탈출          | `Sl TF MC Sl EC Sl TF Cg Sl EC FB EC Sl` |  지뢰 색출  |
-| `A8` | 원칙/관용/외래어 복합 규범       |  12  | 외래어·숫자·로마자      | `TF MC Mt FB Cg TF Mt FB Sl Cg EC FB`    |  빈칸 결합  |
+|  ID  | 컨셉 및 학습 목표                | 스텝 | 추천 자리               | 스텝 배치 (Layout Sequence)           | 마무리 조작 |
+| :--: | :------------------------------- | :--: | :---------------------- | :------------------------------------ | :---------: |
+| `A1` | 조항/원리 적용 근거 판별         |  11  | 어미·조사 3초 판별      | `TF Cp MC Mt Sl FB TF Cg Mt EC Sl`    |   지뢰 탭   |
+| `A2` | 3단계 층위 판별 (규범/허용/오류) |  12  | 표준어·맞춤법           | `Cp TF MC Cg Sl Cg TF MC Cg Sl EC Cg` |  범주 분류  |
+| `A3` | 품사 판별과 결합 경계            |  12  | 띄어쓰기 경계, 동형이의 | `Sl TF MC Cg FB Sl TF Cg FB Sl EC SB` |  문장 조립  |
+| `A4` | 실전문맥 표기 완성               |  10  | 표기 심화               | `TF FB MC FB Sl FB EC FB SB FB`       |  빈칸 완성  |
+| `A5` | 음운/형태 변화와 예외 포착       |  12  | 사이시옷·두음·축약      | `Cp TF MC Mt FB Sl TF Mt Cg FB EC MC` |  실전 선택  |
+| `A6` | 문장부호 의미 전후 대조          |  10  | 문장부호 정밀 제어      | `Cp TF MC Sl Cp Sl TF Cg EC Sl`       |   부호 탭   |
+| `A7` | 검사기 누락 고난도 지뢰 탐지     |  12  | 종합 지뢰 탈출          | `Sl TF MC Sl Cg TF Sl Cg EC FB EC Sl` |  지뢰 색출  |
+| `A8` | 원칙/관용/외래어 복합 규범       |  12  | 외래어·숫자·로마자      | `Cp TF MC Sl FB TF Cg Sl EC FB SB Sl` |   지뢰 탭   |
 
 ### B. 문장 성분과 비문 탈출 (B1~B7)
 
@@ -99,14 +99,14 @@
 
 ### C. 어휘와 뉘앙스/연어 (C1~C6)
 
-|  ID  | 컨셉 및 학습 목표                  | 스텝 | 추천 자리         | 스텝 배치 (Layout Sequence)           | 마무리 조작 |
-| :--: | :--------------------------------- | :--: | :---------------- | :------------------------------------ | :---------: |
-| `C1` | 유의어 세기 눈금 및 미세 차이 판별 |  12  | 유의어 강도 조절  | `Cp TF MC Sl Or Cg TF Or Sl Cg Or Sl` |   강도 탭   |
-| `C2` | 다의어 문맥 적합성 판정            |  11  | 다의어 사전       | `TF MC Sl FB MC Sl TF Mt FB Sl FB`    |  문맥 완성  |
-| `C3` | 자연스러운 연어 결합               |  12  | 연어(Collocation) | `TF MC Mt TF FB Mt Sl TF FB Mt EC FB` |  연어 결합  |
-| `C4` | 상황별 톤앤매너와 격식 수준 조율   |  12  | 격과 톤           | `Cp TF MC Sl Cg TF Sl Cg Sl EC FB Sl` |   톤 교정   |
-| `C5` | 추상어 사다리 내리기 및 구체화     |  11  | 추상도 조절       | `Cp TF MC Or FB Sl TF Or FB EC SB`    | 구체화 조립 |
-| `C6` | 관용구/고사성어 정밀 조립          |  10  | 관용 표현         | `TF MC SB Or TF FB SB Or EC SB`       |  관용 조립  |
+|  ID  | 컨셉 및 학습 목표                | 스텝 | 추천 자리         | 스텝 배치 (Layout Sequence)           | 마무리 조작 |
+| :--: | :------------------------------- | :--: | :---------------- | :------------------------------------ | :---------: |
+| `C1` | 유사 어휘 뉘앙스 분별            |  12  | 유의어 미세 차이  | `Cp TF MC Sl Mt TF FB Sl EC FB SB Sl` |  어휘 선택  |
+| `C2` | 다의어 문맥 적합성 판정          |  11  | 다의어 사전       | `TF MC Sl FB MC Sl TF Mt FB Sl FB`    |  문맥 완성  |
+| `C3` | 자연스러운 연어 결합             |  11  | 연어(Collocation) | `Cp TF MC Sl FB TF Mt Sl EC FB Sl`    |  어휘 선택  |
+| `C4` | 상황별 톤앤매너와 격식 수준 조율 |  12  | 격과 톤           | `Cp TF MC Sl Cg TF Sl Cg Sl EC FB Sl` |   톤 교정   |
+| `C5` | 추상어 사다리 내리기 및 구체화   |  11  | 추상도 조절       | `Cp TF MC Or FB Sl TF Or FB EC SB`    | 구체화 조립 |
+| `C6` | 관용구/고사성어 정밀 조립        |  10  | 관용 표현         | `TF MC SB Or TF FB SB Or EC SB`       |  관용 조립  |
 
 ### D. 문단과 구조/비즈니스 문서 (D1~D8)
 
@@ -139,7 +139,7 @@
 
 |  ID  | 컨셉 및 학습 목표                  | 스텝 | 추천 자리    | 스텝 배치 (Layout Sequence)           | 마무리 조작 |
 | :--: | :--------------------------------- | :--: | :----------- | :------------------------------------ | :---------: |
-| `F1` | 오감 감각어 포착                   |  10  | 감각 묘사    | `TF MC Cg Sl Cp TF Cg Sl EC Sl`       |  감각어 탭  |
+| `F1` | 오감 감각어 포착                   |  12  | 감각 묘사    | `Cp TF MC Sl FB TF Mt Sl FB EC SB Sl` |  감각어 탭  |
 | `F2` | Show, Don't Tell (장면 묘사)       |  12  | 장면 묘사    | `Cp TF MC Sl Or TF Mt Sl Or EC SB Sl` |  장면 조립  |
 | `F3` | 살아있는 비유와 진부한 상투어 선별 |  11  | 비유와 은유  | `Cp TF MC Mt Cg TF Sl Cg Sl EC Sl`    |  비유 지목  |
 | `F4` | 4대 후킹 오프닝 대조 및 선택       |  11  | 후킹 첫 문장 | `Cp TF MC Cg TF Sl Cp Sl EC SB Sl`    | 오프닝 완성 |

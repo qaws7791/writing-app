@@ -1,0 +1,202 @@
+[
+  {
+    "type": "compare",
+    "title": "과시적 한자어 vs 명료한 고유어",
+    "analysis": "불필요한 과시적 한자어는 쉬운 말로 풀면 훨씬 명료해요.",
+    "versions": [
+      {
+        "label": "과시적 표현",
+        "mark": "금일 오찬을 거행하고자 하오니",
+        "text": "금일 오찬을 거행하고자 하오니 많은 참석 바랍니다."
+      },
+      {
+        "label": "명료한 표현",
+        "mark": "오늘 점심 자리를 마련했으니",
+        "text": "오늘 점심 자리를 마련했으니 편하게 참석해 주세요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "한자어 쓰임이 알맞은가요?",
+    "statement": "'오늘 회의'보다 '금일 회의'가 언제나 전문적이다.",
+    "correct": false,
+    "explanation": "쉬운 고유어로 써도 뜻이 충분하면 과시적 한자어를 피해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 공지에 가장 어울리는 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "기획안 숙고를 요망합니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "기획안을 깊이 검토해 주세요"
+      },
+      {
+        "id": "opt-3",
+        "text": "기획안에 대해 사색해 주세요"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "현학적인 '숙고 요망'보다 '깊이 검토해 주세요'가 깔끔해요."
+  },
+  {
+    "type": "select",
+    "question": "고유어로 풀기 좋은 어색한 표현은?",
+    "segments": [
+      "프로젝트 성공을 위해 ",
+      "팀원 간 화합을 도모하고 ",
+      "적극 협력합시다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'화합을 도모하다'는 '힘을 모으다'처럼 쉬운 말로 풀어보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "풀어쓸 한자어와 유지할 한자어",
+    "categories": [
+      {
+        "id": "cat-replace",
+        "label": "고유어로 풀 말"
+      },
+      {
+        "id": "cat-keep",
+        "label": "유지할 개념어"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "금일 (오늘)",
+        "categoryId": "cat-replace"
+      },
+      {
+        "id": "item-2",
+        "text": "기회비용",
+        "categoryId": "cat-keep"
+      },
+      {
+        "id": "item-3",
+        "text": "익일 (다음 날)",
+        "categoryId": "cat-replace"
+      },
+      {
+        "id": "item-4",
+        "text": "우선순위",
+        "categoryId": "cat-keep"
+      }
+    ],
+    "explanation": "일상어는 고유어로 풀고, 엄밀한 전문 개념어는 유지해야 좋아요."
+  },
+  {
+    "type": "true_false",
+    "question": "개념 한자어의 쓰임이 맞나요?",
+    "statement": "'기회비용'처럼 복잡한 개념을 압축하는 한자어는 남겨야 한다.",
+    "correct": true,
+    "explanation": "긴 설명을 대신하는 압축용 개념어는 글의 밀도를 높여줍니다."
+  },
+  {
+    "type": "select",
+    "question": "쉬운 말로 풀어쓸 한자어 구간은?",
+    "segments": [
+      "고객 문의에 대해 ",
+      "즉시 조치를 취하고 ",
+      "결과를 공유해 주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'조치를 취하다'는 불필요한 군더더기이므로 '처리하고'로 써요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "문맥에 맞는 한자어 쓰임새 분류",
+    "categories": [
+      {
+        "id": "cat-plain",
+        "label": "풀어쓸 과시적 어휘"
+      },
+      {
+        "id": "cat-dense",
+        "label": "남길 개념 압축어"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "거행하다 (열다)",
+        "categoryId": "cat-plain"
+      },
+      {
+        "id": "item-2",
+        "text": "인과관계",
+        "categoryId": "cat-dense"
+      },
+      {
+        "id": "item-3",
+        "text": "식음하다 (먹다)",
+        "categoryId": "cat-plain"
+      },
+      {
+        "id": "item-4",
+        "text": "타당성",
+        "categoryId": "cat-dense"
+      }
+    ],
+    "explanation": "굳이 어렵게 쓴 말은 풀고, 대체하기 힘든 논리 개념은 살려 써요."
+  },
+  {
+    "type": "select",
+    "question": "불필요하게 굳어진 한자어 구간은?",
+    "segments": [
+      "신규 서비스 기획 시 ",
+      "기회비용을 따져보고 ",
+      "결재를 득해야 합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'결재를 득하다'는 일본식 한자 투이므로 '결재를 받다'로 고쳐요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "과시적 한자어를 바르게 고치세요.",
+    "segments": [
+      "이번 분기 목표 달성을 위해 ",
+      "사업 타당성을 검토하고 ",
+      "진행을 행하겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["진행을 행하겠습니다", "추진하겠습니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'진행을 행하다' 같은 중복 한자어 대신 '추진하다'가 알맞아요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "개념을 한 단어로 집약할 때는 엄밀한 ___ 한자어를 씁니다.",
+    "words": ["개념 압축용", "과시용", "의례적", "장식용"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "불필요한 과시적 한자어는 덜고 개념을 압축하는 핵심어만 남겨요."
+  },
+  {
+    "type": "select",
+    "question": "가장 명료하고 자연스러운 문장은?",
+    "segments": [
+      "금일부로 기획안을 수결하여 ",
+      "유관 부서에 전달을 요망합니다.",
+      "오늘 승인된 기획안을 공유합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "낡은 공문서 한자어를 걷어내고 쉬운 말로 써야 바로 읽혀요.",
+    "layout": "inline"
+  }
+]

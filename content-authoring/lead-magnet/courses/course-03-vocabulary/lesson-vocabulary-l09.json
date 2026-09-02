@@ -1,0 +1,154 @@
+[
+  {
+    "type": "compare",
+    "title": "수사와 단위명사의 자연스러운 결합",
+    "analysis": "고유어 수사엔 '채', 한자어 수사엔 '동'을 짝지어요.",
+    "versions": [
+      {
+        "label": "고유어 수사",
+        "mark": "세 채",
+        "text": "사옥 인근에 직원 숙소용 단독주택 세 채를 매입했다."
+      },
+      {
+        "label": "한자어 수사",
+        "mark": "삼 동",
+        "text": "물류 단지 부지 내 아파트형 공장 삼 동을 신축했다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "단위명사의 쓰임이 자연스럽나요?",
+    "statement": "단독주택을 셀 때는 '삼 채'보다 '세 채'가 자연스러워요.",
+    "correct": true,
+    "explanation": "순우리말 단위 '채' 앞에는 고유어 수사 '세'가 어울려요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "연구 보고서에 어울리는 표기는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "표본 두 개체"
+      },
+      {
+        "id": "opt-b",
+        "text": "표본 이 개체"
+      },
+      {
+        "id": "opt-c",
+        "text": "표본 삼 개체"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "한자어 단위명사 '개체' 앞에는 한자어 수사 '이'를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "어색하게 결합한 어절은?",
+    "segments": [
+      "이번 현장 조사에서 ",
+      "들개 삼 마리를 ",
+      "발견해 포획했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "고유어 단위명사 '마리'에는 고유어 수사 '세'를 써야 자연스러워요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "토지 매입 대상지는 총 ___ 규모입니다.",
+    "words": ["사 채", "사 필지", "네 필지", "네 개체"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "토지 구획을 세는 한자어 '필지' 앞에는 '사'가 바르게 호응해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 단위명사 호응인가요?",
+    "statement": "공식 문서에서 나이를 나타낼 때 '이십오 살'로 적는 것이 격에 맞다.",
+    "correct": false,
+    "explanation": "한자어 수사 뒤에는 '세'를 쓰고, '살' 앞에는 고유어를 씁니다."
+  },
+  {
+    "type": "match",
+    "title": "수사와 단위명사의 자연스러운 짝",
+    "pairs": [
+      {
+        "left": "단독주택 분류",
+        "leftId": "p-1-l",
+        "right": "세 채",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "공장 건물 분류",
+        "leftId": "p-2-l",
+        "right": "삼 동",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "공식 지원 연령",
+        "leftId": "p-3-l",
+        "right": "이십오 세",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "야생 동물 분류",
+        "leftId": "p-4-l",
+        "right": "두 마리",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "고유어 수사에는 고유어 단위, 한자어 수사에는 한자어 단위를 짝지어요."
+  },
+  {
+    "type": "select",
+    "question": "호응이 어색한 구간은?",
+    "segments": [
+      "신규 물류 거점으로 ",
+      "창고 건물 두 동을 ",
+      "임차하기로 했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "한자어 단위 '동' 앞에는 한자어 수사를 써서 '이 동'이 맞아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 결합을 바르게 고치세요.",
+    "segments": [
+      "야생 조류 보호구역에서 ",
+      "희귀종 삼 마리를 ",
+      "성공적으로 구조했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["희귀종 삼 마리를 ", "희귀종 세 마리를 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "동물을 세는 고유어 단위 '마리'에는 고유어 수사 '세'가 맞아요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "공식 계약서 원본 ___ 인쇄하여 날인해 주세요.",
+    "words": ["이 부를", "두 채를", "두 마리를", "이 개체를"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "문서를 세는 한자어 '부(部)' 앞에는 한자어 수사 '이'를 써요."
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 표현은?",
+    "segments": [
+      "이번 채용 지원자의 ",
+      "평균 연령은 이십오 살로 ",
+      "조사되었습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "한자어 수사 '이십오' 뒤에는 단위명사 '세'를 써야 자연스러워요.",
+    "layout": "inline"
+  }
+]

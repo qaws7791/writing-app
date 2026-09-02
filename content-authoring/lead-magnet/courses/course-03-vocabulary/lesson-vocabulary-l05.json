@@ -1,0 +1,190 @@
+[
+  {
+    "type": "compare",
+    "title": "두루뭉술한 '보다' 정밀하게 쪼개기",
+    "analysis": "'보다'를 동작에 맞게 바꾸면 뜻이 또렷해요.",
+    "versions": [
+      {
+        "label": "모호한 문장",
+        "mark": "지표를 보았다",
+        "text": "출시 전 경쟁사 앱 사용 지표를 보았다."
+      },
+      {
+        "label": "정밀한 문장",
+        "mark": "지표를 정밀 분석했다",
+        "text": "출시 전 경쟁사 앱 사용 지표를 정밀 분석했다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "업무 보고에 어울리는 문장인가요?",
+    "statement": "신규 유저의 이탈 패턴을 자세히 보았다.",
+    "correct": false,
+    "explanation": "단순히 보지 않고 '면밀히 관찰했다'로 써야 정확해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "유저 유형을 묶을 때 알맞은 말은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "나누었습니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "갈랐습니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "분류했습니다"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "일정한 기준에 맞춰 무리 지을 때는 '분류하다'를 써요."
+  },
+  {
+    "type": "select",
+    "question": "더 정밀하게 바꿀 서술어는?",
+    "segments": ["베타 피드백을 모아 ", "유형별로 묶어 ", "정리를 했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'정리하다' 대신 '체계화했다'를 쓰면 훨씬 또렷해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "문맥에 맞는 서술 동사 고르기",
+    "categories": [
+      {
+        "id": "cat-inspect",
+        "label": "살펴 따지는 '검토'"
+      },
+      {
+        "id": "cat-observe",
+        "label": "지켜보는 '관찰'"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "약관 조항 꼼꼼히 살피기",
+        "categoryId": "cat-inspect"
+      },
+      {
+        "id": "item-2",
+        "text": "유저 클릭 동선 지켜보기",
+        "categoryId": "cat-observe"
+      },
+      {
+        "id": "item-3",
+        "text": "기획서 결함 따져보기",
+        "categoryId": "cat-inspect"
+      },
+      {
+        "id": "item-4",
+        "text": "화면 체류 시간 주시하기",
+        "categoryId": "cat-observe"
+      }
+    ],
+    "explanation": "따져 살필 때는 '검토', 지켜볼 때는 '관찰'을 써요."
+  },
+  {
+    "type": "true_false",
+    "question": "문맥에 어울리는 바른 문장인가요?",
+    "statement": "오류 발생 원인을 정밀하게 규명했다.",
+    "correct": true,
+    "explanation": "'원인을 밝히다'보다 '규명했다'를 쓰면 신뢰감이 높아져요."
+  },
+  {
+    "type": "select",
+    "question": "모호한 만능 동사 구간은?",
+    "segments": ["핵심 지표와 ", "보조 지표를 ", "기준선으로 나누었다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "단순히 '나누었다'보다 기준을 세워 '구분했다'가 알맞아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "'구분'과 '분류' 짝짓기",
+    "categories": [
+      {
+        "id": "cat-divide",
+        "label": "경계를 가르는 '구분'"
+      },
+      {
+        "id": "cat-group",
+        "label": "무리 짓는 '분류'"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "공과 사의 선을 긋기",
+        "categoryId": "cat-divide"
+      },
+      {
+        "id": "item-2",
+        "text": "고객군을 연령별로 묶기",
+        "categoryId": "cat-group"
+      },
+      {
+        "id": "item-3",
+        "text": "참과 거짓을 가려내기",
+        "categoryId": "cat-divide"
+      },
+      {
+        "id": "item-4",
+        "text": "데이터를 항목별로 모으기",
+        "categoryId": "cat-group"
+      }
+    ],
+    "explanation": "경계를 가를 때는 '구분', 묶어 정리할 때는 '분류'를 써요."
+  },
+  {
+    "type": "select",
+    "question": "구체적 동사로 바꿀 구간은?",
+    "segments": ["데이터 이상치를 ", "놓치지 않고 ", "자세히 보았습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'자세히 보았다'보다 '면밀히 점검했다'로 써야 선명해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 서술어를 바르게 고치세요.",
+    "segments": [
+      "출시 전 점검 끝에 ",
+      "최종 기능 범위를 ",
+      "결정하기로 했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["결정하기로 했습니다", "확정하기로 했습니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "틀림없이 확실히 정할 때는 '확정하다'를 써야 단정해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "피드백을 반영하여 기획안을 ___ 했습니다.",
+    "words": ["보완", "보기", "하기", "나누기"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "부족한 점을 메워 채울 때는 '보완하다'를 써야 정확해요."
+  },
+  {
+    "type": "select",
+    "question": "책임감이 돋보이는 서술어는?",
+    "segments": [
+      "금주 중으로 ",
+      "요구사항을 반영해 ",
+      "최종안을 확정하겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'하겠습니다'보다 '확정하겠습니다'로 써야 완결성이 높아요.",
+    "layout": "inline"
+  }
+]

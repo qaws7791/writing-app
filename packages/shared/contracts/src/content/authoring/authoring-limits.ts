@@ -15,7 +15,7 @@ export const authoringLimits = {
   lessonEstimatedMinutes: { default: 5, max: 10, min: 5 },
   lessonStepCount: { default: 12, max: 15, min: 8 },
   matchPairCount: { max: 5, min: 3 },
-  maxSameStepTypePerLesson: 3,
+  maxSameStepTypePerLesson: 6,
   multipleChoiceCorrectIndexSkewRatio: 0.8,
   multipleChoiceOptionCount: { max: 4, min: 2 },
   optionText: { max: 15, min: 1 },

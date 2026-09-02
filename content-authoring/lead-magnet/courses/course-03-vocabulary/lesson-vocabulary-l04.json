@@ -1,0 +1,153 @@
+[
+  {
+    "type": "compare",
+    "title": "기획서 속 목적과 목표 비교",
+    "analysis": "방향은 목적, 수치 지표는 목표로 써요.",
+    "versions": [
+      {
+        "label": "목적 표현",
+        "mark": "업무 효율 증진을 목적으로",
+        "text": "이번 개편은 업무 효율 증진을 목적으로 기획되었습니다."
+      },
+      {
+        "label": "목표 표현",
+        "mark": "처리 시간 30% 단축을 목표로",
+        "text": "이번 분기 내 처리 시간 30% 단축을 목표로 잡았습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "맞는 설명인지 골라보세요.",
+    "statement": "정량 수치 지표는 '목표' 자리에 어울려요.",
+    "correct": true,
+    "explanation": "숫자로 측정하는 달성 기준은 목표로 써요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "'매출 20%'에 어울리는 말은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "추진 목적"
+      },
+      {
+        "id": "opt-b",
+        "text": "달성 목표"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "구체적 수치와 달성률은 목표로 표현해요."
+  },
+  {
+    "type": "select",
+    "question": "어색하게 쓰인 단어를 탭하세요.",
+    "segments": ["이번 프로젝트의 ", "목표는 ", "고객 만족도 제고입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "궁극적 지향점은 '목표'가 아닌 '목적'이에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "사내 소통 강화라는 ___을 위해 모였습니다.",
+    "words": ["목적", "목표", "수치", "일정"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "존재 이유나 궁극적 지향은 목적이 맞아요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 단어 배치인가요?",
+    "statement": "올해의 목적은 자격증 2개 취득이다.",
+    "correct": false,
+    "explanation": "개수나 기한이 있는 지표는 목표로 써요."
+  },
+  {
+    "type": "categorize",
+    "title": "목적과 목표 항목 분류하기",
+    "categories": [
+      {
+        "id": "cat-purpose",
+        "label": "추진 목적"
+      },
+      {
+        "id": "cat-goal",
+        "label": "달성 목표"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "업무 생산성 향상",
+        "categoryId": "cat-purpose"
+      },
+      {
+        "id": "item-2",
+        "text": "신규 유입 5만 명",
+        "categoryId": "cat-goal"
+      },
+      {
+        "id": "item-3",
+        "text": "브랜드 신뢰 구축",
+        "categoryId": "cat-purpose"
+      },
+      {
+        "id": "item-4",
+        "text": "이탈률 5% 이하",
+        "categoryId": "cat-goal"
+      }
+    ],
+    "explanation": "방향성은 목적, 측정 가능한 수치는 목표예요."
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 곳을 탭하세요.",
+    "segments": ["신제품 론칭의 ", "목적은 ", "3분기 매출 10억 달성입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "구체적 금액 지표는 '목적'이 아닌 '목표'예요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "잘못 쓰인 단어를 고쳐보세요.",
+    "segments": ["팀워크 강화라는 ", "목표를 위해 ", "워크숍을 엽니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["목표를 위해", "목적을 위해"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "가치나 지향점 앞에는 '목적'이 자연스러워요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "올해 OKR의 핵심 ___는 회원 수 2배 증대입니다.",
+    "words": ["방향", "목표", "목적", "가치"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "정량적 실행 지표를 가리킬 때는 목표를 써요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "목적과 목표를 바르게 잇기",
+    "tiles": ["고객 감동을", "목적으로", "재방문율", "90%를", "목표합니다"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "가치는 목적으로, 수치는 목표로 연결해요."
+  },
+  {
+    "type": "select",
+    "question": "기획서 속 오류 단어를 탭하세요.",
+    "segments": [
+      "서비스 안정화라는 ",
+      "목표 아래, ",
+      "장애 0건을 ",
+      "달성 목표로 정했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "궁극적 지향은 '목적 아래'로 써야 정확해요.",
+    "layout": "inline"
+  }
+]

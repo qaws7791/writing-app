@@ -1,0 +1,162 @@
+[
+  {
+    "type": "compare",
+    "title": "수식어 나열 vs 단일 감각어",
+    "analysis": "수식어를 덜어내고 정확한 감각어 하나를 맞물려요.",
+    "versions": [
+      {
+        "label": "수식어 과잉",
+        "mark": "너무나도 몹시 뼈저리게 차가운",
+        "text": "겨울 아침 문을 열자 너무나도 몹시 뼈저리게 차가운 바람이 불었다."
+      },
+      {
+        "label": "단일 감각어",
+        "mark": "살을 에는 듯한",
+        "text": "겨울 아침 문을 열자 살을 에는 듯한 바람이 살갗을 스쳤다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "감각 묘사의 원칙인가요?",
+    "statement": "형용사와 부사를 많이 덧붙일수록 장면이 더 생생해진다.",
+    "correct": false,
+    "explanation": "수식어가 겹치면 초점이 흐려져 장면이 흐릿해져요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 선명하게 묘사한 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "무척이나 아주 시끄러운 소리"
+      },
+      {
+        "id": "opt-2",
+        "text": "귓전을 때리는 파열음"
+      },
+      {
+        "id": "opt-3",
+        "text": "정말 엄청나게 요란한 소음"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "과장된 부사 대신 청각을 자극하는 명사를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기 수식어가 겹친 구간은?",
+    "segments": [
+      "카페 창가에 앉자 ",
+      "너무나도 몹시 달콤하고 향긋한 ",
+      "커피 향이 번졌습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'너무나도 몹시' 같은 과시적 부사는 지우는 편이 좋아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "한낮의 햇살을 '정말 환하다' 대신 '___ 햇살'로 써보세요.",
+    "words": ["내리쬐는", "아주 밝은", "몹시 찬란한", "너무 눈부신"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "피부에 닿는 감각을 살린 동사형 수식이 훨씬 생생해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 감각어 선택인가요?",
+    "statement": "단 하나의 정확한 감각어가 글의 몰입도를 높인다.",
+    "correct": true,
+    "explanation": "군더더기 없는 감각어 하나가 머릿속에 그림을 그려줘요."
+  },
+  {
+    "type": "match",
+    "title": "과시적 수식을 감각어로 바꾸기",
+    "pairs": [
+      {
+        "left": "엄청 차가운 촉감",
+        "leftId": "p-1-l",
+        "right": "얼음장 같은 감촉",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "대단히 시끄러운 소리",
+        "leftId": "p-2-l",
+        "right": "와장창 깨지는 소음",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "무척 눈부시게 빛남",
+        "leftId": "p-3-l",
+        "right": "일렁이는 윤슬",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "매우 매끄럽고 부드러움",
+        "leftId": "p-4-l",
+        "right": "보들보들한 질감",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "막연한 부사 대신 촉각·청각·시각의 구체 어휘를 짝지어보세요."
+  },
+  {
+    "type": "select",
+    "question": "장면을 흐리는 과시적 수식어는?",
+    "segments": [
+      "빗방울이 창문에 닿아 ",
+      "토닥토닥 소리를 냈고 ",
+      "방 안은 극도로 고요했다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'극도로'라는 과장 부사 대신 '적막이 감돌았다'가 자연스러워요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "바닷가의 아침 풍경에 어울리는 '___ 파도'를 골라보세요.",
+    "words": ["매우 큰", "진짜 요란한", "하얗게 부서지는", "엄청 센"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-3"],
+    "explanation": "시각적 움직임이 담긴 감각어를 쓰면 바다가 눈앞에 그려져요."
+  },
+  {
+    "type": "error_correct",
+    "question": "과장된 수식을 감각어로 고치세요.",
+    "segments": [
+      "구운 빵에서 ",
+      "정말 말도 안 되게 맛있는 ",
+      "버터 향이 피어올랐습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["대단히 좋은 ", "고소하고 달착지근한 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "미각과 후각을 자극하는 감각어를 써야 군침이 돌아요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "감각적인 문장으로 조립하세요.",
+    "tiles": ["낙엽을", "밟자", "발밑에서", "바스락거리는", "소리가", "났다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "explanation": "청각 묘사 하나로 늦가을 산책길의 정취를 온전히 전할 수 있어요."
+  },
+  {
+    "type": "select",
+    "question": "정확한 감각어가 쓰인 구간은?",
+    "segments": [
+      "그는 몹시 떨리는 손으로 ",
+      "서늘한 알루미늄 캔을 ",
+      "단단히 움켜쥐었습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'서늘한'이라는 촉각 어휘가 손끝의 온도를 선명하게 전달해요.",
+    "layout": "inline"
+  }
+]

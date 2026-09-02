@@ -1,0 +1,202 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "상투적 고사성어 vs 진솔한 현대어",
+    "analysis": "낡은 성어 대신 구체적인 사실을 쓰면 진심이 잘 전달돼요!",
+    "versions": [
+      {
+        "label": "상투적 표현",
+        "text": "도와주신 은혜는 각골난망하여 잊지 않겠습니다.",
+        "mark": "각골난망하여"
+      },
+      {
+        "label": "진솔한 표현",
+        "text": "덕분에 프로젝트를 마쳤습니다. 깊이 감사드립니다.",
+        "mark": "깊이 감사드립니다"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 글쓰기 방법인가요?",
+    "statement": "'우후죽순' 대신 '잇따라'를 쓰면 문장이 훨씬 또렷해진다.",
+    "correct": true,
+    "explanation": "낡은 비유를 걷어내면 문장의 뜻이 더 명확해져요!"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서에 어울리는 생생한 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "발 벗고 나섰습니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "적극적으로 주도했습니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "팔짱 끼고 보지 않았습니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "관용적 클리셰 대신 구체적인 능동 행동을 적어보세요!"
+  },
+  {
+    "type": "match",
+    "title": "낡은 표현과 현대적 대체어 연결",
+    "pairs": [
+      {
+        "left": "불철주야 노력하여",
+        "leftId": "p1-l",
+        "right": "밤낮없이 집중하여",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "어깨가 무겁습니다",
+        "leftId": "p2-l",
+        "right": "큰 책임감을 느낍니다",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "금쪽같은 시간",
+        "leftId": "p3-l",
+        "right": "귀중하고 소중한 시간",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "관습적 표현을 내 생각과 감정이 담긴 말로 바꿔보세요!"
+  },
+  {
+    "type": "categorize",
+    "title": "표현의 생명력과 참신함 분류",
+    "categories": [
+      {
+        "id": "cat-cliche",
+        "label": "낡은 상투 표현"
+      },
+      {
+        "id": "cat-fresh",
+        "label": "신선한 직관 표현"
+      }
+    ],
+    "items": [
+      {
+        "id": "cg1-item-1",
+        "text": "전대미문의 사건",
+        "categoryId": "cat-cliche"
+      },
+      {
+        "id": "cg1-item-2",
+        "text": "이례적인 새로운 상황",
+        "categoryId": "cat-fresh"
+      },
+      {
+        "id": "cg1-item-3",
+        "text": "각골난망한 은혜",
+        "categoryId": "cat-cliche"
+      },
+      {
+        "id": "cg1-item-4",
+        "text": "잊지 못할 든든한 도움",
+        "categoryId": "cat-fresh"
+      }
+    ],
+    "explanation": "습관적인 한자어나 비유 대신 생생한 우리말을 써보세요!"
+  },
+  {
+    "type": "true_false",
+    "question": "표현의 적절성에 대한 설명인가요?",
+    "statement": "'피와 땀이 어린 결실' 같은 관용 표현은 개성 있는 문장이다.",
+    "correct": false,
+    "explanation": "누구나 다 쓰는 관용구는 개성이 없고 진부하게 느껴져요!"
+  },
+  {
+    "type": "select",
+    "question": "문맥에서 낡은 상투어가 쓰인 곳은?",
+    "segments": [
+      "최근 생성형 AI 기술이 ",
+      "우후죽순처럼 번지면서 ",
+      "관련 규제가 논의되고 있다."
+    ],
+    "segmentIds": ["sl1-seg-1", "sl1-seg-2", "sl1-seg-3"],
+    "correct": ["sl1-seg-2"],
+    "explanation": "'우후죽순' 대신 '빠르게 확산되며'로 고치면 더 세련돼요!",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "문맥에 맞는 표현 유형 분류",
+    "categories": [
+      {
+        "id": "cat-hackneyed",
+        "label": "습관적 고사성어"
+      },
+      {
+        "id": "cat-natural",
+        "label": "자연스러운 현대어"
+      }
+    ],
+    "items": [
+      {
+        "id": "cg2-item-1",
+        "text": "주경야독하며 배운",
+        "categoryId": "cat-hackneyed"
+      },
+      {
+        "id": "cg2-item-2",
+        "text": "일하며 틈틈이 익힌",
+        "categoryId": "cat-natural"
+      },
+      {
+        "id": "cg2-item-3",
+        "text": "결초보은하겠습니다",
+        "categoryId": "cat-hackneyed"
+      },
+      {
+        "id": "cg2-item-4",
+        "text": "성과로 보답하겠습니다",
+        "categoryId": "cat-natural"
+      }
+    ],
+    "explanation": "어려운 한자 성어보다 직관적인 현대어가 훨씬 잘 읽혀요!"
+  },
+  {
+    "type": "select",
+    "question": "보고서에서 낡은 상투어가 쓰인 곳은?",
+    "segments": [
+      "기획팀 전원이 ",
+      "발 벗고 나서서 ",
+      "출시 일정을 앞당겼습니다."
+    ],
+    "segmentIds": ["sl2-seg-1", "sl2-seg-2", "sl2-seg-3"],
+    "correct": ["sl2-seg-2"],
+    "explanation": "'발 벗고 나서서' 대신 '적극적으로 힘을 모아'를 써보세요!",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "상투적 표현을 알맞게 고치세요.",
+    "segments": ["선배님의 조언은 ", "각골난망하여 ", "평생 잊지 않겠습니다."],
+    "segmentIds": ["ec-seg-1", "ec-seg-2", "ec-seg-3"],
+    "correctSegment": "ec-seg-2",
+    "fixes": ["정말 큰 힘이 되어 ", "각골난망하여 "],
+    "fixIds": ["ec-fix-1", "ec-fix-2"],
+    "correctFix": "ec-fix-1",
+    "explanation": "낡은 고사성어 대신 진솔하고 명확한 감사를 표현해보세요!"
+  },
+  {
+    "type": "select",
+    "question": "생생한 현대어로 다듬은 구간은?",
+    "segments": [
+      "주경야독의 각오로 ",
+      "밤낮없이 분석에 몰두하여 ",
+      "결초보은의 결실을 맺었습니다."
+    ],
+    "segmentIds": ["sl3-seg-1", "sl3-seg-2", "sl3-seg-3"],
+    "correct": ["sl3-seg-2"],
+    "explanation": "진부한 고사성어 대신 구체적인 노력 과정을 적으면 좋아요!",
+    "layout": "inline"
+  }
+]

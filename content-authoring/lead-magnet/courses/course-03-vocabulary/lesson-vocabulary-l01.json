@@ -1,0 +1,158 @@
+[
+  {
+    "type": "compare",
+    "title": "상황에 어울리는 감정 단어 대조",
+    "analysis": "친밀한 사이의 아쉬움에는 '서운함'을, 무례함에는 '불쾌함'을 써요.",
+    "versions": [
+      {
+        "label": "친한 동료",
+        "mark": "서운했다",
+        "text": "친한 동료가 피드백을 차갑게 주니 마음이 서운했다."
+      },
+      {
+        "label": "처음 본 사람",
+        "mark": "불쾌했다",
+        "text": "처음 본 사람이 반말로 툭 던진 말에 기분이 불쾌했다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "단어의 쓰임이 알맞은가요?",
+    "statement": "'서운하다'는 가까운 관계에서 기대가 채워지지 않았을 때 써요.",
+    "correct": true,
+    "explanation": "친밀하고 애정이 있는 상대에게 기대가 어긋났을 때 주로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "회의 중 어울리는 표현은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "말투가 서운했습니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "말투가 거슬렸습니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "말투가 억울했습니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "특정 행동이나 자극이 자꾸 신경 쓰일 때는 '거슬리다'가 맞아요."
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 구간은?",
+    "segments": [
+      "함께 고생한 사수가 ",
+      "나를 쏙 빼놓고 밥을 먹어 ",
+      "몹시 불쾌했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "믿고 따르던 사수에게 느끼는 섭섭함은 '서운함'으로 고쳐보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "감정 결에 맞는 단어 연결",
+    "pairs": [
+      {
+        "left": "기대에 못 미친 섭섭함",
+        "leftId": "p-1-l",
+        "right": "서운하다",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "신경에 밟히는 불필요한 자극",
+        "leftId": "p-2-l",
+        "right": "거슬리다",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "선을 넘는 무례에 대한 반감",
+        "leftId": "p-3-l",
+        "right": "불쾌하다",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "거절하기 어려운 심리적 부담",
+        "leftId": "p-4-l",
+        "right": "불편하다",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "상대와의 관계와 원인에 따라 감정의 결에 꼭 맞는 어휘를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 설명인가요?",
+    "statement": "처음 본 사람의 무례한 언행에는 '서운했다'고 쓰는 게 자연스럽다.",
+    "correct": false,
+    "explanation": "친분 없는 상대의 무례에는 '서운함'보다 '불쾌함'이 정확해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "많은 직원 앞에서 핀잔을 들으니 무안하고 마음이 ___.",
+    "words": ["불쾌했다", "거슬렸다", "서운했다", "불편했다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-3"],
+    "explanation": "믿었던 사수의 차가운 지적에 섭섭할 때는 '서운했다'가 어울려요."
+  },
+  {
+    "type": "select",
+    "question": "어색하게 쓰인 단어는?",
+    "segments": [
+      "동료의 볼펜 소리가 ",
+      "계속 서운해서 ",
+      "회의에 집중 못 했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "신경을 자극해 거북할 때는 '서운해서' 대신 '거슬려서'를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "문맥에 맞게 고치세요.",
+    "segments": [
+      "사적인 질문으로 ",
+      "선을 넘는 태도에 ",
+      "심한 거슬림을 느꼈다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["심한 거슬림을 느꼈다.", "심한 불쾌감을 느꼈다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "도를 넘은 무례에는 단순한 신경 쓰임보다 '불쾌감'이 정확해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "어색한 자리에서 무리한 부탁을 거절하기가 몹시 ___.",
+    "words": ["불편했다", "서운했다", "불쾌했다", "거슬렸다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "심리적 부담으로 마음이 편하지 않을 때는 '불편했다'를 써보세요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "바른 문장으로 조립하세요.",
+    "tiles": ["상대와의", "거리감에", "어울리는", "유의어를", "고르세요."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "관계의 거리와 상황의 맥락을 고려해야 가장 정확한 단어가 보입니다."
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 표현은?",
+    "segments": ["오래된 친구가 ", "축하 인사가 없어 ", "마음이 불쾌했다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "친밀한 벗에게 느끼는 섭섭한 마음은 '서운했다'로 표현해야 맞아요.",
+    "layout": "inline"
+  }
+]

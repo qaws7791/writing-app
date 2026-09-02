@@ -1,0 +1,178 @@
+[
+  {
+    "type": "compare",
+    "title": "효율과 효과의 차이",
+    "analysis": "투입 대비 성과는 효율, 목적 달성은 효과예요.",
+    "versions": [
+      {
+        "label": "자연스러움",
+        "text": "적은 예산으로 최대 효율을 냈습니다.",
+        "mark": "효율"
+      },
+      {
+        "label": "어색함",
+        "text": "적은 예산으로 최대 효과를 냈습니다.",
+        "mark": "효과"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "개념 정의가 맞나요?",
+    "statement": "효율은 들인 비용이나 시간 대비 산출을 뜻해요.",
+    "correct": true,
+    "explanation": "투입 대비 얻은 결과의 비율을 따질 때는 효율을 써요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "문맥에 어울리는 단어는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "마케팅 효과"
+      },
+      {
+        "id": "opt-2",
+        "text": "마케팅 효율"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "목적했던 반응이나 보람이 나타났으므로 효과가 맞아요."
+  },
+  {
+    "type": "select",
+    "question": "문맥상 어색한 단어는?",
+    "segments": ["작업 시간 대비 ", "효과가 ", "매우 뛰어납니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "투입 시간 대비 산출을 나타내므로 효율로 고쳐야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "알맞은 어휘 바구니에 넣기",
+    "categories": [
+      {
+        "id": "cat-eff",
+        "label": "효율"
+      },
+      {
+        "id": "cat-res",
+        "label": "효과"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "시간 대비",
+        "categoryId": "cat-eff"
+      },
+      {
+        "id": "item-2",
+        "text": "에너지 절감",
+        "categoryId": "cat-eff"
+      },
+      {
+        "id": "item-3",
+        "text": "홍보 목적 달성",
+        "categoryId": "cat-res"
+      },
+      {
+        "id": "item-4",
+        "text": "치료 약 반응",
+        "categoryId": "cat-res"
+      }
+    ],
+    "explanation": "가성비는 효율, 목적 달성의 결과는 효과로 분류해요."
+  },
+  {
+    "type": "true_false",
+    "question": "설명이 올바른가요?",
+    "statement": "개인의 주관적 심리와 동기는 원인이라고 불러요.",
+    "correct": false,
+    "explanation": "주관적 동기나 판단의 까닭은 원인이 아니라 이유예요."
+  },
+  {
+    "type": "select",
+    "question": "잘못 쓰인 어휘를 고르세요.",
+    "segments": ["대규모 서버 장애의 ", "이유는 ", "트래픽 폭증입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "물리적·기술적 사실에 의한 결과이므로 원인이 맞아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "원인과 이유의 영역 나누기",
+    "categories": [
+      {
+        "id": "cat-cause",
+        "label": "원인"
+      },
+      {
+        "id": "cat-reason",
+        "label": "이유"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "정전 사태 발생",
+        "categoryId": "cat-cause"
+      },
+      {
+        "id": "item-2",
+        "text": "기계 부품 결함",
+        "categoryId": "cat-cause"
+      },
+      {
+        "id": "item-3",
+        "text": "퇴사를 결심함",
+        "categoryId": "cat-reason"
+      },
+      {
+        "id": "item-4",
+        "text": "제안을 거절함",
+        "categoryId": "cat-reason"
+      }
+    ],
+    "explanation": "물리적 사실은 원인, 인간의 생각과 판단은 이유예요."
+  },
+  {
+    "type": "select",
+    "question": "문맥에 어색한 단어는?",
+    "segments": ["이직을 고민하는 ", "원인을 ", "솔직하게 털어놓았다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "개인의 주관적 고민과 까닭을 묻고 있으므로 이유가 맞아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "틀린 어휘를 찾아 고치세요.",
+    "segments": ["배포를 미룬 ", "원인은 ", "보안 점검 때문입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["원인은 ", "이유는 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "팀의 판단과 결정에 따른 까닭이므로 이유로 고쳐야 해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "최소 비용으로 최대 ___을 달성했습니다.",
+    "words": ["효율", "효과", "이유"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "투입 비용 대비 산출을 극대화했으므로 효율이 들어가야 해요."
+  },
+  {
+    "type": "select",
+    "question": "어색한 단어를 터치하세요.",
+    "segments": ["신규 캠페인의 홍보 ", "효율이 ", "탁월하게 나타났습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "홍보 목적이 달성된 보람을 뜻하므로 효과가 자연스러워요.",
+    "layout": "inline"
+  }
+]

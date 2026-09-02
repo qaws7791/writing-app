@@ -1,0 +1,136 @@
+[
+  {
+    "type": "select",
+    "question": "군더더기 겹말이 들어간 구간은?",
+    "segments": [
+      "설문 참가자 중 ",
+      "과반수 이상의 직원이 ",
+      "개편안에 찬성했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'과반'에 넘는다는 뜻이 있어 '이상'을 빼야 자연스러워요!",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "맞는 어휘 설명인가요?",
+    "statement": "'과반수'는 이미 반이 넘는 수이므로 '이상'을 덧붙이지 않아요.",
+    "correct": true,
+    "explanation": "'과반수' 자체가 '반을 넘는 수'라 '이상'은 겹말이에요!"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "약속 장소 안내에 알맞은 표기는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "서울역전 앞 광장"
+      },
+      {
+        "id": "opt-2",
+        "text": "서울역 앞 광장"
+      },
+      {
+        "id": "opt-3",
+        "text": "서울역전 앞쪽 광장"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "'역전'의 '전(前)'이 앞이므로 '역 앞'으로 써야 깔끔해요!"
+  },
+  {
+    "type": "select",
+    "question": "뜻이 겹치는 단어가 쓰인 구간은?",
+    "segments": ["정년퇴직 후 ", "남은 여생을 ", "사회봉사에 바치셨습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'여생'의 '여(餘)'에 남음이 들어 있어 '여생'만 써요!",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "군더더기 없는 문장으로 고치세요.",
+    "segments": ["사내 복지 혜택으로 ", "휴양 시설을 ", "새로 신설했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["신설했습니다", "새로 신설했습니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'신설'에 '새로움'이 담겨 있으니 '새로'를 빼보세요!"
+  },
+  {
+    "type": "select",
+    "question": "의미가 중복된 표현이 있는 곳은?",
+    "segments": ["이웃을 향한 ", "따뜻한 온정에 ", "깊이 감사드립니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'온정'의 '온(溫)'이 따뜻함이므로 '온정'만 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 표현인가요?",
+    "statement": "'회의 일정을 미리 예고했다'는 군더더기 없는 바른 문장이다.",
+    "correct": false,
+    "explanation": "'예고'의 '예(豫)'가 미리이므로 '미리'를 빼야 해요!"
+  },
+  {
+    "type": "compare",
+    "title": "동의중복 문장 전후 대조",
+    "analysis": "같은 뜻의 한자어와 고유어 중복을 덜어내 문장이 간결해져요.",
+    "versions": [
+      {
+        "label": "수정 전",
+        "text": "이번 행사는 서울역전 앞에서 진행합니다.",
+        "mark": "서울역전 앞에서"
+      },
+      {
+        "label": "수정 후",
+        "text": "이번 행사는 서울역 앞에서 진행합니다.",
+        "mark": "서울역 앞에서"
+      }
+    ]
+  },
+  {
+    "type": "select",
+    "question": "군더더기 없는 올바른 구간은?",
+    "segments": [
+      "이웃들의 따뜻한 정이 ",
+      "매달 월간지를 구독하며 ",
+      "새로 신규 채용되었다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'따뜻한 온정' 대신 '따뜻한 정'으로 쓰면 자연스러워요!",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "보고서 문장을 바르게 고치세요.",
+    "segments": [
+      "찬성 의견이 ",
+      "과반수 이상을 차지하여 ",
+      "원안대로 통과되었습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["과반수를 차지하여", "과반수 이상을 차지하여"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'과반'에 이미 '넘음'이 있으므로 '이상'을 지워보세요!"
+  },
+  {
+    "type": "select",
+    "question": "겹말 군더더기가 쓰인 구간은?",
+    "segments": [
+      "휴가철을 맞아 ",
+      "피서지에서 더위를 피하며 ",
+      "즐거운 시간을 보냈다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'피서'에 '더위를 피함'이 들어 있어 겹쳐 쓰지 않아요!",
+    "layout": "inline"
+  }
+]

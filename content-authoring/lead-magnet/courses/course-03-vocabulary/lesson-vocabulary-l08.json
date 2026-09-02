@@ -1,0 +1,186 @@
+[
+  {
+    "type": "compare",
+    "title": "구어 축약과 문어 격조사 대조",
+    "analysis": "공식 문서에서는 구어 축약을 풀고 문어 격조사를 갖춰 써요.",
+    "versions": [
+      {
+        "label": "구어 표현",
+        "mark": "이게 주된 이유라",
+        "text": "이게 주된 이유라 시스템 개편을 서둘렀습니다."
+      },
+      {
+        "label": "문어 표현",
+        "mark": "이것이 주된 원인이므로",
+        "text": "이것이 주된 원인이므로 시스템 개편을 서둘렀습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "공식 문서에 어울리는 문장인가요?",
+    "statement": "그게 사실이라서 추가 조사를 요청했습니다.",
+    "correct": false,
+    "explanation": "공식 글에서는 '그것이 사실이므로'처럼 축약을 풀어 써요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "보고서에 알맞은 연결어미는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "지연돼 가지고"
+      },
+      {
+        "id": "opt-2",
+        "text": "지연되어서요"
+      },
+      {
+        "id": "opt-3",
+        "text": "지연됨에 따라"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "원인과 결과를 공식 보고서에 쓸 때는 '-함에 따라'가 단정해요."
+  },
+  {
+    "type": "select",
+    "question": "구어투로 어색한 구간은?",
+    "segments": ["서버 점검을 ", "끝내 버려 가지고 ", "배포를 진행했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'-해 버려 가지고' 대신 '-하여'나 '-하므로'로 정제해 보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "구어와 문어 어휘 분류하기",
+    "categories": [
+      {
+        "id": "cat-spoken",
+        "label": "일상 구어"
+      },
+      {
+        "id": "cat-written",
+        "label": "공식 문어"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "이게",
+        "categoryId": "cat-spoken"
+      },
+      {
+        "id": "item-2",
+        "text": "이것이",
+        "categoryId": "cat-written"
+      },
+      {
+        "id": "item-3",
+        "text": "-해 가지고",
+        "categoryId": "cat-spoken"
+      },
+      {
+        "id": "item-4",
+        "text": "-하여",
+        "categoryId": "cat-written"
+      }
+    ],
+    "explanation": "축약형과 입말 어미는 풀어서 단정한 문어형으로 맞춰 써요."
+  },
+  {
+    "type": "true_false",
+    "question": "공식 문서 원칙에 부합하나요?",
+    "statement": "목적을 밝힐 때 '-할려고' 대신 '-하고자'를 쓴다.",
+    "correct": true,
+    "explanation": "비표준 구어 '-ㄹ려고' 대신 문어 어미 '-하고자'가 알맞아요."
+  },
+  {
+    "type": "select",
+    "question": "문어로 고칠 구어 표현은?",
+    "segments": ["신규 기능을 ", "도입할려구 ", "사전 조사를 마쳤습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "구어투 '도입할려구' 대신 '도입하고자'를 쓰면 격이 높아져요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "상황에 맞는 연결어미 짝짓기",
+    "categories": [
+      {
+        "id": "cat-casual",
+        "label": "사적인 구어"
+      },
+      {
+        "id": "cat-formal",
+        "label": "공적인 문어"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "-하는 바람에",
+        "categoryId": "cat-casual"
+      },
+      {
+        "id": "item-2",
+        "text": "-함으로 인해",
+        "categoryId": "cat-formal"
+      },
+      {
+        "id": "item-3",
+        "text": "-했거든요",
+        "categoryId": "cat-casual"
+      },
+      {
+        "id": "item-4",
+        "text": "-했기 때문입니다",
+        "categoryId": "cat-formal"
+      }
+    ],
+    "explanation": "인과를 밝힐 때 사적 구어 대신 공적 문어 어미를 선택해요."
+  },
+  {
+    "type": "select",
+    "question": "격식에 맞지 않는 구간은?",
+    "segments": [
+      "지표가 급감한 건 ",
+      "네트워크 오류가 ",
+      "발생했기 때문입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "구어 축약 '급감한 건' 대신 '급감한 것은'으로 격식을 갖춰요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "구어 어미를 바르게 고치세요.",
+    "segments": ["예산이 ", "부족해 가지고 ", "규모를 축소했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["부족해서요 ", "부족하여 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "구어 연결어미 '-해 가지고' 대신 문어 어미 '-하여'를 써요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "공식 보고서에서는 '___' 주된 원인으로 꼽았습니다.",
+    "words": ["이것이", "이게", "그게", "요게"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "주격 조사와 결합할 때 구어 '이게' 대신 '이것이'를 써요."
+  },
+  {
+    "type": "select",
+    "question": "문어체로 정제할 구어 구간은?",
+    "segments": ["결과를 종합하여 ", "대책을 마련한 뒤 ", "보고해 버렸습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "감정이 섞인 '보고해 버렸다' 대신 '보고했습니다'로 써요.",
+    "layout": "inline"
+  }
+]
