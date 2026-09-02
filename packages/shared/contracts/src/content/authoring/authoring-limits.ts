@@ -5,7 +5,9 @@
 export const authoringLimits = {
   categorizeCategoryCount: { max: 4, min: 2 },
   categorizeItemCount: { max: 8, min: 4 },
+  compareAnalysis: { max: 40, min: 4 },
   compareVersionLabel: { max: 8, min: 1 },
+  compareVersionMark: { max: 20, min: 1 },
   compareVersionText: { max: 60, min: 4 },
   explanation: { max: 40, min: 4 },
   fillBlankBlankCount: { max: 2, min: 1 },

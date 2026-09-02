@@ -1045,26 +1045,36 @@ export function ReadingBody() {
   compare: {
     slug: "compare",
     summary:
-      "버전 비교 표면입니다. Tabs 컴포지션으로 버전을 전환하고 ComparePanel에 글을 담습니다.",
+      "판본 비교 표면입니다. 두 글을 같은 시야에 두고 갈리는 구간을 CompareMark로 표시합니다.",
     examples: [
       {
         id: "versions",
-        title: "버전 전환",
-        description: "라벨이 있는 버전 탭과 본문 패널을 구성합니다.",
+        title: "동시 대조",
+        description: "라벨과 본문을 가진 판본을 나란히 둡니다.",
         preview: "default",
-        code: `import { Compare, ComparePanel, CompareVersion, CompareVersionList, CompareVersions } from "@/components/learning/compare"
+        code: `import {
+  Compare,
+  CompareMark,
+  CompareVersion,
+  CompareVersionLabel,
+  CompareVersionText,
+} from "@/components/learning/compare"
 
 export function CompareStep() {
   return (
     <Compare>
-      <CompareVersions defaultValue="a">
-        <CompareVersionList>
-          <CompareVersion value="a">초고</CompareVersion>
-          <CompareVersion value="b">다듬은 글</CompareVersion>
-        </CompareVersionList>
-        <ComparePanel value="a">주장은 뒤에 있고 근거가 앞섭니다.</ComparePanel>
-        <ComparePanel value="b">주장을 먼저 두고 근거를 붙였습니다.</ComparePanel>
-      </CompareVersions>
+      <CompareVersion>
+        <CompareVersionLabel>초고</CompareVersionLabel>
+        <CompareVersionText>
+          주장은 뒤에 있고 <CompareMark>근거가 앞섭니다</CompareMark>.
+        </CompareVersionText>
+      </CompareVersion>
+      <CompareVersion>
+        <CompareVersionLabel>다듬은 글</CompareVersionLabel>
+        <CompareVersionText>
+          <CompareMark>주장을 먼저</CompareMark> 두고 근거를 붙였습니다.
+        </CompareVersionText>
+      </CompareVersion>
     </Compare>
   )
 }`,
@@ -1072,49 +1082,58 @@ export function CompareStep() {
       {
         id: "with-insight",
         title: "분석 결합",
-        description: "비교 후 생각해보기는 Insight와 조합합니다.",
+        description: "판본 아래 Insight로 왜 갈리는지 한 줄을 붙입니다.",
         code: `<Compare>...</Compare>
 <Insight tone="think">
-  <InsightEyebrow>생각해보기</InsightEyebrow>
-  <InsightDescription>어느 버전이 더 설득력 있나요?</InsightDescription>
+  <InsightDescription>다듬은 글은 주장을 앞에 둡니다.</InsightDescription>
 </Insight>`,
       },
       {
         id: "three-versions",
-        title: "세 버전",
-        description: "버전은 2개 이상이면 됩니다.",
-        code: `<CompareVersionList>
-  <CompareVersion value="1">A</CompareVersion>
-  <CompareVersion value="2">B</CompareVersion>
-  <CompareVersion value="3">C</CompareVersion>
-</CompareVersionList>`,
+        title: "세 판본",
+        description: "판본은 2개 이상이면 됩니다. 세 개일 때는 한 열로 쌓습니다.",
+        code: `<Compare className="sm:grid-cols-1">
+  <CompareVersion>
+    <CompareVersionLabel>A</CompareVersionLabel>
+    <CompareVersionText>첫 판본</CompareVersionText>
+  </CompareVersion>
+  <CompareVersion>
+    <CompareVersionLabel>B</CompareVersionLabel>
+    <CompareVersionText>둘째 판본</CompareVersionText>
+  </CompareVersion>
+  <CompareVersion>
+    <CompareVersionLabel>C</CompareVersionLabel>
+    <CompareVersionText>셋째 판본</CompareVersionText>
+  </CompareVersion>
+</Compare>`,
       },
       {
-        id: "panel-density",
-        title: "패널 밀도",
-        description: "긴 글도 패널 안에서 읽히도록 여백을 유지합니다.",
-        code: `<ComparePanel value="a">
-  <p>긴 비교 본문…</p>
-</ComparePanel>`,
+        id: "mark",
+        title: "강조 구간",
+        description: "갈리는 글자만 CompareMark로 표시합니다.",
+        code: `<CompareVersionText>
+  일정이 확정<CompareMark>되면</CompareMark> 바로 공유하겠습니다.
+</CompareVersionText>`,
       },
     ],
     usageNotes: [
-      "Compare는 Tabs에 의존합니다. 설치 시 tabs도 함께 적용됩니다.",
+      "판본은 탭으로 숨기지 않고 같은 화면에 둡니다.",
       "분석 문구는 Compare 밖 Insight로 분리해 역할을 나눕니다.",
+      "확인 전 정답 색은 쓰지 않습니다. 강조는 highlight-1만 씁니다.",
     ],
     accessibility: [
-      "버전 탭은 키보드로 전환 가능해야 합니다.",
-      "활성 버전 라벨이 스크린 리더에 전달되는지 확인하세요.",
+      "각 판본은 section으로 두고 라벨을 본문 앞에 둡니다.",
+      "강조 구간은 mark 요소이며 색만으로 의미를 전달하지 않습니다.",
     ],
     props: [
       {
-        name: "defaultValue",
+        name: "className",
         type: "string",
         defaultValue: "—",
-        description: "CompareVersions의 초기 버전 값입니다.",
+        description: "Compare 그리드 열 수를 덮어쓸 때 사용합니다.",
       },
     ],
-    related: ["step", "insight", "tabs", "prose"],
+    related: ["step", "insight", "prose"],
   },
   compose: {
     slug: "compose",

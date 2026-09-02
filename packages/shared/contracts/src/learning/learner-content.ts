@@ -121,11 +121,17 @@ const learnerReadingStepSchema = learnerStepBaseSchema.extend({
 })
 
 const learnerCompareStepSchema = learnerStepBaseSchema.extend({
-  explanation: z.string().optional(),
+  analysis: z.string(),
   title: z.string(),
   type: z.literal("COMPARE"),
   versions: z
-    .array(z.strictObject({ label: z.string(), text: z.string() }))
+    .array(
+      z.strictObject({
+        label: z.string(),
+        mark: z.string(),
+        text: z.string(),
+      })
+    )
     .min(2)
     .readonly(),
 })

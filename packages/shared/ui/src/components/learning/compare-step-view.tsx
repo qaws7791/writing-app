@@ -1,51 +1,73 @@
 import {
   Compare,
-  ComparePanel,
+  CompareMark,
   CompareVersion,
-  CompareVersionList,
-  CompareVersions,
+  CompareVersionLabel,
+  CompareVersionText,
 } from "#ui/components/learning/compare"
-import { StepHeader, StepTitle } from "#ui/components/learning/step"
+import { Insight, InsightDescription } from "#ui/components/learning/insight"
+import {
+  StepBody,
+  StepEyebrow,
+  StepHeader,
+  StepTitle,
+} from "#ui/components/learning/step"
+
+const COMPARE_TASK_TITLE = "두 판본을 비교하세요"
 
 export function CompareStepView({
+  analysis,
   title,
   versions,
 }: {
+  readonly analysis: string
   readonly title: string
   readonly versions: readonly {
     readonly label: string
+    readonly mark: string
     readonly text: string
   }[]
 }) {
+  const situation = title.trim()
+
   return (
     <>
       <StepHeader>
+        {situation === "" ? null : <StepEyebrow>{situation}</StepEyebrow>}
         <StepTitle>
-          <h1>{title || "두 버전을 비교해보세요"}</h1>
+          <h1>{COMPARE_TASK_TITLE}</h1>
         </StepTitle>
       </StepHeader>
-      <Compare>
-        <CompareVersions defaultValue="0">
-          <CompareVersionList aria-label="비교할 버전">
-            {versions.map((version, index) => (
-              <CompareVersion
-                key={`${version.label}-${index}`}
-                value={String(index)}
-              >
-                {version.label}
-              </CompareVersion>
-            ))}
-          </CompareVersionList>
+      <StepBody>
+        <Compare
+          className={versions.length === 2 ? undefined : "sm:grid-cols-1"}
+        >
           {versions.map((version, index) => (
-            <ComparePanel
-              key={`${version.label}-${index}`}
-              value={String(index)}
-            >
-              <p className="whitespace-pre-line">{version.text}</p>
-            </ComparePanel>
+            <CompareVersion key={`${version.label}-${index}`}>
+              <CompareVersionLabel>{version.label}</CompareVersionLabel>
+              <CompareVersionText>
+                {renderMarkedText(version.text, version.mark)}
+              </CompareVersionText>
+            </CompareVersion>
           ))}
-        </CompareVersions>
-      </Compare>
+        </Compare>
+        <Insight tone="think">
+          <InsightDescription>{analysis}</InsightDescription>
+        </Insight>
+      </StepBody>
+    </>
+  )
+}
+
+function renderMarkedText(text: string, mark: string) {
+  const index = text.indexOf(mark)
+  if (index < 0) return text
+
+  return (
+    <>
+      {text.slice(0, index)}
+      <CompareMark>{mark}</CompareMark>
+      {text.slice(index + mark.length)}
     </>
   )
 }

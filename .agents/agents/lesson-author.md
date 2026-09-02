@@ -87,7 +87,7 @@ commandExecutionPolicy: auto
 | 스텝 타입 | 주요 필드 및 구조 | 필수 글자 수 및 규칙 |
 | :--- | :--- | :--- |
 | `reading` | `title`, `body` | `title`: 4~30자, `body`: 20~150자 (권장 100~140자) |
-| `compare` | `title`, `versions: [{ label, text }]` (2개 이상) | `title`: 4~30자, `label`: 1~8자, `text`: 4~60자 |
+| `compare` | `title`, `analysis`, `versions: [{ label, text, mark }]` (2개 이상) | `title`: 4~30자, `analysis`: 4~40자, `label`: 1~8자, `text`: 4~60자, `mark`: 1~20자이며 본문에 한 번만 등장 |
 | `true_false` | `question`, `statement`, `correct`, `explanation` | `question`: 4~20자, `statement`: 4~40자, `correct`: boolean, `explanation`: 4~40자 |
 | `multiple_choice` | `question`, `options: [{ id, text }]`, `correct`, `explanation` | `options`: 2~4개 (text 1~15자), `correct`: option ID, `explanation`: 4~40자 |
 | `select` | `question`, `segments`, `segmentIds`, `correct`, `explanation`, `layout: "inline"` | `segments`: 각 1~20자, `correct`: segmentId 배열, `explanation`: 4~40자 |

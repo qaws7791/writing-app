@@ -32,10 +32,10 @@ import {
 } from "@workspace/ui/components/learning/classify";
 import {
   Compare,
-  ComparePanel,
+  CompareMark,
   CompareVersion,
-  CompareVersionList,
-  CompareVersions,
+  CompareVersionLabel,
+  CompareVersionText,
 } from "@workspace/ui/components/learning/compare";
 import {
   Compose,
@@ -354,28 +354,25 @@ function CompareDemo() {
         </StepHeader>
         <StepBody>
           <Compare>
-            <CompareVersions defaultValue="a">
-              <CompareVersionList>
-                <CompareVersion value="a">초고</CompareVersion>
-                <CompareVersion value="b">다듬은 글</CompareVersion>
-              </CompareVersionList>
-              <ComparePanel value="a">
+            <CompareVersion>
+              <CompareVersionLabel>초고</CompareVersionLabel>
+              <CompareVersionText>
                 숙제는 많으면 부담스럽고, 없애면 편해질 것 같다. 그래서 숙제는 줄이는 게 좋다.
-              </ComparePanel>
-              <ComparePanel value="b">
-                숙제를 없애면 학습 부담은 줄지만, 복습의 리듬도 함께 사라질 수 있다. 양은 줄이되
-                목적을 분명히 해야 한다.
-              </ComparePanel>
-            </CompareVersions>
+              </CompareVersionText>
+            </CompareVersion>
+            <CompareVersion>
+              <CompareVersionLabel>다듬은 글</CompareVersionLabel>
+              <CompareVersionText>
+                숙제를 없애면 학습 부담은 줄지만, <CompareMark>복습의 리듬</CompareMark>도 함께
+                사라질 수 있다. 양은 줄이되 목적을 분명히 해야 한다.
+              </CompareVersionText>
+            </CompareVersion>
           </Compare>
-          {phase !== "answering" ? (
-            <Insight tone="think">
-              <InsightEyebrow>생각해보기</InsightEyebrow>
-              <InsightDescription>
-                다듬은 글은 반론을 먼저 인정한 뒤 대안을 제시합니다.
-              </InsightDescription>
-            </Insight>
-          ) : null}
+          <Insight tone="think">
+            <InsightDescription>
+              다듬은 글은 반론을 먼저 인정한 뒤 대안을 제시합니다.
+            </InsightDescription>
+          </Insight>
         </StepBody>
       </Step>
     </DemoFrame>

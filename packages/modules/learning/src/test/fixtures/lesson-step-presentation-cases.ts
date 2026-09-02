@@ -36,24 +36,26 @@ export const learnerStepPresentationCases = [
   },
   {
     expected: {
+      analysis: "앞문장은 사실을 빼고 뒤문장은 남깁니다.",
       id: "compare-1",
       sortOrder: 2,
       title: "두 문장 비교",
       type: "COMPARE",
       versions: [
-        { label: "전", text: "수정 전" },
-        { label: "후", text: "수정 후" },
+        { label: "전", mark: "전", text: "수정 전" },
+        { label: "후", mark: "후", text: "수정 후" },
       ],
     },
     name: "COMPARE",
     step: withFutureSecret({
+      analysis: "앞문장은 사실을 빼고 뒤문장은 남깁니다.",
       id: "compare-1",
       sortOrder: 2,
       title: "두 문장 비교",
       type: "COMPARE",
       versions: [
-        { label: "전", text: "수정 전" },
-        { label: "후", text: "수정 후" },
+        { label: "전", mark: "전", text: "수정 전" },
+        { label: "후", mark: "후", text: "수정 후" },
       ],
     }),
   },

@@ -112,11 +112,12 @@ describe("mergeAuthoringIntoSeed", () => {
             type: "multiple_choice",
           },
           {
+            analysis: "로서는 자격, 로써는 수단입니다.",
             title: "두 문장 비교",
             type: "compare",
             versions: [
-              { label: "A", text: "자격으로서 적합하다." },
-              { label: "B", text: "수단으로써 해결했다." },
+              { label: "자격", mark: "로서", text: "자격으로서 적합하다." },
+              { label: "수단", mark: "로써", text: "수단으로써 해결했다." },
             ],
           },
         ],

@@ -41,11 +41,12 @@ export function createEditorStep(input: EditorStepCreation): EditorStep {
     case "COMPARE":
       return {
         ...base,
+        analysis: "차이를 적습니다.",
         title: "새 비교",
         type: input.type,
         versions: [
-          { label: "초안", text: "" },
-          { label: "수정본", text: "" },
+          { label: "초안", mark: "초안", text: "초안 문장입니다." },
+          { label: "수정본", mark: "수정", text: "수정한 문장입니다." },
         ],
       }
     case "FILL_BLANK": {

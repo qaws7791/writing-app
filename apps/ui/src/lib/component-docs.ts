@@ -60,7 +60,7 @@ const definitions = [
   ["collapsible", "Collapsible", "하나의 콘텐츠 영역을 접고 펼칩니다.", "Disclosure"],
   ["combobox", "Combobox", "검색 가능한 목록에서 하나 이상의 값을 선택합니다.", "Forms"],
   ["command", "Command", "검색과 키보드 탐색을 지원하는 명령 메뉴입니다.", "Navigation"],
-  ["compare", "Compare", "같은 주제의 글 버전을 전환하며 비교하게 합니다.", "Learning"],
+  ["compare", "Compare", "같은 주제의 글 판본을 나란히 두고 차이를 비교하게 합니다.", "Learning"],
   ["compose", "Compose", "쓰기 활동의 프롬프트, 입력, 글자 수 기준을 구성합니다.", "Learning"],
   [
     "course-overview",

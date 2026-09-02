@@ -360,7 +360,7 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 - `LessonFeedback` 배경은 shell 전체 너비이고, 문구와 CTA는 본문과 같은 `max-w-2xl` 열을 쓴다.
 - 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant다.
 - markdown 본문은 `MarkdownContent`가 `ReactMarkdown` 결과를 `ProseBody` 안에 렌더링한다. 본문은 18/32·500, 소제목은 20/32·600이다. 사례 인용은 낮은 `surface` 면이다.
-- `ORDER`와 `COMPARE` renderer는 동적 경계로 분리한다. 이 경계는 drag-and-drop과 Tabs 코드를 해당 활동에서만 불러온다.
+- `ORDER` renderer는 동적 경계로 분리한다. 이 경계는 drag-and-drop 코드를 해당 활동에서만 불러온다.
 
 ### WritingStudioShell
 
@@ -381,8 +381,11 @@ route 초기 shell은 `control-icons`, `navigation-icons`, `action-icons` 모듈
 
 구현 위치: `packages/shared/ui/src/components/learning/compare-step-view.tsx`
 
-- 버전 전환은 `CompareVersions`, `CompareVersionList`, `CompareVersion`과 `ComparePanel`을 사용한다.
-- 버전 control은 Tabs keyboard 계약을 유지한다.
+- 판본은 `Compare`, `CompareVersion`, `CompareVersionLabel`, `CompareVersionText`, `CompareMark`를 사용한다.
+- 두 판본은 같은 화면에 둔다. 좁은 화면은 한 열이고 넓은 화면은 두 열이다. 세 판본 이상은 한 열이다.
+- 갈리는 구간은 `highlight-1`만 표시한다. 확인 전 `success`는 쓰지 않는다.
+- 분석은 `Insight tone="think"`로 판본 아래에 둔다.
+- 과제 문장은 「두 판본을 비교하세요」다. 콘텐츠 제목은 eyebrow다.
 - compare·reading·write 등 정보 제시형 스텝 CTA 라벨은 「이해했어요」다.
 
 ## 어드민 앱 컴포넌트

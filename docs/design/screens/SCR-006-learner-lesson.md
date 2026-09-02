@@ -64,9 +64,10 @@
 - 순서 스텝의 드래그 핸들은 항목 이름과 현재 위치를 이해할 수 있는 한국어 접근성 이름과 이동 안내를 제공한다.
 - 분류 스텝은 남은 항목 쟁반과 카테고리 바구니를 제공한다.
 - 분류 스텝은 항목을 고른 뒤 바구니를 누르는 클릭-클릭과, 항목을 바구니로 끌어다 놓는 드래그를 모두 지원한다.
-- 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`, `MULTIPLE_CHOICE`의 `Choice`, `TRUE_FALSE`의 `Verdict`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
+- 학습 스텝은 `READING`의 `Prose`, `COMPARE`의 `Compare`와 `Insight`, `MULTIPLE_CHOICE`의 `Choice`, `TRUE_FALSE`의 `Verdict`, `FILL_BLANK`·`SENTENCE_BUILD`의 `Token`, `SELECT`·`ERROR_CORRECT`의 `Segment`, `ORDER`·`PARAGRAPH_ORGANIZE`의 `Sortable`, `MATCH`의 `Pair`, `CATEGORIZE`의 `Classify`, `TRANSCRIBE`의 `Compose`, `ERROR_CORRECT`의 `Choice` 조합을 사용한다.
 - 제목 아래에 사용법 문구를 두지 않는다. 클릭·터치 가능한 선택 타일·칩·카드는 작은 그림자(`shadow-xs`)로 조작 가능함을 드러낸다.
 - `READING`·`COMPARE`는 스크롤 끝 도달 강제 없이 즉시 `이해했어요`를 활성화한다.
+- `COMPARE`는 판본을 탭으로 숨기지 않고 같은 화면에 둔다. 갈리는 구간은 `highlight-1`로 표시하고, 분석은 `Insight`로 둔다.
 - `SELECT`의 `inline` 구간은 문장 안에서도 작은 칩 표면으로 누를 수 있음을 드러낸다.
 - `CATEGORIZE`는 제목 아래에 사용법 문구를 두지 않는다. 남은 항목 쟁반과 바구니 헤더가 담을 곳을 드러낸다.
 - 참거짓 스텝은 본문 주장 아래에 1행 2열 O·X 버튼을 둔다. O는 참, X는 거짓이다. 보이는 텍스트 레이블은 두지 않고 접근 가능한 이름으로 참·거짓을 제공한다.

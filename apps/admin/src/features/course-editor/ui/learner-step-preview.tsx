@@ -6,6 +6,7 @@ import type { ReactNode } from "react"
 import type { EditorStep } from "@/features/course-editor/model/editor-step"
 import { orderAdminPreviewItems } from "@/features/course-editor/model/learner-step-preview-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
+import { CompareStepView } from "@workspace/ui/components/learning/compare-step-view"
 import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
 import { MatchAnswer } from "@workspace/ui/components/learning/match-answer"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer"
@@ -16,12 +17,6 @@ import { Step } from "@workspace/ui/components/learning/step"
 const OrderAnswer = dynamic(() =>
   import("@workspace/ui/components/learning/order-answer").then(
     (module) => module.OrderAnswer
-  )
-)
-
-const CompareStepView = dynamic(() =>
-  import("@workspace/ui/components/learning/compare-step-view").then(
-    (module) => module.CompareStepView
   )
 )
 
@@ -48,7 +43,13 @@ function renderStepPreview(step: EditorStep): ReactNode {
         />
       )
     case "COMPARE":
-      return <CompareStepView title={step.title} versions={step.versions} />
+      return (
+        <CompareStepView
+          analysis={step.analysis}
+          title={step.title}
+          versions={step.versions}
+        />
+      )
     case "MULTIPLE_CHOICE":
       return (
         <MultipleChoiceAnswer

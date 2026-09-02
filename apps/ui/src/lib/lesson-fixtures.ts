@@ -6,14 +6,17 @@ export const readingDefaults = {
 
 export const compareDefaults = {
   title: "두 도입부 비교",
+  analysis: "훅은 장면으로 시작하고 평범한 도입은 주제를 먼저 말합니다.",
   versions: [
     {
       label: "평범한 도입",
+      mark: "오늘은",
       text: "오늘은 글쓰기에 대해 이야기해 보려고 한다.",
     },
     {
       label: "훅이 있는 도입",
-      text: "나는 3년간 매일 30분씩 글을 썼다. 어느 날 거울 앞에 선 내 생각이 달라져 있었다.",
+      mark: "3년간",
+      text: "나는 3년간 매일 30분씩 글을 썼다. 어느 날 생각이 달라졌다.",
     },
   ],
 } as const;

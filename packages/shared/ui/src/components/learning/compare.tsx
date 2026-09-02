@@ -1,46 +1,12 @@
-"use client"
-
 import * as React from "react"
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "#ui/components/primitives/tabs"
 import { cn } from "#ui/lib/utils"
 
 function Compare({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="compare"
-      className={cn("flex w-full flex-col gap-5", className)}
-      {...props}
-    />
-  )
-}
-
-function CompareVersions({
-  className,
-  ...props
-}: React.ComponentProps<typeof Tabs>) {
-  return (
-    <Tabs
-      data-slot="compare-versions"
-      className={cn("w-full gap-4", className)}
-      {...props}
-    />
-  )
-}
-
-function CompareVersionList({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsList>) {
-  return (
-    <TabsList
-      data-slot="compare-version-list"
-      className={cn("w-full justify-start sm:w-fit", className)}
+      className={cn("grid w-full grid-cols-1 gap-3 sm:grid-cols-2", className)}
       {...props}
     />
   )
@@ -49,25 +15,51 @@ function CompareVersionList({
 function CompareVersion({
   className,
   ...props
-}: React.ComponentProps<typeof TabsTrigger>) {
+}: React.ComponentProps<"section">) {
   return (
-    <TabsTrigger
+    <section
       data-slot="compare-version"
-      className={cn(className)}
+      className={cn(
+        "flex flex-col gap-2 rounded-3xl border border-border/80 bg-card px-5 py-4 text-base leading-7 text-pretty",
+        className
+      )}
       {...props}
     />
   )
 }
 
-function ComparePanel({
+function CompareVersionLabel({
   className,
   ...props
-}: React.ComponentProps<typeof TabsContent>) {
+}: React.ComponentProps<"p">) {
   return (
-    <TabsContent
-      data-slot="compare-panel"
+    <p
+      data-slot="compare-version-label"
+      className={cn("text-xs font-medium text-muted-foreground", className)}
+      {...props}
+    />
+  )
+}
+
+function CompareVersionText({
+  className,
+  ...props
+}: React.ComponentProps<"p">) {
+  return (
+    <p
+      data-slot="compare-version-text"
+      className={cn("text-base leading-7 text-pretty", className)}
+      {...props}
+    />
+  )
+}
+
+function CompareMark({ className, ...props }: React.ComponentProps<"mark">) {
+  return (
+    <mark
+      data-slot="compare-mark"
       className={cn(
-        "rounded-4xl border border-border/80 bg-card px-5 py-5 text-base leading-7 text-pretty shadow-2xs sm:px-6 sm:py-6",
+        "rounded-sm bg-highlight-1 px-0.5 text-foreground",
         className
       )}
       {...props}
@@ -77,8 +69,8 @@ function ComparePanel({
 
 export {
   Compare,
-  ComparePanel,
+  CompareMark,
   CompareVersion,
-  CompareVersionList,
-  CompareVersions,
+  CompareVersionLabel,
+  CompareVersionText,
 }

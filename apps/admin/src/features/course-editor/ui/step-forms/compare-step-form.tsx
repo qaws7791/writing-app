@@ -15,6 +15,12 @@ export function CompareStepForm({ onChange, step }: StepFormProps<"COMPARE">) {
         onChange={(title) => onChange({ ...step, title })}
         value={step.title}
       />
+      <StepTextField
+        id={`${step.id}-analysis`}
+        label="분석"
+        onChange={(analysis) => onChange({ ...step, analysis })}
+        value={step.analysis}
+      />
       <StepJsonField
         id={`${step.id}-versions`}
         label="비교할 글 버전"

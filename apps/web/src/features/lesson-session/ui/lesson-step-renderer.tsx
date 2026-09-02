@@ -13,6 +13,7 @@ import {
   toLessonStepCheckedVisual,
 } from "@/features/lesson-session/model/lesson-step-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
+import { CompareStepView } from "@workspace/ui/components/learning/compare-step-view"
 import { ErrorCorrectAnswer } from "@workspace/ui/components/learning/error-correct-answer"
 import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
 import { LessonStepFrame } from "@workspace/ui/components/learning/lesson-step-frame"
@@ -27,12 +28,6 @@ import type { LessonStepType } from "@workspace/contracts/content/steps"
 const OrderAnswer = dynamic(() =>
   import("@workspace/ui/components/learning/order-answer").then(
     (module) => module.OrderAnswer
-  )
-)
-
-const CompareStepView = dynamic(() =>
-  import("@workspace/ui/components/learning/compare-step-view").then(
-    (module) => module.CompareStepView
   )
 )
 
@@ -130,7 +125,13 @@ function renderStep({
     }
     case "COMPARE": {
       const StepRenderer = lessonStepRendererByType.COMPARE
-      return <StepRenderer title={step.title} versions={step.versions} />
+      return (
+        <StepRenderer
+          analysis={step.analysis}
+          title={step.title}
+          versions={step.versions}
+        />
+      )
     }
     case "MULTIPLE_CHOICE": {
       const StepRenderer = lessonStepRendererByType.MULTIPLE_CHOICE

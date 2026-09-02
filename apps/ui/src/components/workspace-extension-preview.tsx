@@ -91,7 +91,7 @@ function ComparePreview({ story }: { story: string }) {
         story === "ThreeVersions"
           ? [
               ...compareDefaults.versions,
-              { label: "질문형 도입", text: "당신은 하루에 몇 분이나 글을 씁니까?" },
+              { label: "질문형 도입", mark: "몇 분", text: "당신은 하루에 몇 분이나 글을 씁니까?" },
             ]
           : [...compareDefaults.versions]
       }

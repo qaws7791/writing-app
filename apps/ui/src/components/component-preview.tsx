@@ -133,10 +133,10 @@ import {
 } from "@workspace/ui/components/primitives/command";
 import {
   Compare,
-  ComparePanel,
+  CompareMark,
   CompareVersion,
-  CompareVersionList,
-  CompareVersions,
+  CompareVersionLabel,
+  CompareVersionText,
 } from "@workspace/ui/components/learning/compare";
 import { Compose, ComposeEditor, ComposeMeter } from "@workspace/ui/components/learning/compose";
 import {
@@ -733,14 +733,18 @@ function DefaultComponentPreview({ slug }: { slug: string }) {
     case "compare":
       return (
         <Compare className="w-full max-w-md">
-          <CompareVersions defaultValue="a">
-            <CompareVersionList>
-              <CompareVersion value="a">초고</CompareVersion>
-              <CompareVersion value="b">다듬은 글</CompareVersion>
-            </CompareVersionList>
-            <ComparePanel value="a">주장은 뒤에 있고 근거가 앞섭니다.</ComparePanel>
-            <ComparePanel value="b">주장을 먼저 두고 근거를 붙였습니다.</ComparePanel>
-          </CompareVersions>
+          <CompareVersion>
+            <CompareVersionLabel>초고</CompareVersionLabel>
+            <CompareVersionText>
+              주장은 뒤에 있고 <CompareMark>근거가 앞섭니다</CompareMark>.
+            </CompareVersionText>
+          </CompareVersion>
+          <CompareVersion>
+            <CompareVersionLabel>다듬은 글</CompareVersionLabel>
+            <CompareVersionText>
+              <CompareMark>주장을 먼저</CompareMark> 두고 근거를 붙였습니다.
+            </CompareVersionText>
+          </CompareVersion>
         </Compare>
       );
     case "compose":

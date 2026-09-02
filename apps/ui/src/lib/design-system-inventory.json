@@ -85,7 +85,7 @@
           "id": "components-lesson-compare-step-view--playground",
           "exportName": "Playground",
           "label": "Playground",
-          "description": "Controls로 제목·버전·분석 문구를 조작할 수 있는 Playground입니다.",
+          "description": "제목·판본·강조 구간·분석을 조작할 수 있는 Playground입니다.",
           "destination": "/docs/extensions/lesson/compare-step-view#story-playground",
           "hasPlay": false
         },
@@ -93,7 +93,7 @@
           "id": "components-lesson-compare-step-view--three-versions",
           "exportName": "ThreeVersions",
           "label": "ThreeVersions",
-          "description": "두 개 이상의 버전 탭을 확인하는 예시입니다.",
+          "description": "세 판본을 한 열로 쌓아 동시에 대조하는 예시입니다.",
           "destination": "/docs/extensions/lesson/compare-step-view#story-three-versions",
           "hasPlay": false
         }

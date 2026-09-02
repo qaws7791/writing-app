@@ -82,19 +82,29 @@ export const workspaceExtensionDocs: WorkspaceExtensionDoc[] = [
     slug: "compare-step-view",
     title: "Compare Step View",
     moduleTitle: "Components/Lesson/CompareStepView",
-    description: "둘 이상의 글 version을 tab으로 전환하여 나란히 비교합니다.",
+    description: "둘 이상의 글 판본을 같은 화면에 두고 차이를 비교합니다.",
     importPath: "@workspace/ui/components/learning/compare-step-view",
     props: [
-      { name: "title", type: "string", description: "비교 단계 제목입니다." },
-      { name: "versions", type: "Version[]", description: "Tab으로 전환할 version 목록입니다." },
+      {
+        name: "title",
+        type: "string",
+        description: "비교 상황 제목입니다. 과제 문장 위에 둡니다.",
+      },
+      { name: "analysis", type: "string", description: "두 판본이 왜 갈리는지 한 줄 분석입니다." },
+      {
+        name: "versions",
+        type: "Version[]",
+        description: "라벨·본문·강조 구간을 가진 판본 목록입니다.",
+      },
     ],
     usageNotes: [
-      "각 version label은 짧고 서로 구분되게 작성합니다.",
-      "두 판본 대조 후 판정 및 해설은 뒤따르는 채점 스텝이 수행합니다.",
+      "각 판본 label은 쓰이는 자리를 짧게 적습니다.",
+      "강조 구간 mark는 본문에 한 번만 나타나야 합니다.",
+      "두 판본 대조 후 판정은 뒤따르는 채점 스텝이 수행합니다.",
     ],
     accessibility: [
-      "Tab과 panel의 관계를 semantic으로 연결합니다.",
-      "Arrow key로 tab 사이를 이동할 수 있어야 합니다.",
+      "과제 문장은 h1입니다. 상황 제목은 eyebrow입니다.",
+      "각 판본은 section이며 라벨이 본문 앞에 있습니다.",
     ],
   },
   {

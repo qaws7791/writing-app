@@ -91,7 +91,7 @@ const learningCatalogItems = componentItems.filter((item) =>
 
 const lessonItems: DocSearchRecord[] = [
   ["categorize-answer", "Categorize Answer", "항목을 카테고리로 분류하는 답안"],
-  ["compare-step-view", "Compare Step View", "여러 글 버전을 비교하는 읽기 뷰"],
+  ["compare-step-view", "Compare Step View", "여러 글 판본을 나란히 비교하는 읽기 뷰"],
   ["fill-blank-answer", "Fill Blank Answer", "문장 빈칸에 단어를 배치하는 답안"],
   ["match-answer", "Match Answer", "두 선택지 집합을 연결하는 답안"],
   ["multiple-choice-answer", "Multiple Choice Answer", "하나의 정답을 고르는 답안"],

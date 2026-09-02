@@ -49,11 +49,15 @@ describe("lesson-step-policy", () => {
       } satisfies LessonStep
 
       const compareStep = {
+        analysis: "두 판본의 차이를 봅니다.",
         id: "step-cp" as LessonStepId,
         sortOrder: 1,
         title: "제목",
         type: "COMPARE",
-        versions: [{ label: "A", text: "본문 A" }],
+        versions: [
+          { label: "A", mark: "A", text: "본문 A" },
+          { label: "B", mark: "B", text: "본문 B" },
+        ],
       } satisfies LessonStep
 
       const selectStep = {

@@ -56,7 +56,7 @@ Course
 ## 확정 스텝 타입
 
 - `READING`: 제목, 안내, 본문, 출처를 제공한다.
-- `COMPARE`: 둘 이상의 글 버전과 분석을 제공한다.
+- `COMPARE`: 둘 이상의 글 버전, 각 버전의 강조 구간과 분석을 제공한다.
 - `MULTIPLE_CHOICE`: 질문, 선택지, 정답, 해설을 제공한다.
 - `FILL_BLANK`: 문장 템플릿, stable ID가 있는 단어, 정답 ID 순서와 해설을 제공한다.
 - `SELECT`: stable ID가 있는 문장 구간, 정답 ID, 해설, `inline` 또는 `block` layout을 제공한다.

@@ -459,12 +459,14 @@ export function presentLearnerStep(
       }
     case "COMPARE":
       return {
+        analysis: step.analysis,
         id: step.id,
         sortOrder: step.sortOrder,
         title: step.title,
         type: "COMPARE",
         versions: step.versions.map((version) => ({
           label: version.label,
+          mark: version.mark,
           text: version.text,
         })),
       }

@@ -91,10 +91,22 @@ export const pairTextSchema = createBoundedKoreanTextSchema({
   min: authoringLimits.pairText.min,
 })
 
+export const compareAnalysisSchema = createBoundedKoreanTextSchema({
+  fieldLabel: "분석",
+  max: authoringLimits.compareAnalysis.max,
+  min: authoringLimits.compareAnalysis.min,
+})
+
 export const compareVersionLabelSchema = createBoundedKoreanTextSchema({
   fieldLabel: "판본 라벨",
   max: authoringLimits.compareVersionLabel.max,
   min: authoringLimits.compareVersionLabel.min,
+})
+
+export const compareVersionMarkSchema = createBoundedKoreanTextSchema({
+  fieldLabel: "강조 구간",
+  max: authoringLimits.compareVersionMark.max,
+  min: authoringLimits.compareVersionMark.min,
 })
 
 export const compareVersionTextSchema = createBoundedKoreanTextSchema({
