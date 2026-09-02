@@ -99,6 +99,8 @@ Pretendard Variable과 시스템 font stack을 사용한다.
 | Label    | 14 / 20 px         | 500–600 | control과 row 제목         |
 | Meta     | 12 / 18 px         | 500     | 날짜, 상태와 보조 정보     |
 
+READING 본문은 Body가 아니라 Prose 에디토리얼 스케일을 쓴다. 본문은 18 / 32 px·500, 소제목은 20 / 32 px·600, 출처와 캡션은 14 / 24 px·500이다.
+
 본문은 일반적으로 45자에서 75자 폭을 사용한다.
 
 한국어 제목은 `word-break: keep-all`과 `overflow-wrap: anywhere`를 사용한다. 제목에 `text-balance`를 쓰지 않는다.
