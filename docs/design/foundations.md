@@ -169,6 +169,8 @@ Enter와 이동은 `cubic-bezier(0.32, 0.72, 0, 1)`을 사용한다.
 
 Exit는 `cubic-bezier(0.62, 0.04, 0.86, 0.4)`을 사용한다.
 
+레슨 피드백 바텀시트 진입은 `slide-up`이다. 역방향 overshoot 없이 아래에서 올라오고, 프레임 `overflow-hidden`이 페이지 스크롤을 막는다.
+
 Motion은 layout shift를 만들거나 입력을 지연시키면 안 된다.
 
 ## 사용자 설정

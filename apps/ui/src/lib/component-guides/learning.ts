@@ -1423,8 +1423,8 @@ export function LessonSession() {
       },
       {
         id: "feedback-correct",
-        title: "정답 피드백 오버레이",
-        description: "채점 후 평가 문구와 계속하기 CTA를 하단 success 오버레이로 표시합니다.",
+        title: "정답 피드백 바텀시트",
+        description: "채점 후 평가 문구와 계속하기 CTA를 하단 success 바텀시트로 표시합니다.",
         code: `<LessonFooter className="bg-transparent pt-0 pb-0 backdrop-blur-none">
   <LessonFeedback tone="correct">
     <LessonFeedbackBody>
@@ -1437,8 +1437,8 @@ export function LessonSession() {
       },
       {
         id: "feedback-incorrect",
-        title: "오답 피드백 오버레이",
-        description: "오답은 warning 오버레이와 다시 시도 아이콘, 계속하기 CTA를 함께 둡니다.",
+        title: "오답 피드백 바텀시트",
+        description: "오답은 warning 바텀시트와 다시 시도 아이콘, 계속하기 CTA를 함께 둡니다.",
         code: `<LessonFooter className="bg-transparent pt-0 pb-0 backdrop-blur-none">
   <LessonFeedback tone="incorrect">
     <LessonFeedbackBody>
@@ -1456,14 +1456,14 @@ export function LessonSession() {
     usageNotes: [
       "Lesson은 세션 크롬이고, 활동 콘텐츠는 Step과 도메인 표면이 담당합니다.",
       "완료 요약은 레슨 필드에서 오며 별도 SUMMARY 스텝을 만들지 않습니다.",
-      "하단 CTA는 전체 너비의 큰 버튼을 기본으로 두고, 채점 후에는 LessonFeedback 오버레이로 평가와 다음 행동을 표시합니다.",
-      "LessonFeedback 배경은 레슨 shell 전체 너비입니다. 평가 문구와 CTA는 헤더·본문과 같은 max-w-2xl 열과 같은 수평 패딩을 씁니다.",
+      "하단 CTA는 전체 너비의 큰 버튼을 기본으로 두고, 채점 후에는 LessonFeedback 바텀시트로 평가와 다음 행동을 표시합니다.",
+      "LessonFeedback은 헤더·본문과 같은 max-w-2xl 열과 같은 수평 패딩을 쓰는 하단 바텀시트입니다. 상단 모서리는 rounded-t-5xl입니다. 등장은 slide-up이며 prefers-reduced-motion에서 줄어듭니다.",
       "LessonClose는 40×40 hit area를 유지하고 글리프만 본문 왼쪽 엣지에 광학 정렬합니다.",
       "LessonFooter 배경은 불투명 background입니다. 본문과 버튼을 블러로 겹치지 않게 합니다.",
     ],
     accessibility: [
       "닫기 버튼에 접근 가능한 이름을 유지하세요.",
-      "채점 피드백 오버레이는 role=status로 평가 문구를 전달합니다.",
+      "채점 피드백 바텀시트는 role=status로 평가 문구를 전달합니다.",
     ],
     props: [
       {

@@ -14,7 +14,7 @@ import {
 import { cn } from "#ui/lib/utils"
 
 const lessonFeedbackVariants = cva(
-  "w-full min-w-0 border-t pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] group/lesson-feedback",
+  "relative z-10 w-full min-w-0 rounded-t-5xl border border-b-0 pt-5 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-md group/lesson-feedback animate-slide-up",
   {
     variants: {
       tone: {
@@ -155,13 +155,15 @@ function LessonFeedback({
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof lessonFeedbackVariants>) {
   return (
-    <div
-      data-slot="lesson-feedback"
-      data-tone={tone}
-      role="status"
-      className={cn(lessonFeedbackVariants({ tone }), className)}
-      {...props}
-    />
+    <div className="mx-auto w-full min-w-0 max-w-2xl overflow-hidden px-4 sm:px-6">
+      <div
+        data-slot="lesson-feedback"
+        data-tone={tone}
+        role="status"
+        className={cn(lessonFeedbackVariants({ tone }), className)}
+        {...props}
+      />
+    </div>
   )
 }
 
@@ -173,7 +175,7 @@ function LessonFeedbackBody({
     <div
       data-slot="lesson-feedback-body"
       className={cn(
-        "mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-3 px-4 sm:px-6",
+        "flex w-full min-w-0 flex-col gap-3 px-4 sm:px-5",
         className
       )}
       {...props}
