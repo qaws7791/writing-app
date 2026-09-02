@@ -1,0 +1,122 @@
+[
+  {
+    "type": "compare",
+    "title": "수식 대상 명확히 구분하기",
+    "versions": [
+      {
+        "label": "모호함",
+        "text": "노련한 김 팀장의 기획안을 먼저 검토합시다.",
+        "mark": "노련한 김 팀장의 기획안"
+      },
+      {
+        "label": "명확함",
+        "text": "김 팀장의 노련한 기획안을 먼저 검토합시다.",
+        "mark": "김 팀장의 노련한 기획안"
+      }
+    ],
+    "analysis": "어순을 바꾸어 수식 대상을 명확히 좁힙니다."
+  },
+  {
+    "type": "true_false",
+    "question": "중의성을 없앤 바른 문장인가요?",
+    "statement": "지혜로운, 민우의 선택이 팀을 살렸습니다.",
+    "correct": true,
+    "explanation": "쉼표를 넣어 앞 수식어가 민우를 꾸밈을 밝힙니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "디자이너가 친절함을 뜻하는 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "친절한, 유진의 디자이너"
+      },
+      {
+        "id": "opt-b",
+        "text": "유진의 친절한 디자이너"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "수식어를 꾸밈받는 대상 바로 앞에 둡니다."
+  },
+  {
+    "type": "select",
+    "question": "쉼표가 필요한 경계 구간은?",
+    "segments": ["철수는 웃으면서 ", "들어오는 영희를 ", "반갑게 맞이했다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "웃은 주체가 철수임을 밝히려면 뒤에 쉼표를 둡니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "sentence_build",
+    "question": "기획자가 꼼꼼함을 뜻하는 문장은?",
+    "tiles": ["꼼꼼한,", "기획자의", "요구 사항을", "반영했습니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4"],
+    "correct": ["t-1", "t-2", "t-3", "t-4"],
+    "explanation": "수식어 뒤 쉼표로 수식 범위를 기획자로 한정합니다."
+  },
+  {
+    "type": "compare",
+    "title": "긴 부사절 뒤 호흡 가다듬기",
+    "versions": [
+      {
+        "label": "호흡 급함",
+        "text": "모든 테스트를 성공적으로 끝마친 뒤 즉시 배포합니다.",
+        "mark": "끝마친 뒤 즉시"
+      },
+      {
+        "label": "호흡 정돈",
+        "text": "모든 테스트를 성공적으로 끝마친 뒤, 즉시 배포합니다.",
+        "mark": "끝마친 뒤, 즉시"
+      }
+    ],
+    "analysis": "긴 부사절 뒤에 쉼표를 찍어 오독을 막습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "오독 여지가 없는 문장인가요?",
+    "statement": "내가 사랑하는 동생의 친구를 만났다.",
+    "correct": false,
+    "explanation": "내가 사랑하는 대상이 동생인지 친구인지 모호합니다."
+  },
+  {
+    "type": "order",
+    "title": "중의적 문장 다듬기 3단계",
+    "items": [
+      "수식어의 대상 파악",
+      "수식 대상 바로 앞 이동",
+      "필요시 쉼표로 경계 구분"
+    ],
+    "itemIds": ["item-1", "item-2", "item-3"],
+    "correct": ["item-1", "item-2", "item-3"],
+    "explanation": "수식 대상을 확인한 뒤 어순과 쉼표로 정돈합니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "친구가 사랑스러움을 뜻하는 문장은?",
+    "tiles": ["동생의", "사랑하는", "친구를", "카페에서", "만났습니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "수식어를 친구 바로 앞에 두어 뜻을 분명히 합니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "오독을 방지하도록 바르게 고치세요.",
+    "segments": ["열정적인 그의 ", "동료를 ", "응원합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["열정적인 그의 ", "그의 열정적인 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "수식어를 동료 바로 앞에 두어 수식 대상을 좁힙니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "의미가 명확한 보고 문장은?",
+    "tiles": ["검토를", "마친 뒤,", "수정안을", "팀장님께", "공유했습니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "부사절 뒤 쉼표로 문장의 호흡을 명확히 가다듬습니다."
+  }
+]

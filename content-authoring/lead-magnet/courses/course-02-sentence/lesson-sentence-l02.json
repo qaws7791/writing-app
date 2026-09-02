@@ -1,0 +1,138 @@
+[
+  {
+    "type": "select",
+    "question": "호응이 어색한 서술어는?",
+    "segments": ["서버 장애를 ", "점검하고 ", "정상 복구했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'장애를 복구하다'가 아닌 '서버를 복구하다'여야 합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장인가요?",
+    "statement": "신규 기능은 고객 만족도를 크게 기여했습니다.",
+    "correct": false,
+    "explanation": "'기여하다'는 목적어가 아닌 '~에 기여하다'로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "호응이 자연스러운 표현은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "문제를 파악하고 조치했다"
+      },
+      {
+        "id": "opt-b",
+        "text": "문제를 파악해 해결책을 냈다"
+      },
+      {
+        "id": "opt-c",
+        "text": "문제를 검토하고 조치했다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'문제를 조치하다'가 아닌 '해결책을 내다'로 호응합니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 부분을 바르게 고치세요.",
+    "segments": ["신규 정책을 발표하고 ", "적극 수렴했습니다."],
+    "segmentIds": ["seg-1", "seg-2"],
+    "correctSegment": "seg-2",
+    "fixes": ["적극 수렴했습니다.", "의견을 수렴했습니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'정책을 수렴하다'는 어색하므로 '의견을'을 보충합니다."
+  },
+  {
+    "type": "select",
+    "question": "조사가 잘못 쓰인 구간은?",
+    "segments": ["이번 출시 일정은 ", "기존 계획을 ", "다릅니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'다르다' 앞에는 목적어가 아닌 '~와/과'가 옵니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "필수 부사어가 올바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "규정에 부합합니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "규정을 부합합니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "규정으로 부합합니다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'부합하다'는 필수 부사어 조사 '~에'와 호응합니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장인가요?",
+    "statement": "보고서 내용을 검토하고 수정 사항을 반영했습니다.",
+    "correct": true,
+    "explanation": "두 서술어가 각각의 목적어를 온전히 갖춰 자연스럽습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "조사를 올바르게 고치세요.",
+    "segments": ["우리 팀은 이번 ", "프로젝트를 ", "착수했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["프로젝트를 ", "프로젝트에 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'착수하다'는 목적격 '를' 대신 부사격 '에'를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "목적어 호응이 어색한 구간은?",
+    "segments": ["고객 문의를 ", "접수하고 ", "신속히 안내했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'문의를 안내하다'가 아닌 '결과를 안내하다'여야 합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "오류 원인을 분석하고 ___ 마련했습니다.",
+    "words": ["대응책을", "오류를", "원인으로", "분석을"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'마련했습니다'에 맞는 목적어 '대응책을'이 필요합니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 조사를 바르게 고치세요.",
+    "segments": ["회사 이익을 ", "크게 기여하는 ", "방안입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["회사 이익을 ", "회사 이익에 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'기여하다'는 목적어가 아닌 부사어 '~에'가 필수입니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "호응이 바른 문장으로 조립하세요.",
+    "tiles": [
+      "문제를 ",
+      "파악하고 ",
+      "해결 방안을 ",
+      "마련하여 ",
+      "보고했습니다."
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "각 서술어가 알맞은 목적어를 갖춰 문장이 매끄럽습니다."
+  }
+]

@@ -1,0 +1,126 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "영어식 표현을 우리말로 바꾸기",
+    "analysis": "'가지다'와 '의해'를 줄이면 문장이 훨씬 명확해집니다.",
+    "versions": [
+      {
+        "label": "영어 직역",
+        "mark": "확신을 가지고",
+        "text": "이번 프로젝트의 성공에 대해 확신을 가지고 있습니다."
+      },
+      {
+        "label": "자연스러움",
+        "mark": "확신합니다",
+        "text": "이번 프로젝트의 성공을 확신합니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 교정인가요?",
+    "statement": "'팀장에 의해 승인되었다'는 '팀장이 승인했다'로 고쳐야 자연스럽다.",
+    "correct": true,
+    "explanation": "영어식 수동태 'by(~에 의해)'는 주어를 살린 능동형으로 바꿉니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 보고에 알맞은 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "좋은 결과를 얻었습니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "좋은 결과를 가졌습니다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'have' 직역투인 '가지다' 대신 맥락에 맞게 '얻다'로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 영어 직역 표현은?",
+    "segments": ["신규 기능에 ", "관심을 가지고 계신 ", "고객이 많습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'관심을 가지다'는 '관심이 있다'로 고쳐야 우리말답습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "규정 위반 여부는 사내 ___ 판단하기로 했습니다.",
+    "words": ["인사팀이", "인사팀에 의해", "인사팀을 가져", "인사팀에 의하여"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "주체가 사람일 때는 '~에 의해' 대신 주격 조사 '이/가'를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 표현인가요?",
+    "statement": "'주간 회의를 가지겠습니다'는 격식 있고 세련된 표현이다.",
+    "correct": false,
+    "explanation": "'have' 번역투이므로 '회의를 열겠습니다'나 '하겠습니다'로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 번역투 조사는?",
+    "segments": ["관련 법령에 의하여 ", "신규 제도를 ", "시행하기로 했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "근거나 기준을 나타낼 때는 '~에 의하여' 대신 '~에 따라'를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 번역투를 바르게 고치세요.",
+    "segments": ["대표이사에 의해 ", "최종 결정이 ", "내려졌습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["대표이사에 의해 ", "대표이사가 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "능동의 주체를 살려 '대표이사에 의해'를 '대표이사가'로 고칩니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "담당자와 충분한 ___ 다음 결론을 내리겠습니다.",
+    "words": ["대화를 가져", "대화를 나눈", "대화에 의해", "대화를 가지는"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "'have a talk' 번역투 대신 '대화를 나누다'로 표현합니다."
+  },
+  {
+    "type": "select",
+    "question": "자연스럽게 바꿀 수 있는 부분은?",
+    "segments": [
+      "서버 점검 중 ",
+      "오류가 발생한 것은 ",
+      "외부 요인에 의해서입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "원인이나 이유를 나타낼 때는 '~에 의해' 대신 조사 '~로'를 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "영어식 번역투를 바르게 고치세요.",
+    "segments": ["추가 질문이 ", "있는 분은 ", "의견을 가져 주세요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["의견을 내주세요.", "의견을 가져 주세요."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'have an opinion' 번역투 대신 '의견을 내다'로 씁니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "바른 능동문으로 조립하세요.",
+    "tiles": ["인사팀이", "취업 규칙에", "따라", "문제를", "해결했습니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "'~에 의해 해결되다' 대신 '주어+~에 따라 해결했다'로 씁니다."
+  }
+]

@@ -1,0 +1,174 @@
+﻿[
+  {
+    "type": "true_false",
+    "question": "올바르게 호응한 문장인가요?",
+    "statement": "이 제안은 결코 받아들이겠습니다.",
+    "correct": false,
+    "explanation": "'결코'는 '받아들일 수 없다'처럼 부정 서술어와 호응합니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서 문장으로 올바른 표현은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "여간 쉬웠습니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "여간 어렵지 않았습니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "여간 힘든 편입니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'여간'은 '어렵지 않다'와 같이 부정 서술어와 짝을 이룹니다."
+  },
+  {
+    "type": "match",
+    "title": "부사어와 알맞은 서술어 연결",
+    "pairs": [
+      {
+        "left": "결코",
+        "leftId": "p-1-l",
+        "right": "양보할 수 없다",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "비록",
+        "leftId": "p-2-l",
+        "right": "일정이 빠듯하지만",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "마치",
+        "leftId": "p-3-l",
+        "right": "새 프로그램처럼",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "여간",
+        "leftId": "p-4-l",
+        "right": "쉽지 않다",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "각 부사어는 정해진 서술어 형태와 짝을 이루어야 자연스럽습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "슬랙 공지 문장으로 적절한가요?",
+    "statement": "비록 예산은 부족하지만 품질은 지킵니다.",
+    "correct": true,
+    "explanation": "'비록'은 '~지만'처럼 양보를 나타내는 서술어와 호응합니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "보안 규정상 외부 반출은 절대로 ___.",
+    "words": ["불가합니다", "가능합니다", "추천합니다", "바랍니다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'절대로' 뒤에는 '불가하다'처럼 금지·부정 서술어가 옵니다."
+  },
+  {
+    "type": "match",
+    "title": "실무 문맥의 부사어 짝 맞추기",
+    "pairs": [
+      {
+        "left": "만약",
+        "leftId": "p-1-l",
+        "right": "장애가 발생한다면",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "마치",
+        "leftId": "p-2-l",
+        "right": "한 팀인 듯이",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "절대로",
+        "leftId": "p-3-l",
+        "right": "공유해서는 안 된다",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "문맥에 맞는 부사어와 서술어의 짝을 찾아 문장을 완성합니다."
+  },
+  {
+    "type": "select",
+    "question": "서술어 호응이 어색한 구간은?",
+    "segments": ["이번 프로젝트는 ", "여간 까다로워서 ", "야근이 늘었습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'여간'은 '까다롭지 않아서'처럼 부정 서술어로 호응해야 합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 작성된 문장인가요?",
+    "statement": "새 디자인이 마치 원본과 완전히 똑같았다.",
+    "correct": false,
+    "explanation": "'마치' 뒤에는 '~처럼', '~듯이' 같은 비유 서술어가 와야 합니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "___ 오류가 발생하더라도 즉시 롤백하겠습니다.",
+    "words": ["마치", "비록", "결코", "여간"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "'~더라도'와 어울려 양보의 뜻을 나타내는 부사어는 '비록'입니다."
+  },
+  {
+    "type": "match",
+    "title": "호응 부사어와 서술어 짝 맞추기",
+    "pairs": [
+      {
+        "left": "결코 포기하지",
+        "leftId": "p-1-l",
+        "right": "않겠습니다",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "비록 힘들",
+        "leftId": "p-2-l",
+        "right": "지라도 해냅니다",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "마치 꿈을 꾼",
+        "leftId": "p-3-l",
+        "right": "것만 같습니다",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "여간 신경 쓰이지",
+        "leftId": "p-4-l",
+        "right": "않는 일입니다",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "부사어의 의미에 어울리는 끝맺음 표현을 바르게 짝짓습니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "호응이 어긋난 부분을 고치세요.",
+    "segments": ["이번 장애는 ", "결코 사소하여 ", "전면 재점검합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["결코 사소하여", "결코 사소하지 않아"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'결코' 뒤에는 '사소하지 않아'처럼 부정 서술어가 와야 합니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "서버 장애 원인을 찾는 일은 ___ 쉽지 않았습니다.",
+    "words": ["절대로", "마치", "비록", "여간"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-4"],
+    "explanation": "'~지 않다'와 짝을 이뤄 강조하는 부사어는 '여간'입니다."
+  }
+]

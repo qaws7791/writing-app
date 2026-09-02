@@ -1,0 +1,216 @@
+[
+  {
+    "type": "true_false",
+    "question": "자연스러운 업무 보고인가요?",
+    "statement": "이번 일정 지연은 사실상 실패에 다름 아닙니다.",
+    "correct": false,
+    "explanation": "'~에 다름 아니다'는 일본어투이므로 '~일 뿐이다'로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 보고에 자연스러운 표현은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "지연에 다름없습니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "지연된 것과 같습니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "일본어투 '-에 다름없다' 대신 '-과 같다'로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "일본어 번역투 구간은?",
+    "segments": ["이는 고객을 ", "기만에 다름 아닌 ", "부적절한 대응입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'기만에 다름 아닌'은 '기만이나 다름없는'으로 고칩니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "일본어투와 자연스러운 서술 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "자연스러운 우리말"
+      },
+      {
+        "id": "cat-2",
+        "label": "일본어 직역투"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "실패일 뿐이다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "실패에 다름 아니다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "낭비나 마찬가지다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "낭비에 다름없다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "특혜와 다를 바 없다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "특혜에 다름 아니다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "일본어투 '-에 다름 아니다' 대신 '-일 뿐이다'로 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "바르고 자연스러운 문장인가요?",
+    "statement": "이번 프로모션은 반드시 성공할 것이 분명합니다.",
+    "correct": true,
+    "explanation": "'성공할 것임에 틀림없다' 대신 '분명합니다'를 쓴 바른 문장입니다."
+  },
+  {
+    "type": "select",
+    "question": "과장된 번역투 서술 구간은?",
+    "segments": [
+      "서버 장애의 ",
+      "주원인임에 틀림없으니 ",
+      "즉시 조치 바랍니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'주원인임에 틀림없으니'는 '주원인이 분명하니'로 바꿉니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서에 어울리는 간결한 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "목표 달성이 확실합니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "목표 달성임에 틀림없습니다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "일본어 직역투 '-임에 틀림없다' 대신 '-이 확실하다'를 씁니다."
+  },
+  {
+    "type": "categorize",
+    "title": "단정적 번역투와 간결한 서술 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "간결한 우리말 서술"
+      },
+      {
+        "id": "cat-2",
+        "label": "과장된 번역투 서술"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "합격이 분명하다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "합격임에 틀림없다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "오류가 확실하다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "오류임에 틀림없다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "성공하리라 확신한다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "성공할 것임에 틀림없다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "일본어 직역투 '-임에 틀림없다' 대신 '-이 분명하다'로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 번역투 서술 구간은?",
+    "segments": [
+      "이러한 조치는 ",
+      "임시방편에 다름 아니므로 ",
+      "근본 대책이 필요합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'임시방편에 다름 아니므로'는 '임시방편일 뿐이므로'로 바꿉니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "번역투 종결을 바르게 고치세요.",
+    "segments": ["이번 조치는 책임 ", "회피에 다름없습니다."],
+    "segmentIds": ["seg-1", "seg-2"],
+    "correctSegment": "seg-2",
+    "fixes": ["회피에 다름없습니다.", "회피일 뿐입니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "일본어투 '-에 다름없다' 대신 '-일 뿐이다'로 고칩니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "새 기능 도입으로 업무 효율이 크게 ___",
+    "words": [
+      "개선될 것이 확실합니다",
+      "개선됨에 틀림없습니다",
+      "개선됨에 다름없습니다",
+      "개선될 것으로 봅니다"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "번역투 '-임에 틀림없다' 대신 '-이 확실하다'를 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "과장된 번역투를 바르게 고치세요.",
+    "segments": [
+      "지표를 볼 때 ",
+      "이번 분기 목표 달성은 ",
+      "확실함에 틀림없습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["확실함에 틀림없습니다.", "확실합니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "과장된 번역투 '-에 틀림없다' 대신 '확실합니다'로 씁니다."
+  }
+]

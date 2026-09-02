@@ -1,0 +1,205 @@
+[
+  {
+    "type": "true_false",
+    "question": "자연스러운 업무 보고인가요?",
+    "statement": "이번 신기능은 사용성이 크게 개선되었다고 생각되어집니다.",
+    "correct": false,
+    "explanation": "이중 피동인 '생각되어집니다' 대신 '생각합니다'로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 보고에 적절한 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "매출 반등으로 보여집니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "매출 반등으로 보입니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'보이다'에 '-어지다'가 겹쳤으므로 '보입니다'로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "이중 피동 오류 구간은?",
+    "segments": ["이전 버전에서 ", "잊혀진 기능들을 ", "다시 발굴했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'잊히다'에 '-어진'이 덧붙은 오류이므로 '잊힌'으로 고칩니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "바른 표기와 이중 피동 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "바른 표기"
+      },
+      {
+        "id": "cat-2",
+        "label": "이중 피동 오류"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "열린 창문",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "열려진 창문",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "나뉜 그룹",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "나뉘어진 그룹",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "담긴 의미",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "담겨진 의미",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "피동 표현에 '-어지다'를 덧붙여 중복 피동을 만들지 않습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 단일 피동 문장인가요?",
+    "statement": "복잡하게 꼬였던 결제 이슈가 마침내 풀린 것으로 확인됐습니다.",
+    "correct": true,
+    "explanation": "'풀려진' 대신 올바른 단일 피동 '풀린'을 쓴 바른 문장입니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기 피동 표현은?",
+    "segments": ["보안상 이유로 ", "굳게 잠겨진 계정을 ", "즉시 해제했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'잠기다'에 '-어진'이 덧붙었으므로 '잠긴'으로 써야 합니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서에 바른 표현은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "초안에 쓰인 문구"
+      },
+      {
+        "id": "opt-b",
+        "text": "초안에 쓰여진 문구"
+      },
+      {
+        "id": "opt-c",
+        "text": "초안에 씌어진 문구"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "'쓰이다'에 '-어진'이 겹친 오류이므로 '쓰인'이 맞습니다."
+  },
+  {
+    "type": "categorize",
+    "title": "실무 표현 바른 짝 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "바른 단일 표현"
+      },
+      {
+        "id": "cat-2",
+        "label": "잘못된 이중 피동"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "믿기지 않는 결과",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "믿겨지지 않는 결과",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "불리는 명칭",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "불려지는 명칭",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "닫힌 회의실",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "닫혀진 회의실",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "피동 형태가 이미 있는 말에 '-어지다'를 겹쳐 쓰지 않습니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 이중 피동 구간은?",
+    "segments": [
+      "현재 데이터로는 ",
+      "서버 증설이 시급하다고 ",
+      "판단되어집니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'판단되다'에 '-어지다'가 겹쳤으므로 '판단합니다'로 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "이중 피동을 바르게 고치세요.",
+    "segments": ["고객 인터뷰로 ", "모여진 의견을 ", "보고서에 담았습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["모여진 의견을", "모인 의견을"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'모이다'에 '-어진'이 겹친 이중 피동이므로 '모인'으로 고칩니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "다음 주 워크숍 일정이 마침내 ___ 확정되었습니다.",
+    "words": ["잡혀진 상태로", "잡힌 상태로", "잡혀버린 채로", "잡히어진 대로"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "'잡히다'에 '-어진'이 덧붙지 않은 '잡힌'이 바른 표기입니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 결론부를 바로잡으세요.",
+    "segments": ["QA 결과, 일정을 ", "앞당겨도 좋을 것으로 ", "보여집니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["보여집니다.", "보입니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'보이다'에 '-어지다'가 덧붙었으므로 '보입니다'로 고칩니다."
+  }
+]

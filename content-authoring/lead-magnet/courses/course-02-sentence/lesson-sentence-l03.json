@@ -1,0 +1,162 @@
+[
+  {
+    "type": "select",
+    "question": "어색하게 겹친 서술어 구간은?",
+    "segments": [
+      "제 생각은 ",
+      "이번 안건을 채택하는 것이 ",
+      "좋겠다고 생각합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주어가 '생각'이면 서술어를 '~것입니다'로 맞춰 겹침을 없앱니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "주어와 서술어가 잘 어울리나요?",
+    "statement": "저의 바람은 프로젝트가 꼭 성공하길 바랍니다.",
+    "correct": false,
+    "explanation": "주어 '바람'에 맞춰 서술어를 '~성공하는 것입니다'로 호응시킵니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서에 어울리는 올바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "목적은 오류를 줄이고자 함"
+      },
+      {
+        "id": "opt-b",
+        "text": "목적은 오류를 줄이는 것임"
+      },
+      {
+        "id": "opt-c",
+        "text": "목적은 오류를 줄여야 함"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "주어가 '목적'이면 서술어를 '~줄이는 것'으로 호응시킵니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 서술어를 바르게 고치세요.",
+    "segments": ["이번 개편의 목적은 ", "이용 편의를 ", "높이고자 합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["높이고자 합니다", "높이는 것입니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "주어가 '목적'이면 서술어를 '~높이는 것입니다'로 호응시킵니다."
+  },
+  {
+    "type": "select",
+    "question": "주어와 어울리지 않는 서술어는?",
+    "segments": [
+      "서버 장애의 원인은 ",
+      "트래픽이 급증했기 때문에 ",
+      "문제가 발생했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주어가 '원인은'이면 서술어는 '~때문입니다'로 짝을 맞춰야 합니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "간결하고 자연스러운 슬랙 답장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "저는 이 안이 좋다고 봅니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "제 생각은 좋다고 생각해요"
+      },
+      {
+        "id": "opt-c",
+        "text": "내 의견은 이 안이라 봅니다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "주어를 '저는'으로 바꾸면 불필요한 '생각'의 중복이 사라집니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바르게 호응한 문장인가요?",
+    "statement": "지연된 주된 이유는 검수가 늦어졌기 때문입니다.",
+    "correct": true,
+    "explanation": "주어 '이유는'과 서술어 '~때문입니다'가 바르게 호응한 문장입니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "보고서의 어색한 서술어를 고치세요.",
+    "segments": [
+      "품질을 높이는 방법은 ",
+      "테스트를 주기적으로 ",
+      "진행해야 합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["진행해야 합니다", "진행하는 것입니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "주어가 '방법은'이면 서술어를 '~진행하는 것입니다'로 맞춥니다."
+  },
+  {
+    "type": "select",
+    "question": "수정이 필요한 어색한 구간은?",
+    "segments": [
+      "저의 건의 사항은 ",
+      "출시일을 일주일 ",
+      "연기하길 건의합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주어 '건의 사항'과 서술어 '건의합니다'의 겹침을 바로잡아야 합니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "이번 설문의 목적은 사용자의 만족도를 ___.",
+    "words": [
+      "확인하는 것이다",
+      "확인하고자 한다",
+      "확인해야만 한다",
+      "확인하기 위함임"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "주어 '목적은'에 맞춰 서술어를 '~확인하는 것이다'로 완성합니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "이메일 문장의 어색한 곳을 고치세요.",
+    "segments": [
+      "저희 팀의 희망 사항은 ",
+      "마감 기한을 ",
+      "지켜주길 희망합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["지켜주길 희망합니다", "지켜주는 것입니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "주어 '희망 사항'에 어울리도록 서술어를 '~것입니다'로 고칩니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "올바른 뼈대의 문장을 조립하세요.",
+    "tiles": [
+      "제 생각은",
+      "기획안을",
+      "수정하는",
+      "것이",
+      "좋겠다는",
+      "것입니다."
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "explanation": "주어 '제 생각은'에 맞춰 서술어를 '~것입니다'로 호응시킵니다."
+  }
+]

@@ -1,0 +1,143 @@
+[
+  {
+    "type": "compare",
+    "title": "중복 수식어 덜어내기",
+    "analysis": "뜻이 겹치는 수식어를 빼면 문장이 선명해집니다.",
+    "versions": [
+      {
+        "label": "수식 중복",
+        "mark": "수많은 다양한",
+        "text": "수많은 다양한 고객 의견을 취합했습니다."
+      },
+      {
+        "label": "군살 제거",
+        "mark": "다양한",
+        "text": "다양한 고객 의견을 취합했습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 수식 표현인가요?",
+    "statement": "'가장 최고의 성과'처럼 강조를 위해 겹쳐 쓴다.",
+    "correct": false,
+    "explanation": "'최고'에 이미 '가장'의 뜻이 있어 겹치지 않게 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서에 어울리는 간결한 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "새롭게 출시된 신제품"
+      },
+      {
+        "id": "opt-b",
+        "text": "이번에 출시된 신제품"
+      },
+      {
+        "id": "opt-c",
+        "text": "새로운 신제품의 출시"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'신제품'에 '새롭다'가 포함되어 중복을 피합니다."
+  },
+  {
+    "type": "select",
+    "question": "의미가 중복된 수식어 구간은?",
+    "segments": [
+      "이번 프로젝트에서 ",
+      "너무나도 대단히 많은 ",
+      "지원을 받았습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'너무나도'와 '대단히'가 겹치므로 하나만 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "회의 일정을 ___ 전달해 드립니다.",
+    "words": ["미리 사전에", "사전에", "사전적으로", "미리미리 사전에"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "'사전'에 '미리'라는 뜻이 들어 있어 겹쳐 쓰지 않습니다."
+  },
+  {
+    "type": "true_false",
+    "question": "바른 수식 원칙인가요?",
+    "statement": "수식어는 꾸며주는 말 바로 앞에 두어야 자연스럽다.",
+    "correct": true,
+    "explanation": "수식어와 피수식어 사이를 좁혀야 문맥이 분명해집니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기가 있는 수식 구간은?",
+    "segments": [
+      "기획안 작성을 위해 ",
+      "수많은 여러 가지 자료를 ",
+      "검토했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'수많은'과 '여러 가지'가 중복되어 하나를 뺍니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "중복 수식어를 바르게 고치세요.",
+    "segments": ["이번 분기에 ", "가장 제일 좋은 ", "실적을 냈습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["가장 제일 좋은", "가장 좋은"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'가장'과 '제일'은 같은 뜻이므로 하나만 남깁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "고객이 만족할 만한 ___을 마련했습니다.",
+    "words": [
+      "최선의 방안",
+      "가장 최선의 방안",
+      "제일 최선의 방안",
+      "최고 최선의 방안"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'최선'에 '가장'의 의미가 포함되어 겹쳐 쓰지 않습니다."
+  },
+  {
+    "type": "select",
+    "question": "수식어가 멀어져 어색한 구간은?",
+    "segments": ["따뜻한 ", "담당자의 안내 덕분에 ", "안심했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'따뜻한'은 '안내' 바로 앞에 붙여 쓰는 것이 좋습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "중복 수식을 바르게 고치세요.",
+    "segments": [
+      "이번 분기에는 ",
+      "새로운 신제품 출시를 ",
+      "준비하고 있습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["신제품 출시를 ", "새로운 신제품을 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'신제품'과 중복되는 '새로운'을 덜어냅니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "군살 없는 문장으로 조립하세요.",
+    "tiles": ["다양한", "고객 의견을", "반영해", "개선했습니다.", "수많은"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4"],
+    "explanation": "중복 수식어 '수많은'을 빼고 간결하게 조립합니다."
+  }
+]

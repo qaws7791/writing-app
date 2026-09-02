@@ -1,0 +1,132 @@
+[
+  {
+    "type": "select",
+    "question": "어색하게 겹친 중복 표현은?",
+    "segments": [
+      "다음 주 배포 일정을 ",
+      "미리 예고해 드리니 ",
+      "일정에 참고 바랍니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'예고(豫告)'에 '미리'가 포함되어 '미리'를 뺍니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "동어반복 수정 원칙인가요?",
+    "statement": "한자어에 뜻이 포함된 수식어를 빼면 문장이 간결해집니다.",
+    "correct": true,
+    "explanation": "한자어에 이미 포함된 수식어를 지우면 문장이 간결해집니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "기획서에 어울리는 간결한 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "새로운 신규 기능을 엽니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "새로운 기능을 선보입니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'신규(新規)'에 '새롭다'가 포함되어 '새로운 기능'으로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기 중복 표현 구간은?",
+    "segments": [
+      "오류 원인을 파악하기 위해 ",
+      "로그를 다시 재확인한 뒤 ",
+      "공유하겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'재(再)'에 '다시'라는 뜻이 들어있으므로 하나만 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "중복된 잉여 표현을 바르게 고치세요.",
+    "segments": ["참석자 투표 결과 ", "과반수 이상이 ", "찬성표를 던졌습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["과반수 이상이 ", "과반수가 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'과반수(過半數)'에 '넘다'가 포함되어 '과반수가'로 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "겹치는 의미가 쓰인 구간은?",
+    "segments": ["서버 점검 작업은 ", "약 세 시간가량 ", "진행될 예정입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'약(約)'과 '~가량'은 뜻이 겹치므로 둘 중 하나만 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 퇴고 지침인가요?",
+    "statement": "'박수갈채를 치다'는 의미를 강조하므로 그대로 두는 것이 좋다.",
+    "correct": false,
+    "explanation": "'박수(拍手)'에 '치다'가 들어 있어 '박수를 보내다'로 씁니다."
+  },
+  {
+    "type": "compare",
+    "title": "동어반복 잉여 표현 삭제 전후",
+    "analysis": "겹치는 수식어를 빼면 글의 전달력이 훨씬 높아집니다.",
+    "versions": [
+      {
+        "label": "수정 전",
+        "text": "새로 출시된 신제품을 먼저 미리 공개합니다.",
+        "mark": "먼저 미리"
+      },
+      {
+        "label": "수정 후",
+        "text": "새로 출시된 신제품을 먼저 공개합니다.",
+        "mark": "먼저 공개합니다"
+      }
+    ]
+  },
+  {
+    "type": "select",
+    "question": "불필요한 중복 구간을 고르세요.",
+    "segments": ["창고 안의 ", "비어 있는 빈 공간을 ", "자재실로 활용합니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'빈(空)'과 '비어 있는'이 겹치므로 '빈 공간을'로 줄여 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "중복 표현을 깔끔하게 고치세요.",
+    "segments": [
+      "지연되었던 시스템 배포를 ",
+      "다음 주부터 ",
+      "다시 재개합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["다시 재개합니다.", "재개합니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'재개(再開)'에 '다시'가 포함되어 있어 '재개합니다'로 고칩니다."
+  },
+  {
+    "type": "select",
+    "question": "문맥상 군더더기가 있는 곳은?",
+    "segments": [
+      "피해 고객 전원에게 ",
+      "따뜻한 온정의 뜻으로 ",
+      "보상 쿠폰을 지급합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'온정(溫情)'에 '따뜻함'이 포함되어 '온정의 뜻으로'로 씁니다.",
+    "layout": "inline"
+  }
+]

@@ -1,0 +1,177 @@
+[
+  {
+    "type": "true_false",
+    "question": "접속부사 사용 원칙",
+    "statement": "문장마다 '그리고'를 붙여야 흐름이 매끄럽다.",
+    "correct": false,
+    "explanation": "문맥이 분명하면 접속사 없이도 자연스럽게 이어집니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "보고서에 가장 어울리는 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "그리고 분석을 끝마쳤습니다."
+      },
+      {
+        "id": "opt-b",
+        "text": "심층 분석에 착수했습니다."
+      },
+      {
+        "id": "opt-c",
+        "text": "그러므로 분석을 마쳤습니다."
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "기계적 접속사 대신 구체적인 서술로 바로 연결합니다."
+  },
+  {
+    "type": "match",
+    "title": "접속부사 퇴고 짝 맞추기",
+    "pairs": [
+      {
+        "left": "그리고 회의를 시작함",
+        "leftId": "p-1-l",
+        "right": "이어 회의를 시작함",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "그러나 일정이 밀렸음",
+        "leftId": "p-2-l",
+        "right": "단, 일정이 지연됨",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "그러므로 즉시 대응함",
+        "leftId": "p-3-l",
+        "right": "이에 즉시 대응함",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "또한 예산을 추가함",
+        "leftId": "p-4-l",
+        "right": "추가로 예산을 배정함",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "상투적인 접속사를 구체적인 연결 표현으로 바꿉니다."
+  },
+  {
+    "type": "true_false",
+    "question": "대조 접속사 퇴고법",
+    "statement": "대조되는 문장은 접속사 없이 연결하면 의미가 통하지 않는다.",
+    "correct": false,
+    "explanation": "대조 어미나 문맥 자체로도 상반된 의미가 전달됩니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "기능 테스트를 마쳤고, ___ 배포를 준비 중입니다.",
+    "words": ["그리고", "곧바로", "그러므로", "하지만"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "'그리고' 대신 연결어미와 시간 부사로 잇는 것이 좋습니다."
+  },
+  {
+    "type": "match",
+    "title": "자연스러운 문맥 연결",
+    "pairs": [
+      {
+        "left": "매출이 급증했습니다",
+        "leftId": "p-1-l",
+        "right": "목표를 조기 달성했습니다",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "오류를 발견했습니다",
+        "leftId": "p-2-l",
+        "right": "긴급 패치를 배포했습니다",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "검토를 마쳤습니다",
+        "leftId": "p-3-l",
+        "right": "내일 바로 공유하겠습니다",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "접속사 없이도 앞뒤 사실만으로 인과와 순서가 드러납니다."
+  },
+  {
+    "type": "select",
+    "question": "문맥상 불필요한 접속사는?",
+    "segments": [
+      "상반기 실적을 정리했습니다. ",
+      "그리고 ",
+      "개선 과제를 도출하여 ",
+      "다음 주에 보고하겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "앞뒤 문맥의 연결이 자연스러워 '그리고'를 삭제합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "인과 접속부사 생략 원칙",
+    "statement": "원인과 결과가 뚜렷하면 '그러므로'를 빼는 편이 깔끔하다.",
+    "correct": true,
+    "explanation": "자명한 인과 관계에서 접속사를 빼면 전달력이 높아집니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "서버 점검이 끝났습니다. ___ 정상 접속이 가능합니다.",
+    "words": ["그러므로", "하지만", "현재", "비록"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-3"],
+    "explanation": "'그러므로' 대신 시점을 명시하는 편이 더 명확합니다."
+  },
+  {
+    "type": "match",
+    "title": "접속사 다이어트 실전",
+    "pairs": [
+      {
+        "left": "그러나 의견이 다름",
+        "leftId": "p-1-l",
+        "right": "의견 차이가 있음",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "그리고 조치 완료함",
+        "leftId": "p-2-l",
+        "right": "조치까지 완료함",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "그러므로 승인 요청",
+        "leftId": "p-3-l",
+        "right": "검토 후 승인 요청",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "불필요한 접속사를 빼면 핵심 내용이 한눈에 들어옵니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 접속사를 바르게 고치세요.",
+    "segments": [
+      "디자인 시안을 완성했습니다. ",
+      "그러나 ",
+      "피드백 반영이 필요합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["다만", "그리고", "그러므로"],
+    "fixIds": ["fix-1", "fix-2", "fix-3"],
+    "correctFix": "fix-1",
+    "explanation": "가벼운 보완 조건을 덧붙일 때는 '다만'이 어울립니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "신규 기능 개발을 완료했으며, ___ QA 검증을 진행합니다.",
+    "words": ["내일부터", "그리고", "하지만", "그러므로"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "'그리고'를 빼고 일정 부사를 넣으면 실행력이 강조됩니다."
+  }
+]

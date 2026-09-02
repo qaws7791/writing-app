@@ -1,0 +1,133 @@
+[
+  {
+    "type": "compare",
+    "title": "주어 일치와 서술어 호응 비교",
+    "analysis": "앞뒤 절 주어를 일치시키면 문장이 명확해집니다.",
+    "versions": [
+      {
+        "label": "오류 문장",
+        "mark": "보고서가 제출되었다",
+        "text": "팀장님은 검토를 마치고 보고서가 제출되었다."
+      },
+      {
+        "label": "바른 문장",
+        "mark": "보고서를 제출하셨다",
+        "text": "팀장님은 검토를 마치고 보고서를 제출하셨다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 호응의 문장인가요?",
+    "statement": "우리는 현장을 확인하고 원인이 파악되었다.",
+    "correct": false,
+    "explanation": "앞 절 주어에 맞춰 '원인을 파악했다'로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "주어가 일관된 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "결재를 올리고 승인되었다"
+      },
+      {
+        "id": "opt-b",
+        "text": "결재를 올리고 승인을 받았다"
+      },
+      {
+        "id": "opt-c",
+        "text": "결재가 나고 승인을 올렸다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "주어 관점을 '승인을 받았다'로 능동 통일합니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 서술어 구간은?",
+    "segments": ["민우 님은 ", "데이터를 분석한 뒤 ", "결과가 공유되었다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주어에 맞춰 '결과를 공유했다'로 고쳐야 자연스럽습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "기획팀은 요구사항을 정리하여 ___ 전달했습니다.",
+    "words": ["개발팀에", "개발팀이", "문서가", "결과가"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "주어 '기획팀'의 행동이므로 목적어/부사어로 연결합니다."
+  },
+  {
+    "type": "true_false",
+    "question": "문장 호응이 자연스러운가요?",
+    "statement": "개발팀은 배포를 끝내고 로그를 점검했다.",
+    "correct": true,
+    "explanation": "주어 '개발팀'이 두 동작을 능동으로 자연스럽게 맺습니다."
+  },
+  {
+    "type": "select",
+    "question": "주어와 어긋난 서술어는?",
+    "segments": ["수진 님은 ", "발표를 마치고 ", "질문이 시작되었다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "앞 절 주어에 이어 '질문을 받았다'로 맞춰야 자연스럽습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 서술어를 바르게 고치세요.",
+    "segments": ["지원자는 ", "서류를 제출하고 ", "합격이 통보되었다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["합격이 통보되었다", "합격 통보를 받았다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "주어 '지원자'에 맞춰 '합격 통보를 받았다'로 바꿉니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "대표님은 신규 사업을 승인하고 ___ 지시하셨다.",
+    "words": ["예산이", "실행을", "계획이", "목표가"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "주어 '대표님'의 목적어로 '실행을'을 넣어야 호응합니다."
+  },
+  {
+    "type": "select",
+    "question": "초점이 흐려진 서술어 구간은?",
+    "segments": ["마케팅팀은 ", "캠페인을 기획하고 ", "성과가 측정되었다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주어 '마케팅팀'에 맞춰 '성과를 측정했다'로 고칩니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "피동 오류 구간을 바르게 고치세요.",
+    "segments": ["PM은 ", "일정을 조율하고 ", "공유가 완료되었다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["공유가 완료되었다", "공유를 마쳤다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "주어 'PM'의 행동이므로 능동형 '공유를 마쳤다'로 씁니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "단일 주어로 완성된 문장은?",
+    "tiles": [
+      "지훈 님은",
+      "회의를",
+      "마치고",
+      "회의록을",
+      "모두에게",
+      "공유했다."
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "explanation": "단일 주어 '지훈 님은'에 맞춰 문장을 능동으로 구성합니다."
+  }
+]

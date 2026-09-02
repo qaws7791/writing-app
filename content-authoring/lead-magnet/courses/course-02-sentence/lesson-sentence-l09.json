@@ -1,0 +1,116 @@
+﻿[
+  {
+    "type": "select",
+    "question": "어색한 피동 표현 구간은?",
+    "segments": ["환불 처리가 ", "오늘 중으로 ", "이루어질 예정입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'이루어지다' 대신 '환불을 처리할 예정입니다'로 능동 서술합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 수정 원칙인가요?",
+    "statement": "'논의가 진행되다'는 '논의하다'로 바꾸는 것이 간결합니다.",
+    "correct": true,
+    "explanation": "불필요한 '진행되다'를 걷어내면 문장의 주체가 살아납니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 공지에 어울리는 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "점검이 진행됩니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "서버를 점검합니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'점검이 진행되다'보다 '점검하다'로 직접 쓰는 것이 좋습니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기 피동 구간을 고르세요.",
+    "segments": ["기획팀과 ", "신규 기능에 대해 ", "협의가 진행되었습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'협의가 진행되다' 대신 '협의했습니다'로 바로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 서술어를 바르게 고치세요.",
+    "segments": ["지원금을 전원에게 ", "오늘 오전 ", "지급이 되었습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["지급이 되었습니다.", "지급했습니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'지급이 되다'보다 '지급했습니다'로 능동 표기해야 명확합니다."
+  },
+  {
+    "type": "select",
+    "question": "관료적 피동 표현 구간은?",
+    "segments": ["대표이사의 ", "최종 결재가 ", "내려졌습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'결재가 내려지다' 대신 '최종 결재했습니다'로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 작성법인가요?",
+    "statement": "'처리가 이루어지다'는 객관적 느낌을 주므로 권장된다.",
+    "correct": false,
+    "explanation": "행위자를 감추는 피동은 문장을 무기력하고 모호하게 만듭니다."
+  },
+  {
+    "type": "compare",
+    "title": "관료적 피동 vs 명쾌한 능동",
+    "analysis": "불필요한 피동을 걷어내면 문장의 주체와 행위가 또렷해집니다.",
+    "versions": [
+      {
+        "label": "수정 전",
+        "mark": "결정이 내려졌습니다",
+        "text": "운영팀 회의 결과 서비스 종료로 결정이 내려졌습니다."
+      },
+      {
+        "label": "수정 후",
+        "mark": "결정했습니다",
+        "text": "운영팀 회의 결과 서비스 종료를 결정했습니다."
+      }
+    ]
+  },
+  {
+    "type": "select",
+    "question": "능동적으로 고쳐야 할 구간은?",
+    "segments": ["데이터 정리가 ", "순조롭게 ", "진행되고 있습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'데이터를 순조롭게 정리하고 있습니다'로 능동 서술합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "당당한 능동 표현으로 고치세요.",
+    "segments": ["보안팀에서 ", "서버 보안을 ", "점검 진행했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["점검 진행했습니다.", "점검했습니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'점검을 진행하다'보다 '점검하다'로 직접 밝혀 적습니다."
+  },
+  {
+    "type": "select",
+    "question": "주체가 명확한 표현 구간은?",
+    "segments": ["TF팀에서 ", "운영 정책을 ", "개선하기로 했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'개선이 이루어지다' 대신 주체를 살려 능동으로 맺습니다.",
+    "layout": "inline"
+  }
+]

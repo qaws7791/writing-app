@@ -1,0 +1,134 @@
+[
+  {
+    "type": "compare",
+    "title": "번역투 조사를 자연스럽게 바꾸기",
+    "analysis": "번역투 조사를 걷어내면 문장이 훨씬 간결해집니다.",
+    "versions": [
+      {
+        "label": "번역투",
+        "mark": "기획안에 대하여",
+        "text": "팀원들과 신규 기획안에 대하여 집중적으로 검토했습니다."
+      },
+      {
+        "label": "자연스러움",
+        "mark": "기획안을",
+        "text": "팀원들과 신규 기획안을 집중적으로 검토했습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 수정인가요?",
+    "statement": "'업무에 있어서'는 '업무에서'로 줄이면 뜻이 더 선명해집니다.",
+    "correct": true,
+    "explanation": "일본어투 조사 '에 있어서'는 장소·범위의 '에서'로 바꿉니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 보고에 더 간결한 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "신규 기능에 대하여 논의했다"
+      },
+      {
+        "id": "opt-b",
+        "text": "신규 기능을 논의했다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "'~에 대하여 논의하다' 대신 목적격 조사 '~을/를'을 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기 번역투 조사는?",
+    "segments": [
+      "이번 프로젝트를 ",
+      "진행함에 있어서 ",
+      "협업이 필수적입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'진행함에 있어서'는 '진행할 때'나 '진행하는 데'로 바꿉니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "고객 피드백은 온라인 설문 ___ 신속하게 수집했습니다.",
+    "words": ["조사로", "조사를 통하여", "조사에 대하여", "조사에 있어서"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "수단이나 방법을 나타낼 때는 '통하여' 대신 조사 '로'를 씁니다."
+  },
+  {
+    "type": "true_false",
+    "question": "바른 글쓰기 습관인가요?",
+    "statement": "'~에 관하여'를 자주 쓰면 전문적이고 격식 있는 문장이 된다.",
+    "correct": false,
+    "explanation": "'~에 관하여'는 문장을 늘어지게 하므로 '~을/를'로 줄여 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "자연스럽게 줄일 수 있는 부분은?",
+    "segments": ["운영팀과 ", "일정 조정에 관하여 ", "협의를 마쳤습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'일정 조정에 관하여'는 '일정 조정을'로 바꾸면 훨씬 깔끔합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "군더더기 표현을 바르게 고치세요.",
+    "segments": [
+      "서비스 개선에 있어서 ",
+      "가장 시급한 과제는 ",
+      "속도 개선입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["서비스 개선에 있어서 ", "서비스 개선에서 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "일본어투 번역 표현 '에 있어서'는 조사 '에서'로 고쳐 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "최종 배포 일정은 주간 ___ 결정하기로 했습니다.",
+    "words": ["회의를 통하여", "회의에서", "회의에 대하여", "회의에 있어서"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "결정이 이루어지는 상황·자리이므로 '통하여' 대신 '에서'를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "간결하게 고쳐야 할 조사 구간은?",
+    "segments": ["타사 사례에 대하여 ", "조사한 뒤 ", "보고서를 올렸습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'타사 사례에 대하여'는 '타사 사례를'로 바꾸면 간결해집니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "번역투 조사를 깔끔하게 고치세요.",
+    "segments": [
+      "신규 기능을 ",
+      "기획함에 있어서 ",
+      "사용자 의견을 모았습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["기획함에 있어서 ", "기획할 때 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'~함에 있어서'는 번역투이므로 '~할 때'로 고치면 자연스럽습니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "간결하고 바른 문장을 만드세요.",
+    "tiles": ["다음", "회의에서", "예산안을", "신속하게", "검토하겠습니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "'회의를 통해 예산안에 대해' 대신 '회의에서 예산안을'로 씁니다."
+  }
+]

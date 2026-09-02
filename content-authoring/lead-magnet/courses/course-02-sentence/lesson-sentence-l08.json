@@ -1,0 +1,191 @@
+[
+  {
+    "type": "true_false",
+    "question": "피동 표현의 올바른 쓰임인가요?",
+    "statement": "'위기에 처해지다'는 자연스러운 표현이다.",
+    "correct": false,
+    "explanation": "'처하다' 자체에 뜻이 있어 '처하다'로 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "슬랙 공지에 어울리는 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "각별한 주의가 필요합니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "각별한 주의가 요구되어집니다"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "무생물 주어 피동 대신 능동 표현을 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 피동 표현 구간은?",
+    "segments": [
+      "데이터 이관 작업에 ",
+      "예상보다 많은 시간이 ",
+      "소요되어졌습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "불필요한 이중 피동 대신 '소요되었습니다'로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "번역투 피동 vs 바른 표현 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "어색한 피동"
+      },
+      {
+        "id": "cat-2",
+        "label": "자연스러운 표현"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "난관에 처해지다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "협조가 요구되다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "난관에 처하다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "협조를 부탁하다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "불필요한 피동을 걷어내면 문장이 선명해집니다."
+  },
+  {
+    "type": "true_false",
+    "question": "문장 수정 원칙으로 맞나요?",
+    "statement": "무생물 주어 피동문은 사람 주어 능동문으로 바꾼다.",
+    "correct": true,
+    "explanation": "사람을 주어로 세워 능동으로 쓰면 뜻이 명확합니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 피동 서술어는?",
+    "segments": [
+      "팀 내 논의를 거쳐 ",
+      "출시 일정이 최종 ",
+      "결정되어졌습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'결정되었습니다'나 '결정했습니다'로 씁니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "업무 메일에 바른 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "보고서가 제출되어졌습니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "보고서를 제출했습니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "문서가 주어인 피동보다 주어의 능동 동작이 좋습니다."
+  },
+  {
+    "type": "categorize",
+    "title": "실무 문장 표현 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "어색한 번역투"
+      },
+      {
+        "id": "cat-2",
+        "label": "명확한 우리말"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "원인이 밝혀지다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-2",
+        "text": "원인이 규명되어지다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "위기에 직면해지다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "위기에 직면하다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "이중 피동 '-되어지다'는 단일 서술어로 고칩니다."
+  },
+  {
+    "type": "select",
+    "question": "군더더기 피동 표현은?",
+    "segments": [
+      "신규 기능 도입이 ",
+      "매출 증대에 유효하다고 ",
+      "생각되어집니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'생각합니다' 또는 '판단합니다'로 명확히 밝힙니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 피동을 바르게 고치세요.",
+    "segments": ["우리 팀은 현재 ", "인력 부족의 어려움에 ", "처해져 있다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["처해져 있다.", "처해 있다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'처하다'에 불필요한 피동을 더하지 않고 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "보안 강화를 위해 전사적 ___ 권장합니다.",
+    "words": ["주의를", "주의가 요구되어져", "주의되어짐을", "주의에 처하여"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "무생물 주어 피동 대신 목적어와 능동 서술어로 씁니다."
+  },
+  {
+    "type": "error_correct",
+    "question": "자연스러운 문장으로 고치세요.",
+    "segments": ["신규 서버 증설로 ", "접속 지연 문제가 ", "해결되어졌습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["해결되어졌습니다.", "해결되었습니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "이중 피동 '-되어지다'를 단일 피동으로 바로잡습니다."
+  }
+]

@@ -1,0 +1,226 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "만연체 보고와 단문 분할",
+    "analysis": "한 문장에 생각 하나만 담아 마침표를 찍습니다.",
+    "versions": [
+      {
+        "label": "만연체",
+        "mark": "진행하였으나 일정이 지연되어",
+        "text": "신규 기능 개발 후 테스트를 진행하였으나 일정이 지연되어 출시를 연기했습니다."
+      },
+      {
+        "label": "단문 분할",
+        "mark": "진행했습니다. 그러나 일정이",
+        "text": "신규 기능 개발 후 테스트를 진행했습니다. 그러나 일정이 지연되어 출시를 연기했습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "단문화 원칙에 맞나요?",
+    "statement": "한 문장에는 한 생각만 담고 길이는 40~50자로 끊어야 합니다.",
+    "correct": true,
+    "explanation": "한 문장에 생각 하나만 담아야 글의 가독성이 높아집니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 알맞은 문장 길이는?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "한 문장 40~50자"
+      },
+      {
+        "id": "opt-b",
+        "text": "한 문장 100자 이상"
+      },
+      {
+        "id": "opt-c",
+        "text": "한 문장 150자 이상"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "40~50자 단문이 의미를 가장 빠르고 명확하게 전달합니다."
+  },
+  {
+    "type": "categorize",
+    "title": "단문과 만연체 문장 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "명료한 단문"
+      },
+      {
+        "id": "cat-2",
+        "label": "늘어진 만연체"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "결제를 완료했습니다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "결제 후 배송을 시작하며",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "배송을 시작합니다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "검토하고 승인하여 배포함",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "기획안을 승인했습니다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "취합하여 보고서로 작성함",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "연결 어미로 잇지 않고 마침표로 끊어야 명쾌해집니다."
+  },
+  {
+    "type": "select",
+    "question": "마침표로 끊을 연결 구간은?",
+    "segments": [
+      "1차 검수를 마쳤고, ",
+      "2차 수정 사항을 취합해 ",
+      "내일 최종 배포합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'마쳤습니다.'로 문장을 끊어야 전달력이 높아집니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "compare",
+    "title": "접속사 줄이고 단문 연결하기",
+    "analysis": "문장을 분할한 뒤 불필요한 접속사는 과감히 뺍니다.",
+    "versions": [
+      {
+        "label": "접속사 과다",
+        "mark": "완료했습니다. 그리고 이어서",
+        "text": "오류 수정을 완료했습니다. 그리고 이어서 결제 시스템을 점검합니다."
+      },
+      {
+        "label": "자연스러운 단문",
+        "mark": "완료했습니다. 다음으로",
+        "text": "오류 수정을 완료했습니다. 다음으로 결제 시스템을 점검합니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 작성법인가요?",
+    "statement": "접속 어미로 문장을 길게 이을수록 전문적으로 보인다.",
+    "correct": false,
+    "explanation": "문장이 길어지면 주술 호응이 깨지고 의미가 흐려집니다."
+  },
+  {
+    "type": "categorize",
+    "title": "종결 어미와 연결 어미 구분",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "단문 종결 어미"
+      },
+      {
+        "id": "cat-2",
+        "label": "문장 연결 어미"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "~마쳤습니다.",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "~확인했습니다.",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "~진행하였고,",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "~수정하였으며,",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "~공유합니다.",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "~개발하였으나,",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "종결 어미로 마침표를 찍어야 문장이 깔끔해집니다."
+  },
+  {
+    "type": "select",
+    "question": "가위질할 만연체 연결 구간은?",
+    "segments": [
+      "서버 점검을 끝마쳤으며, ",
+      "신규 보안 패치를 ",
+      "순차 배포할 계획입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'-으며'에서 문장을 끊어 단문으로 분할하면 깔끔합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "늘어진 연결부를 단문으로 고치세요.",
+    "segments": [
+      "매출 목표를 달성하였고, ",
+      "하반기에는 신규 시장 진출을 ",
+      "적극 추진합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["달성하였고, ", "달성했습니다. "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "종결 어미와 마침표를 쓰면 1문장 1생각이 완성됩니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "명료한 단문 보고를 완성하세요.",
+    "tiles": ["테스트를", "마쳤습니다.", "결과를", "확인해", "주세요."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "단문 두 개로 분할하면 요청 사항이 명확히 전달됩니다."
+  },
+  {
+    "type": "select",
+    "question": "단문화로 분절할 핵심 위치는?",
+    "segments": [
+      "기획안 작성을 완료했고, ",
+      "팀 내 공유를 거쳐 ",
+      "내일 결재를 올립니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'완료했습니다.'로 끊어야 1문장 1생각 원칙에 맞습니다.",
+    "layout": "inline"
+  }
+]

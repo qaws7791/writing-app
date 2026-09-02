@@ -1,0 +1,185 @@
+[
+  {
+    "type": "select",
+    "question": "어색한 번역투 표현 구간은?",
+    "segments": [
+      "이번 프로젝트 ",
+      "에 있어서의 핵심은 ",
+      "사용자 경험 개선입니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "일본어투 '에 있어서의'는 '에서'로 고쳐야 자연스럽습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 퇴고 원칙인가요?",
+    "statement": "문장이 꼬였을 때는 주어와 서술어만 남겨 뼈대를 확인한다.",
+    "correct": true,
+    "explanation": "주어와 서술어의 호응을 먼저 맞추면 비문이 쉽게 풀립니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 자연스러운 교정안은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "개선되어진다고 봅니다"
+      },
+      {
+        "id": "opt-b",
+        "text": "개선된다고 봅니다"
+      },
+      {
+        "id": "opt-c",
+        "text": "개선되어짐으로 사료됩니다"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "이중 피동 '되어진'을 빼고 단일 피동 '개선된다'를 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "주술 호응이 깨진 구간은?",
+    "segments": ["내 생각은 ", "보안 패치를 서둘러 ", "적용해야 한다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주어가 '생각은'이므로 서술어는 '~점이다'로 맞춰야 합니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "주술 호응에 맞게 고치세요.",
+    "segments": ["우리의 목표는 ", "시스템을 안정화하고 ", "오류율을 낮춘다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["낮추는 것이다.", "낮출 뿐이다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'목표는'에 어울리도록 서술어를 '~것이다'로 통일합니다."
+  },
+  {
+    "type": "categorize",
+    "title": "올바른 문장과 비문 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "자연스러운 문장"
+      },
+      {
+        "id": "cat-2",
+        "label": "복합 비문"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "서버를 재가동했다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "서버가 복구되어졌다",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "결과를 공유합니다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "팀장에 의해 보고됨",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-5",
+        "text": "오류를 수정했습니다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-6",
+        "text": "목표는 달성했다",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "이중 피동, 번역투 조사, 주술 불일치는 대표적 비문입니다."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 작성법인가요?",
+    "statement": "'~에 다름 아니다'를 쓰면 문장의 신뢰도가 높아진다.",
+    "correct": false,
+    "explanation": "일본어 번역투이므로 '~와 같다'나 '~이다'로 고쳐 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "불필요한 피동 표현 구간은?",
+    "segments": ["배포 일정이 ", "내일로 ", "생각되어집니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "이중 피동 '되어집니다'를 능동형 '생각합니다'로 고칩니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "번역투 조사를 바르게 고치세요.",
+    "segments": ["이 문제는 ", "기술팀에 의해 ", "해결되었습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["기술팀이 ", "기술팀에 따른 "],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "영어 번역투 '에 의해' 대신 능동 주격 조사 '이'를 씁니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "문제가 ___ 능동적으로 ___.",
+    "words": ["발생되면", "발생하면", "조치합니다", "조치되어집니다"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2", "w-3"],
+    "explanation": "피동 접미사 남발을 피하고 명쾌한 능동 표현을 채웁니다."
+  },
+  {
+    "type": "select",
+    "question": "어색한 군더더기 연결 구간은?",
+    "segments": ["회의를 진행함에 있어 ", "신규 안건을 ", "검토했습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "'진행함에 있어'는 군더더기이므로 '진행하며'로 줄입니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 피동형을 고치세요.",
+    "segments": ["신규 기능이 ", "다음 주에 ", "출시되어질 예정입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["출시될 예정입니다.", "출시되어집니다."],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'되다'에 '-어지다'가 붙은 이중 피동을 단일 피동으로 풉니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "호응이 바른 문장을 조립하세요.",
+    "tiles": ["가장", "중요한", "점은", "일정을", "지키는", "것이다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+    "explanation": "주어 '점은'과 서술어 '~것이다'가 정확히 호응합니다."
+  },
+  {
+    "type": "select",
+    "question": "자연스럽게 완결된 서술 구간은?",
+    "segments": [
+      "최종 점검 결과, ",
+      "모든 테스트를 거쳐 ",
+      "배포를 완료했습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "주술 호응과 능동 서술어가 어우러진 완성형 문장입니다.",
+    "layout": "inline"
+  }
+]
