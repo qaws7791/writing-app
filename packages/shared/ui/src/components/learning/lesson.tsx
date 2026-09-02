@@ -223,7 +223,7 @@ function LessonFeedbackActions({
     <div
       data-slot="lesson-feedback-actions"
       className={cn(
-        "flex w-full min-w-0 items-stretch gap-2 [&_[data-slot=button]]:h-12",
+        "flex w-full min-w-0 items-stretch gap-2 [&_[data-slot=button]]:h-12 [&_[data-slot=button]:last-child]:min-w-0 [&_[data-slot=button]:last-child]:flex-1",
         className
       )}
       {...props}
@@ -261,10 +261,7 @@ function LessonFeedbackContinueButton({
 }) {
   return (
     <Button
-      className={cn(
-        tone === "incorrect" ? "min-w-0 flex-1" : "w-full",
-        className
-      )}
+      className={cn("w-full", className)}
       size="lg"
       type="button"
       variant={tone === "correct" ? "success" : "warning"}
