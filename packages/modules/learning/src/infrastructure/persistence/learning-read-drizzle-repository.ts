@@ -195,6 +195,7 @@ function projectCourseDetail(
           },
     lessonProgress: progressRows.map((row) => ({
       completedAt: row.completedAt,
+      completedStepIdsJson: row.completedStepIdsJson,
       currentStepId: lessonStepIdSchema.parse(row.currentStepId),
       lessonId: lessonIdSchema.parse(row.lessonId),
       status: row.status,

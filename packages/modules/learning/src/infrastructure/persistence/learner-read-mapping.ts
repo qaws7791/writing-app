@@ -24,6 +24,10 @@ import type {
   LearningLessonReference,
   LessonLearningState,
 } from "#learning/domain/learning-types"
+import {
+  inProgressLearningProjection,
+  parseCompletedStepIds,
+} from "#learning/infrastructure/persistence/completed-step-ids"
 
 export type LearnerCourseListProjectionRow = {
   readonly category: string
@@ -64,6 +68,7 @@ type LearnerCourseProgressProjectionRow = {
 
 type LearnerLessonProgressProjectionRow = {
   readonly completedAt: Date | null
+  readonly completedStepIdsJson: string
   readonly currentStepId: string
   readonly lessonId: string
   readonly status: "completed" | "in_progress"
@@ -256,19 +261,18 @@ function projectLearnerLessonLearningState(input: {
     }
   }
 
-  const currentStepIndex = Math.max(
-    0,
-    input.steps.findIndex((step) => step.id === input.progress?.currentStepId)
-  )
+  const orderedStepIds = input.steps.map((step) => step.id as LessonStepId)
+  const projection = inProgressLearningProjection({
+    completedStepIds: parseCompletedStepIds(
+      input.progress.completedStepIdsJson,
+      new Set(orderedStepIds)
+    ),
+    currentStepId: input.progress.currentStepId as LessonStepId,
+    orderedStepIds,
+  })
 
   return {
-    completedSteps: currentStepIndex,
-    currentStepId: input.progress.currentStepId as LessonStepId,
-    currentStepIndex,
-    progressPercent:
-      input.steps.length === 0
-        ? 0
-        : Math.round((currentStepIndex / input.steps.length) * 100),
+    ...projection,
     status: "in_progress",
     totalSteps: input.steps.length,
     version: input.version,

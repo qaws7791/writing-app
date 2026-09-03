@@ -1,11 +1,13 @@
 import {
   completeLearnerLesson,
+  saveLearnerLessonProgress,
   startLearnerLesson,
 } from "@workspace/http-client/learner"
 
 import type {
   CompleteLearnerLessonBody,
   CompleteLearnerLessonResult,
+  SaveLearnerLessonProgressBody,
 } from "@workspace/contracts/learning/learner-transition"
 import { getLessonUserMessage } from "@/features/lesson-session/model/lesson-user-message"
 import {
@@ -13,6 +15,7 @@ import {
   toLessonStartResult,
 } from "@/features/lesson-session/model/lesson-view-model"
 import {
+  isLearnerApiAbortedError,
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
 } from "@/shared/http/learner-api-client"
@@ -24,15 +27,26 @@ type LessonCompleteOutcome =
       readonly status: "ok"
     }
 
+type LessonProgressOutcome =
+  | { readonly message: string; readonly status: "error" }
+  | {
+      readonly learning: ReturnType<typeof toLessonStartResult>
+      readonly status: "ok"
+    }
+
 export type LessonSessionEffects = {
   readonly completeLesson: (input: {
     readonly request: CompleteLearnerLessonBody
   }) => Promise<LessonCompleteOutcome>
+  readonly saveProgress: (input: {
+    readonly request: SaveLearnerLessonProgressBody
+  }) => Promise<LessonProgressOutcome>
   readonly start: () => Promise<
     | {
         readonly learning: ReturnType<typeof toLessonStartResult>
         readonly status: "ok"
       }
+    | { readonly status: "aborted" }
     | { readonly message: string; readonly status: "error" }
   >
 }
@@ -73,11 +87,13 @@ export function createLessonSessionEffects(input: {
             status: "ok",
           }
     },
-    async start() {
+    async saveProgress({ request }) {
       const result = await settleLearnerApiRequest(
-        startLearnerLesson(
+        saveLearnerLessonProgress(
           input.lessonId,
           {
+            completedStepIds: request.completedStepIds,
+            currentStepId: request.currentStepId,
             expectedCurriculumVersionId: input.expectedCurriculumVersionId,
           },
           { signal: input.readAbortSignal() }
@@ -92,6 +108,26 @@ export function createLessonSessionEffects(input: {
             status: "error",
           }
         : { learning: toLessonStartResult(result.value), status: "ok" }
+    },
+    async start() {
+      const result = await settleLearnerApiRequest(
+        startLearnerLesson(input.lessonId, {
+          expectedCurriculumVersionId: input.expectedCurriculumVersionId,
+        })
+      )
+      if (result.status === "error") {
+        if (isLearnerApiAbortedError(result.error)) {
+          return { status: "aborted" }
+        }
+        return {
+          message: getLessonUserMessage(
+            "start",
+            readLearnerApiErrorCode(result.error)
+          ),
+          status: "error",
+        }
+      }
+      return { learning: toLessonStartResult(result.value), status: "ok" }
     },
   }
 }

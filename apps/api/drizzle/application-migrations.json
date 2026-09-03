@@ -58,5 +58,11 @@
     "fileName": "0009-remove-writing-complete.sql",
     "foreignKeys": "off",
     "id": "0009-remove-writing-complete"
+  },
+  {
+    "checksum": "3a82e81fa620becaaec8ba22d97fe9a2d70826df0391957493fade716bb4ecef",
+    "fileName": "0010-lesson-completed-step-ids.sql",
+    "foreignKeys": "on",
+    "id": "0010-lesson-completed-step-ids"
   }
 ]

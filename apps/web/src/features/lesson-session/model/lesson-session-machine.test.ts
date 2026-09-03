@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest"
 
 import {
   createLessonSessionState,
+  remainingLessonStepIds,
   transitionLessonSession,
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
-import { completeLearnerLessonResultSchema } from "@workspace/contracts/learning/learner-transition"
+import {
+  completeLearnerLessonResultSchema,
+  type LearnerStepDraftAnswer,
+} from "@workspace/contracts/learning/learner-transition"
 
 describe("lesson session machine (client-driven queue)", () => {
   it("정답 평가 시 완료 목록에 추가되고 정답 상태가 된다", () => {
@@ -85,18 +89,146 @@ describe("lesson session machine (client-driven queue)", () => {
       status: "complete",
     })
   })
+
+  it("starting에서 START_REQUESTED를 다시 받으면 상태를 유지한다", () => {
+    const starting = transitionLessonSession(
+      createLessonSessionState(false, false, {}, ["step-1"]),
+      { type: "START_REQUESTED" }
+    )
+
+    expect(transitionLessonSession(starting, { type: "START_REQUESTED" })).toBe(
+      starting
+    )
+  })
+
+  it("START_FAILED 메시지가 없으면 startError를 비운다", () => {
+    const starting = transitionLessonSession(
+      createLessonSessionState(false, false, {}, ["step-1"]),
+      { type: "START_REQUESTED" }
+    )
+
+    expect(
+      transitionLessonSession(starting, { message: null, type: "START_FAILED" })
+    ).toEqual({
+      startError: null,
+      status: "not-started",
+    })
+  })
+
+  it("이미 채점된 스텝의 STEP_EVALUATED는 카운트를 바꾸지 않는다", () => {
+    const active = createActiveSession(["step-1", "step-2"])
+    const evaluated = transitionLessonSession(active, {
+      isCorrect: false,
+      stepId: "step-1",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
+    })
+    const repeated = transitionLessonSession(evaluated, {
+      isCorrect: false,
+      stepId: "step-1",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
+    })
+
+    expect(repeated).toMatchObject({
+      mistakeCount: 1,
+      stepQueue: ["step-1", "step-2", "step-1"],
+      totalAttempts: 1,
+    })
+  })
+
+  it("완료 저장 중 DRAFT_RECONCILED는 상태를 유지한다", () => {
+    const submitting = transitionLessonSession(
+      createActiveSession(["step-1"]),
+      { type: "COMPLETE_LESSON_REQUESTED" }
+    )
+
+    expect(
+      transitionLessonSession(submitting, {
+        payload: null,
+        stepId: "step-1",
+        type: "DRAFT_RECONCILED",
+      })
+    ).toBe(submitting)
+  })
+
+  it("재큐 복사본으로 이동할 때만 다음 스텝 payload를 지운다", () => {
+    const active = createActiveSession(["step-1", "step-2"], {
+      "step-1": {
+        selectedOptionId: "opt-1",
+        type: "MULTIPLE_CHOICE",
+      },
+      "step-2": {
+        selectedOptionId: "opt-2",
+        type: "MULTIPLE_CHOICE",
+      },
+    })
+    const incorrect = transitionLessonSession(active, {
+      isCorrect: false,
+      stepId: "step-1",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
+    })
+    const toOriginalNext = transitionLessonSession(incorrect, {
+      type: "CONTINUE_REQUESTED",
+    })
+
+    expect(toOriginalNext.status).toBe("active")
+    if (toOriginalNext.status !== "active") return
+    expect(toOriginalNext.answerPayloads["step-2"]).toEqual({
+      selectedOptionId: "opt-2",
+      type: "MULTIPLE_CHOICE",
+    })
+
+    const evaluatedSecond = transitionLessonSession(toOriginalNext, {
+      isCorrect: true,
+      stepId: "step-2",
+      totalOriginalSteps: 2,
+      type: "STEP_EVALUATED",
+    })
+    const toRequeued = transitionLessonSession(evaluatedSecond, {
+      type: "CONTINUE_REQUESTED",
+    })
+
+    expect(toRequeued.status).toBe("active")
+    if (toRequeued.status !== "active") return
+    expect(toRequeued.answerPayloads["step-1"]).toBeUndefined()
+  })
+
+  it("저장된 완료 스텝으로 남은 큐를 재구성한다", () => {
+    const resumed = createLessonSessionState(
+      true,
+      false,
+      {},
+      ["step-1", "step-2", "step-3"],
+      ["step-1"]
+    )
+
+    expect(resumed).toMatchObject({
+      completedStepIds: ["step-1"],
+      currentQueueIndex: 0,
+      progressPercent: 33,
+      status: "active",
+      stepQueue: ["step-2", "step-3"],
+    })
+    expect(remainingLessonStepIds(["step-1", "step-2"], ["step-1"])).toEqual([
+      "step-2",
+    ])
+  })
 })
 
-function createActiveSession(stepIds: string[]): LessonSessionState {
-  const notStarted = createLessonSessionState(0, false, false, {}, 0, stepIds)
+function createActiveSession(
+  stepIds: string[],
+  answerPayloads: Readonly<Record<string, LearnerStepDraftAnswer>> = {}
+): LessonSessionState {
+  const notStarted = createLessonSessionState(false, false, {}, stepIds)
   const starting = transitionLessonSession(notStarted, {
     type: "START_REQUESTED",
   })
   return transitionLessonSession(starting, {
-    answerPayloads: {},
-    currentStepIndex: 0,
-    initialStepIds: stepIds,
-    progressPercent: 0,
+    answerPayloads,
+    completedStepIds: [],
+    originalStepIds: stepIds,
     type: "START_SUCCEEDED",
   })
 }

@@ -23,9 +23,9 @@ export function LessonCompleteScreen({
   readonly onNext: (nextLessonId: string) => void
 }) {
   const nextLesson = completion?.courseLearning.nextLesson ?? null
-  const accuracyPercent = completion?.accuracyPercent ?? 100
-  const durationMinutes = completion?.durationMinutes ?? 0
-  const streakDays = completion?.streakDays ?? 0
+  const accuracyPercent = completion?.accuracyPercent
+  const durationMinutes = completion?.durationMinutes
+  const streakDays = completion?.streakDays
   const streakIncreased = completion?.streakIncreased ?? false
 
   return (
@@ -48,37 +48,38 @@ export function LessonCompleteScreen({
           <p className="text-muted-foreground">{lesson.title}</p>
         </div>
 
-        {/* 성과 대시보드 */}
-        <div
-          className="grid grid-cols-3 gap-4 w-full max-w-sm pt-6 motion-safe:animate-fade-in-up"
-          style={{ animationDelay: "300ms" }}
-        >
-          <div className="flex flex-col items-center p-4 bg-muted/30 rounded-2xl">
-            <span className="text-sm font-medium text-muted-foreground mb-1">
-              정답률
-            </span>
-            <span className="text-2xl font-bold">{accuracyPercent}%</span>
-          </div>
-          <div className="flex flex-col items-center p-4 bg-muted/30 rounded-2xl">
-            <span className="text-sm font-medium text-muted-foreground mb-1">
-              소요 시간
-            </span>
-            <span className="text-2xl font-bold">{durationMinutes}분</span>
-          </div>
-          <div className="flex flex-col items-center p-4 bg-muted/30 rounded-2xl relative">
-            <span className="text-sm font-medium text-muted-foreground mb-1">
-              스트릭
-            </span>
-            <span className="text-2xl font-bold flex items-center">
-              {streakDays}일
-            </span>
-            {streakIncreased && (
-              <span className="absolute -top-2 -right-2 text-success font-bold text-sm bg-success/10 px-2 py-0.5 rounded-full motion-safe:animate-bounce">
-                +1
+        {completion !== null ? (
+          <div
+            className="grid grid-cols-3 gap-4 w-full max-w-sm pt-6 motion-safe:animate-fade-in-up"
+            style={{ animationDelay: "300ms" }}
+          >
+            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-2xl">
+              <span className="text-sm font-medium text-muted-foreground mb-1">
+                정답률
               </span>
-            )}
+              <span className="text-2xl font-bold">{accuracyPercent}%</span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-2xl">
+              <span className="text-sm font-medium text-muted-foreground mb-1">
+                소요 시간
+              </span>
+              <span className="text-2xl font-bold">{durationMinutes}분</span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-muted/30 rounded-2xl relative">
+              <span className="text-sm font-medium text-muted-foreground mb-1">
+                스트릭
+              </span>
+              <span className="text-2xl font-bold flex items-center">
+                {streakDays}일
+              </span>
+              {streakIncreased ? (
+                <span className="absolute -top-2 -right-2 text-success font-bold text-sm bg-success/10 px-2 py-0.5 rounded-full motion-safe:animate-bounce">
+                  +1
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         {lesson.summary.length > 0 && (
           <div

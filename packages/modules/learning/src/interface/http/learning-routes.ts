@@ -17,12 +17,14 @@ import {
   learnerLessonResponseSchema,
   learnerProgressQuerySchema,
   learnerProgressResponseSchema,
+  learnerSaveLessonProgressResponseSchema,
   learnerSaveStepDraftResponseSchema,
   learnerStartLessonResponseSchema,
 } from "@workspace/contracts/learning/learner-api"
 import {
   completeLearnerLessonBodySchema,
   completeLearnerStepParamsSchema,
+  saveLearnerLessonProgressBodySchema,
   saveLearnerStepDraftBodySchema,
   startLearnerLessonBodySchema,
 } from "@workspace/contracts/learning/learner-transition"
@@ -79,6 +81,7 @@ export function registerLearningRoutes<TEnv extends LearningHonoEnv>(
   registerGetLessonRoute(app, input, authenticated)
   registerProgressRoute(app, input, authenticated)
   registerStartLessonRoute(app, input, authenticated)
+  registerSaveLessonProgressRoute(app, input, authenticated)
   registerSaveStepDraftRoute(app, input, authenticated)
   registerCompleteLessonRoute(app, input, authenticated)
 }
@@ -282,6 +285,57 @@ function registerStartLessonRoute<TEnv extends LearningHonoEnv>(
     })
     return context.json(
       learnerStartLessonResponseSchema.parse(unwrapLearningResult(result)),
+      200
+    )
+  })
+}
+
+function registerSaveLessonProgressRoute<TEnv extends LearningHonoEnv>(
+  app: OpenAPIHono<TEnv>,
+  input: LearningRouteDependencies,
+  authenticated: AuthenticatedRouteOptions
+): void {
+  const route = createRoute({
+    method: "post",
+    operationId: "saveLearnerLessonProgress",
+    path: "/learning/lessons/{lessonId}/progress",
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: saveLearnerLessonProgressBodySchema },
+        },
+        required: true,
+      },
+      params: learnerLessonParamsSchema,
+    },
+    responses: authenticatedResponses(
+      jsonResponse(
+        "저장한 레슨 진행 상태입니다.",
+        learnerSaveLessonProgressResponseSchema
+      ),
+      {
+        404: errorResponse("레슨을 찾을 수 없습니다."),
+        409: errorResponse(
+          "커리큘럼 버전이 변경되었거나 진행 단계가 충돌했습니다."
+        ),
+      }
+    ),
+    summary: "레슨 원본 진행 저장",
+    ...authenticated,
+  } satisfies RouteConfig)
+  app.openapi(route, async (context) => {
+    const body = context.req.valid("json")
+    const result = await input.application.saveLessonProgress({
+      completedStepIds: body.completedStepIds,
+      currentStepId: body.currentStepId,
+      expectedCurriculumVersionId: body.expectedCurriculumVersionId,
+      learnerId: context.var.learningLearner.learnerId,
+      lessonId: context.req.valid("param").lessonId,
+    })
+    return context.json(
+      learnerSaveLessonProgressResponseSchema.parse(
+        unwrapLearningResult(result)
+      ),
       200
     )
   })

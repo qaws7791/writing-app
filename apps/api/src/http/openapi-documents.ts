@@ -32,6 +32,7 @@ const learnerDependencies = {
       readCourseDetail: contractOnly,
       readLearnerHome: contractOnly,
       readLesson: contractOnly,
+      saveLessonProgress: contractOnly,
       saveStepDraft: contractOnly,
       startLesson: contractOnly,
     },

@@ -47,11 +47,9 @@ import {
   LessonCompleteDescription,
   LessonCompleteTitle,
   LessonFeedback,
-  LessonFeedbackActions,
   LessonFeedbackBody,
   LessonFeedbackContinueButton,
   LessonFeedbackDescription,
-  LessonFeedbackRetryButton,
   LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
@@ -234,12 +232,10 @@ function renderCheckedFeedbackFooter({
   correct,
   explanation,
   onContinue,
-  onRetry,
 }: {
   correct: boolean
   explanation: string
   onContinue: () => void
-  onRetry: () => void
 }) {
   const tone = correct ? "correct" : "incorrect"
 
@@ -250,18 +246,9 @@ function renderCheckedFeedbackFooter({
           {correct ? "완벽해요!" : "다시 확인해보세요"}
         </LessonFeedbackTitle>
         <LessonFeedbackDescription>{explanation}</LessonFeedbackDescription>
-        {correct ? (
-          <LessonFeedbackContinueButton onClick={onContinue} tone="correct">
-            계속하기
-          </LessonFeedbackContinueButton>
-        ) : (
-          <LessonFeedbackActions>
-            <LessonFeedbackRetryButton onClick={onRetry} />
-            <LessonFeedbackContinueButton onClick={onContinue} tone="incorrect">
-              계속하기
-            </LessonFeedbackContinueButton>
-          </LessonFeedbackActions>
-        )}
+        <LessonFeedbackContinueButton onClick={onContinue} tone={tone}>
+          계속하기
+        </LessonFeedbackContinueButton>
       </LessonFeedbackBody>
     </LessonFeedback>
   )
@@ -418,10 +405,6 @@ function ChoiceStep({
               explanation:
                 "설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setSelected(null)
-                setPhase("answering")
-              },
             })
       }
       onClose={onClose}
@@ -479,10 +462,6 @@ function TokenStep({
               explanation:
                 "반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setSlot(null)
-                setPhase("answering")
-              },
             })
       }
       onClose={onClose}
@@ -586,10 +565,6 @@ function SegmentStep({
               explanation:
                 "“개인의 습관만으로”가 문제의 범위를 너무 좁히는 전제입니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setSelected([])
-                setPhase("answering")
-              },
             })
       }
       onClose={onClose}
@@ -650,10 +625,6 @@ function OrderStep({
               explanation:
                 "주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setOrder([...ORDER_INITIAL])
-                setPhase("answering")
-              },
             })
       }
       onClose={onClose}
@@ -701,12 +672,6 @@ function MatchStep({
   const [active, setActive] = React.useState<string | null>(null)
   const [pairs, setPairs] = React.useState<Record<string, string>>({})
   const [phase, setPhase] = React.useState<GradePhase>("answering")
-
-  const reset = () => {
-    setActive(null)
-    setPairs({})
-    setPhase("answering")
-  }
 
   const pairedRight = new Set(Object.values(pairs))
   const complete = PAIR_LEFT.every((item) => pairs[item.id])
@@ -767,7 +732,6 @@ function MatchStep({
               correct,
               explanation: "주장은 “무엇을”, 근거는 “왜”에 답하는 짝입니다.",
               onContinue: onComplete,
-              onRetry: reset,
             })
       }
       onClose={onClose}
@@ -860,11 +824,6 @@ function CategorizeStep({
   const [placements, setPlacements] = React.useState<Record<string, string>>({})
   const [phase, setPhase] = React.useState<GradePhase>("answering")
 
-  const reset = () => {
-    setPlacements({})
-    setPhase("answering")
-  }
-
   const complete = CLASSIFY_ITEMS.every((item) => placements[item.id])
   const correct =
     phase !== "answering" &&
@@ -895,7 +854,6 @@ function CategorizeStep({
               explanation:
                 "주장은 의견을, 근거는 그 의견을 받치는 사실을 담습니다.",
               onContinue: onComplete,
-              onRetry: reset,
             })
       }
       onClose={onClose}
@@ -1033,14 +991,7 @@ function TrueFalseStep({
 }) {
   const [selected, setSelected] = React.useState<boolean | null>(null)
   const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const [resetNonce, setResetNonce] = React.useState(0)
   const correct = selected === TRUE_FALSE_ANSWER
-
-  const retry = () => {
-    setSelected(null)
-    setPhase("answering")
-    setResetNonce((value) => value + 1)
-  }
 
   return (
     <SessionChrome
@@ -1056,14 +1007,12 @@ function TrueFalseStep({
               explanation:
                 "근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.",
               onContinue: onComplete,
-              onRetry: retry,
             })
       }
       onClose={onClose}
     >
       <Step>
         <TrueFalseAnswer
-          key={resetNonce}
           checked={
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
@@ -1088,17 +1037,10 @@ function SentenceBuildStep({
 }) {
   const [selected, setSelected] = React.useState<readonly string[]>([])
   const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const [resetNonce, setResetNonce] = React.useState(0)
   const correct =
     phase !== "answering" &&
     selected.length === SENTENCE_ANSWER.length &&
     selected.every((id, index) => id === SENTENCE_ANSWER[index])
-
-  const retry = () => {
-    setSelected([])
-    setPhase("answering")
-    setResetNonce((value) => value + 1)
-  }
 
   return (
     <SessionChrome
@@ -1114,14 +1056,12 @@ function SentenceBuildStep({
               explanation:
                 "주장을 짧고 분명한 한 문장으로 두는 것이 기본입니다.",
               onContinue: onComplete,
-              onRetry: retry,
             })
       }
       onClose={onClose}
     >
       <Step>
         <SentenceBuildAnswer
-          key={resetNonce}
           checked={
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
@@ -1146,16 +1086,9 @@ function TranscribeStep({
 }) {
   const [value, setValue] = React.useState("")
   const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const [resetNonce, setResetNonce] = React.useState(0)
   const normalized = (text: string) => text.replace(/\s+/g, " ").trim()
   const correct =
     phase !== "answering" && normalized(value) === normalized(TRANSCRIBE_SOURCE)
-
-  const retry = () => {
-    setValue("")
-    setPhase("answering")
-    setResetNonce((value) => value + 1)
-  }
 
   return (
     <SessionChrome
@@ -1170,14 +1103,12 @@ function TranscribeStep({
               correct,
               explanation: "맞춤법·띄어쓰기·문장부호까지 원문과 같아야 합니다.",
               onContinue: onComplete,
-              onRetry: retry,
             })
       }
       onClose={onClose}
     >
       <Step>
         <TranscribeAnswer
-          key={resetNonce}
           checked={
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
@@ -1204,18 +1135,10 @@ function ErrorCorrectStep({
   )
   const [fixId, setFixId] = React.useState<string | null>(null)
   const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const [resetNonce, setResetNonce] = React.useState(0)
   const correct =
     phase !== "answering" &&
     errorSegmentId === ERROR_CORRECT_SEGMENT &&
     fixId === ERROR_CORRECT_FIX
-
-  const retry = () => {
-    setErrorSegmentId(null)
-    setFixId(null)
-    setPhase("answering")
-    setResetNonce((value) => value + 1)
-  }
 
   return (
     <SessionChrome
@@ -1231,14 +1154,12 @@ function ErrorCorrectStep({
               explanation:
                 "“주장을 되풀이하며”가 오류이고, “사실과 사례로”가 바른 교정입니다.",
               onContinue: onComplete,
-              onRetry: retry,
             })
       }
       onClose={onClose}
     >
       <Step>
         <ErrorCorrectAnswer
-          key={resetNonce}
           checked={
             phase === "answering" ? false : correct ? "correct" : "wrong"
           }
@@ -1267,17 +1188,10 @@ function ParagraphOrganizeStep({
 }) {
   const [selected, setSelected] = React.useState<readonly string[]>([])
   const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const [resetNonce, setResetNonce] = React.useState(0)
   const correct =
     phase !== "answering" &&
     selected.length === PARAGRAPH_ANSWER.length &&
     selected.every((id, index) => id === PARAGRAPH_ANSWER[index])
-
-  const retry = () => {
-    setSelected([])
-    setPhase("answering")
-    setResetNonce((value) => value + 1)
-  }
 
   return (
     <SessionChrome
@@ -1293,14 +1207,12 @@ function ParagraphOrganizeStep({
               explanation:
                 "주제문 → 근거 → 결론 순으로 이어지고, 주제와 무관한 문장은 제외합니다.",
               onContinue: onComplete,
-              onRetry: retry,
             })
       }
       onClose={onClose}
     >
       <Step>
         <ParagraphOrganizeAnswer
-          key={resetNonce}
           cards={[...PARAGRAPH_CARDS]}
           checked={
             phase === "answering" ? false : correct ? "correct" : "wrong"

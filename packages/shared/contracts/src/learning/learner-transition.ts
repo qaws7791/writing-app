@@ -47,6 +47,12 @@ export const completeLearnerLessonBodySchema = z.strictObject({
   totalAttempts: z.number().int().min(0),
 })
 
+export const saveLearnerLessonProgressBodySchema = z.strictObject({
+  completedStepIds: z.array(lessonStepIdSchema),
+  currentStepId: lessonStepIdSchema,
+  expectedCurriculumVersionId: curriculumVersionIdSchema,
+})
+
 export const completeLearnerLessonResultSchema = z.strictObject({
   accuracyPercent: z.number().int().min(0).max(100),
   courseLearning: courseLearningStateSchema,
@@ -74,6 +80,9 @@ export type StartLearnerLessonBody = z.infer<
 >
 export type CompleteLearnerLessonBody = z.infer<
   typeof completeLearnerLessonBodySchema
+>
+export type SaveLearnerLessonProgressBody = z.infer<
+  typeof saveLearnerLessonProgressBodySchema
 >
 export type CompleteLearnerLessonResult = z.infer<
   typeof completeLearnerLessonResultSchema

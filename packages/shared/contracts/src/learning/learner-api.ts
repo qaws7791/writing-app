@@ -24,6 +24,8 @@ export const learnerCourseCategoriesResponseSchema =
 export const learnerStartLessonResponseSchema = startLearnerLessonResponseSchema
 export const learnerSaveStepDraftResponseSchema =
   saveLearnerStepDraftResponseSchema
+export const learnerSaveLessonProgressResponseSchema =
+  startLearnerLessonResponseSchema
 export const learnerCompleteLessonResponseSchema =
   completeLearnerLessonResultSchema
 
@@ -56,6 +58,9 @@ export type LearnerStartLessonResponse = z.infer<
 >
 export type LearnerSaveStepDraftResponse = z.infer<
   typeof learnerSaveStepDraftResponseSchema
+>
+export type LearnerSaveLessonProgressResponse = z.infer<
+  typeof learnerSaveLessonProgressResponseSchema
 >
 export type LearnerCompleteLessonResponse = z.infer<
   typeof learnerCompleteLessonResponseSchema

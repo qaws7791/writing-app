@@ -16,6 +16,7 @@ import adminMcpStaticAccessTokensSql from "../../drizzle/0006-admin-mcp-static-a
 import dropAiFeedbackSql from "../../drizzle/0007-drop-ai-feedback.sql" with { type: "text" }
 import purposeWritingTasksSql from "../../drizzle/0008-purpose-writing-tasks.sql" with { type: "text" }
 import removeWritingCompleteSql from "../../drizzle/0009-remove-writing-complete.sql" with { type: "text" }
+import lessonCompletedStepIdsSql from "../../drizzle/0010-lesson-completed-step-ids.sql" with { type: "text" }
 import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
 const migrationSqlByFileName = {
@@ -30,6 +31,7 @@ const migrationSqlByFileName = {
   "0007-drop-ai-feedback.sql": dropAiFeedbackSql,
   "0008-purpose-writing-tasks.sql": purposeWritingTasksSql,
   "0009-remove-writing-complete.sql": removeWritingCompleteSql,
+  "0010-lesson-completed-step-ids.sql": lessonCompletedStepIdsSql,
 } as const
 
 const migrationSources = applicationMigrationManifest.map((migration) => ({

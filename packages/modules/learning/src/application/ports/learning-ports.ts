@@ -13,6 +13,8 @@ import type {
   CompleteLearnerLessonCommand,
   CompleteLearnerLessonTransitionResult,
   LearnerTransitionError,
+  SaveLearnerLessonProgressCommand,
+  SaveLearnerLessonProgressResult,
   SaveLearnerStepDraftCommand,
   SaveLearnerStepDraftResult,
   StartLearnerLessonCommand,
@@ -74,6 +76,10 @@ export type LearningTransitionRepository = Readonly<{
     readonly learnerId: LearnerId
     readonly lessonId: LessonId
   }) => Promise<LearnerPinnedScope | null>
+  saveLessonProgress: (
+    command: SaveLearnerLessonProgressCommand,
+    curriculum: LearningCurriculum
+  ) => Promise<Result<SaveLearnerLessonProgressResult, LearnerTransitionError>>
   saveStepDraft: (
     command: SaveLearnerStepDraftCommand,
     curriculum: LearningCurriculum

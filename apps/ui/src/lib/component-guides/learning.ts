@@ -1438,16 +1438,13 @@ export function LessonSession() {
       {
         id: "feedback-incorrect",
         title: "오답 피드백 바텀시트",
-        description: "오답은 warning 바텀시트와 다시 시도 아이콘, 계속하기 CTA를 함께 둡니다.",
+        description: "오답은 warning 바텀시트와 계속하기 CTA를 둡니다.",
         code: `<LessonFooter className="bg-transparent pt-0 pb-0 backdrop-blur-none">
   <LessonFeedback tone="incorrect">
     <LessonFeedbackBody>
       <LessonFeedbackTitle>다시 확인해보세요</LessonFeedbackTitle>
       <LessonFeedbackDescription>근거는 주장을 뒷받침하는 사실이어야 합니다.</LessonFeedbackDescription>
-      <LessonFeedbackActions>
-        <LessonFeedbackRetryButton />
-        <LessonFeedbackContinueButton tone="incorrect">계속하기</LessonFeedbackContinueButton>
-      </LessonFeedbackActions>
+      <LessonFeedbackContinueButton tone="incorrect">계속하기</LessonFeedbackContinueButton>
     </LessonFeedbackBody>
   </LessonFeedback>
 </LessonFooter>`,

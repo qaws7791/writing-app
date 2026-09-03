@@ -20,6 +20,8 @@ import { useLessonDraftSync } from "@/features/lesson-session/hooks/use-lesson-d
 import { createLessonSessionEffects } from "@/features/lesson-session/api/lesson-session-effect-adapter"
 import {
   createLessonSessionState,
+  remainingLessonStepIds,
+  lessonProgressPercent,
   transitionLessonSession,
   type LessonSessionState,
 } from "@/features/lesson-session/model/lesson-session-machine"
@@ -52,6 +54,7 @@ export function useLessonSession({
   const [sessionState, send] = useReducer(transitionLessonSession, initialState)
   const sessionStateRef = useRef(sessionState)
   const sessionStartTimeRef = useRef<number | null>(null)
+  const startRequestLockRef = useRef(false)
 
   const applyServerDraft = useCallback(
     (stepId: string, answer: LearnerStepDraftAnswer | null) => {
@@ -130,22 +133,33 @@ export function useLessonSession({
     sessionState.status === "complete"
       ? 100
       : isActive
-        ? lesson.steps.length > 0
-          ? Math.round(
-              (sessionState.completedStepIds.length / lesson.steps.length) * 100
-            )
-          : 0
+        ? lessonProgressPercent(
+            sessionState.completedStepIds.length,
+            lesson.steps.length
+          )
         : 0
 
   const startLesson = useCallback(async (): Promise<void> => {
+    if (startRequestLockRef.current) return
     if (sessionStateRef.current.status !== "not-started") return
 
+    startRequestLockRef.current = true
     sessionStartTimeRef.current = Date.now()
     send({ type: "START_REQUESTED" })
     const result = await effects.start()
-    if (!isMountedRef.current) return
+    if (!isMountedRef.current) {
+      startRequestLockRef.current = false
+      return
+    }
+
+    if (result.status === "aborted") {
+      startRequestLockRef.current = false
+      send({ message: null, type: "START_FAILED" })
+      return
+    }
 
     if (result.status === "error") {
+      startRequestLockRef.current = false
       send({
         message: result.message || LESSON_START_ERROR,
         type: "START_FAILED",
@@ -154,6 +168,7 @@ export function useLessonSession({
     }
 
     if (result.learning.status !== "in_progress") {
+      startRequestLockRef.current = false
       send({ message: LESSON_START_ERROR, type: "START_FAILED" })
       return
     }
@@ -161,9 +176,8 @@ export function useLessonSession({
     applyServerDrafts(result.learning.drafts)
     send({
       answerPayloads: toDraftAnswerPayloads(result.learning.drafts),
-      currentStepIndex: result.learning.currentStepIndex,
-      initialStepIds: lesson.steps.map((s) => s.id),
-      progressPercent: result.learning.progressPercent,
+      completedStepIds: result.learning.completedStepIds,
+      originalStepIds: lesson.steps.map((s) => s.id),
       type: "START_SUCCEEDED",
     })
   }, [applyServerDrafts, effects, lesson.steps, send])
@@ -194,10 +208,11 @@ export function useLessonSession({
             currentStep,
             submission.data
           )
+          if (evaluation === null) return
           send({
-            evaluation: evaluation ?? null,
-            explanation: evaluation?.explanation,
-            isCorrect: evaluation?.correct ?? true,
+            evaluation,
+            explanation: evaluation.explanation,
+            isCorrect: evaluation.correct,
             stepId: currentStep.id,
             totalOriginalSteps: lesson.steps.length,
             type: "STEP_EVALUATED",
@@ -231,10 +246,11 @@ export function useLessonSession({
     if (!submission.success) return
 
     const evaluation = evaluateStepSubmission(step, submission.data)
+    if (evaluation === null) return
     send({
-      evaluation: evaluation ?? null,
-      explanation: evaluation?.explanation,
-      isCorrect: evaluation?.correct ?? true,
+      evaluation,
+      explanation: evaluation.explanation,
+      isCorrect: evaluation.correct,
       stepId: step.id,
       totalOriginalSteps: lesson.steps.length,
       type: "STEP_EVALUATED",
@@ -250,7 +266,25 @@ export function useLessonSession({
       if (currentStep !== null) {
         discardSubmittedDraft(currentStep.id)
       }
+      const shouldPersistProgress =
+        state.checked !== false && state.checked.correct
       send({ type: "CONTINUE_REQUESTED" })
+      if (shouldPersistProgress) {
+        const originalStepIds = lesson.steps.map((step) => step.id)
+        const nextOriginalStepId = remainingLessonStepIds(
+          originalStepIds,
+          state.completedStepIds
+        )[0]
+        if (nextOriginalStepId !== undefined) {
+          void effects.saveProgress({
+            request: {
+              completedStepIds: [...state.completedStepIds] as LessonStepId[],
+              currentStepId: nextOriginalStepId as LessonStepId,
+              expectedCurriculumVersionId: lesson.version.curriculumVersionId,
+            },
+          })
+        }
+      }
       return
     }
 
@@ -326,27 +360,19 @@ function resolveInitialSessionState(lesson: LearnerLesson): LessonSessionState {
   const stepIds = lesson.steps.map((s) => s.id)
   switch (lesson.learning.status) {
     case "not_started":
-      return createLessonSessionState(0, false, false, {}, 0, stepIds)
+      return createLessonSessionState(false, false, {}, stepIds)
     case "in_progress":
       return createLessonSessionState(
-        lesson.learning.currentStepIndex,
         true,
         false,
         toDraftAnswerPayloads(lesson.drafts),
-        lesson.learning.progressPercent,
-        stepIds
+        stepIds,
+        lesson.learning.completedStepIds
       )
     case "completed":
-      return createLessonSessionState(
-        lesson.steps.length - 1,
-        true,
-        true,
-        {},
-        100,
-        stepIds
-      )
+      return createLessonSessionState(true, true, {}, stepIds)
     case "locked":
-      return createLessonSessionState(0, false, false, {}, 0, stepIds)
+      return createLessonSessionState(false, false, {}, stepIds)
   }
 }
 

@@ -78,11 +78,9 @@ import {
   LessonCompleteDescription,
   LessonCompleteTitle,
   LessonFeedback,
-  LessonFeedbackActions,
   LessonFeedbackBody,
   LessonFeedbackContinueButton,
   LessonFeedbackDescription,
-  LessonFeedbackRetryButton,
   LessonFeedbackTitle,
   LessonFooter,
   LessonHeader,
@@ -196,12 +194,10 @@ function renderCheckedFeedbackFooter({
   correct,
   explanation,
   onContinue,
-  onRetry,
 }: {
   correct: boolean;
   explanation: string;
   onContinue: () => void;
-  onRetry: () => void;
 }) {
   const tone = correct ? "correct" : "incorrect";
 
@@ -210,18 +206,9 @@ function renderCheckedFeedbackFooter({
       <LessonFeedbackBody>
         <LessonFeedbackTitle>{correct ? "완벽해요!" : "다시 확인해보세요"}</LessonFeedbackTitle>
         <LessonFeedbackDescription>{explanation}</LessonFeedbackDescription>
-        {correct ? (
-          <LessonFeedbackContinueButton onClick={onContinue} tone="correct">
-            계속하기
-          </LessonFeedbackContinueButton>
-        ) : (
-          <LessonFeedbackActions>
-            <LessonFeedbackRetryButton onClick={onRetry} />
-            <LessonFeedbackContinueButton onClick={onContinue} tone="incorrect">
-              계속하기
-            </LessonFeedbackContinueButton>
-          </LessonFeedbackActions>
-        )}
+        <LessonFeedbackContinueButton onClick={onContinue} tone={tone}>
+          계속하기
+        </LessonFeedbackContinueButton>
       </LessonFeedbackBody>
     </LessonFeedback>
   );
@@ -417,7 +404,6 @@ function ChoiceDemo() {
               correct,
               explanation: "설득문은 주장을 먼저 두고 근거로 뒷받침할 때 읽기 쉬워집니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -479,7 +465,6 @@ function VerdictDemo() {
               correct,
               explanation: "근거는 주장을 반복하는 문장이 아니라 독자가 믿을 재료여야 합니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -564,7 +549,6 @@ function TokenDemo() {
               correct,
               explanation: "반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -660,7 +644,6 @@ function SegmentDemo() {
               correct,
               explanation: "“개인의 습관만으로”가 문제의 범위를 너무 좁히는 전제입니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -723,7 +706,6 @@ function SortableDemo() {
               correct,
               explanation: "주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -834,7 +816,6 @@ function PairDemo() {
               correct,
               explanation: "주장은 “무엇을”, 근거는 “왜”에 답하는 짝입니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -942,7 +923,6 @@ function ClassifyDemo() {
               correct,
               explanation: "주장은 의견을, 근거는 그 의견을 받치는 사실을 담습니다.",
               onContinue: () => setPhase("done"),
-              onRetry: reset,
             })
       }
       onClose={reset}
@@ -1523,7 +1503,6 @@ function FlowReading({
 function FlowChoice({
   stepIndex,
   onComplete,
-  onReset,
   onClose,
 }: {
   stepIndex: number;
@@ -1548,11 +1527,6 @@ function FlowChoice({
               correct,
               explanation: "주장을 먼저 두고 근거로 뒷받침하는 구조가 기본입니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setSelected(null);
-                setPhase("answering");
-                onReset();
-              },
             })
       }
       onClose={onClose}
@@ -1594,7 +1568,6 @@ function FlowChoice({
 function FlowToken({
   stepIndex,
   onComplete,
-  onReset,
   onClose,
 }: {
   stepIndex: number;
@@ -1619,11 +1592,6 @@ function FlowToken({
               correct,
               explanation: "반박은 상대 주장의 약한 고리를 드러낼 때 설득력이 커집니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setSlot(null);
-                setPhase("answering");
-                onReset();
-              },
             })
       }
       onClose={onClose}
@@ -1671,7 +1639,6 @@ function FlowToken({
 function FlowSortable({
   stepIndex,
   onComplete,
-  onReset,
   onClose,
 }: {
   stepIndex: number;
@@ -1695,11 +1662,6 @@ function FlowSortable({
               correct,
               explanation: "주장 → 근거 → 결론 순서가 가장 안정적인 기본 골격입니다.",
               onContinue: onComplete,
-              onRetry: () => {
-                setOrder(["reason", "close", "claim"]);
-                setPhase("answering");
-                onReset();
-              },
             })
       }
       onClose={onClose}

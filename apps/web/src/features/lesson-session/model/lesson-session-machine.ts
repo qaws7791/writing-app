@@ -39,12 +39,11 @@ export type LessonSessionEvent =
   | { readonly type: "START_REQUESTED" }
   | {
       readonly answerPayloads: Readonly<Record<string, LearnerStepDraftAnswer>>
-      readonly currentStepIndex: number
-      readonly initialStepIds: readonly string[]
-      readonly progressPercent: number
+      readonly completedStepIds: readonly string[]
+      readonly originalStepIds: readonly string[]
       readonly type: "START_SUCCEEDED"
     }
-  | { readonly message: string; readonly type: "START_FAILED" }
+  | { readonly message: string | null; readonly type: "START_FAILED" }
   | {
       readonly payload: LearnerStepDraftAnswer
       readonly stepId: string
@@ -80,18 +79,34 @@ class LessonSessionTransitionError extends Error {
   }
 }
 
+export function remainingLessonStepIds(
+  originalStepIds: readonly string[],
+  completedStepIds: readonly string[]
+): readonly string[] {
+  const completed = new Set(completedStepIds)
+  return originalStepIds.filter((stepId) => !completed.has(stepId))
+}
+
+export function lessonProgressPercent(
+  completedCount: number,
+  totalOriginalSteps: number
+): number {
+  return totalOriginalSteps > 0
+    ? Math.round((completedCount / totalOriginalSteps) * 100)
+    : 0
+}
+
 export function createLessonSessionState(
-  currentStepIndex: number,
   hasStarted: boolean,
   isComplete: boolean,
   initialDrafts: Readonly<Record<string, LearnerStepDraftAnswer>>,
-  initialProgressPercent: number,
-  initialStepIds: readonly string[]
+  originalStepIds: readonly string[],
+  completedStepIds: readonly string[] = []
 ): LessonSessionState {
   if (isComplete) {
     return {
       completion: null,
-      currentStepIndex,
+      currentStepIndex: Math.max(0, originalStepIds.length - 1),
       status: "complete",
     }
   }
@@ -103,19 +118,11 @@ export function createLessonSessionState(
     }
   }
 
-  return {
-    activity: "idle",
-    answerPayloads: initialDrafts,
-    checked: false,
-    completedStepIds: [],
-    currentQueueIndex: 0,
-    mistakeCount: 0,
-    progressPercent: initialProgressPercent,
-    status: "active",
-    stepQueue: initialStepIds,
-    submitError: null,
-    totalAttempts: 0,
-  }
+  return createActiveLessonSession(
+    initialDrafts,
+    completedStepIds,
+    originalStepIds
+  )
 }
 
 export function transitionLessonSession(
@@ -123,6 +130,9 @@ export function transitionLessonSession(
   event: LessonSessionEvent
 ): LessonSessionState {
   if (event.type === "START_REQUESTED") {
+    if (state.status === "starting") {
+      return state
+    }
     if (state.status !== "not-started") {
       throw new LessonSessionTransitionError(state, event)
     }
@@ -146,23 +156,27 @@ export function transitionLessonSession(
       throw new LessonSessionTransitionError(state, event)
     }
 
-    return {
-      activity: "idle",
-      answerPayloads: event.answerPayloads,
-      checked: false,
-      completedStepIds: [],
-      currentQueueIndex: 0,
-      mistakeCount: 0,
-      progressPercent: event.progressPercent,
-      status: "active",
-      stepQueue: event.initialStepIds,
-      submitError: null,
-      totalAttempts: 0,
-    }
+    return createActiveLessonSession(
+      event.answerPayloads,
+      event.completedStepIds,
+      event.originalStepIds
+    )
   }
 
   if (state.status !== "active") {
     throw new LessonSessionTransitionError(state, event)
+  }
+
+  if (state.activity === "submitting") {
+    if (
+      event.type === "ANSWER_PAYLOAD_CHANGED" ||
+      event.type === "DRAFT_RECONCILED" ||
+      event.type === "STEP_EVALUATED" ||
+      event.type === "CONTINUE_REQUESTED" ||
+      event.type === "COMPLETE_LESSON_REQUESTED"
+    ) {
+      return state
+    }
   }
 
   if (event.type === "ANSWER_PAYLOAD_CHANGED" && state.activity === "idle") {
@@ -199,17 +213,19 @@ export function transitionLessonSession(
   }
 
   if (event.type === "STEP_EVALUATED" && state.activity === "idle") {
+    if (state.checked !== false) {
+      return state
+    }
+
     const totalAttempts = state.totalAttempts + 1
     if (event.isCorrect) {
       const completedStepIds = state.completedStepIds.includes(event.stepId)
         ? state.completedStepIds
         : [...state.completedStepIds, event.stepId]
-      const progressPercent =
-        event.totalOriginalSteps > 0
-          ? Math.round(
-              (completedStepIds.length / event.totalOriginalSteps) * 100
-            )
-          : 100
+      const progressPercent = lessonProgressPercent(
+        completedStepIds.length,
+        event.totalOriginalSteps
+      )
 
       return {
         ...state,
@@ -225,7 +241,6 @@ export function transitionLessonSession(
       }
     }
 
-    // When incorrect: re-queue current step to the end of the queue
     const stepQueue = [...state.stepQueue, event.stepId]
     const mistakeCount = state.mistakeCount + 1
 
@@ -247,9 +262,11 @@ export function transitionLessonSession(
     const nextQueueIndex = state.currentQueueIndex + 1
     if (nextQueueIndex < state.stepQueue.length) {
       const nextStepId = state.stepQueue[nextQueueIndex]
-      // Clear answer payload for next step if it's a re-queued step
       const answerPayloads = { ...state.answerPayloads }
-      if (nextStepId !== undefined) {
+      if (
+        nextStepId !== undefined &&
+        isRequeuedStepCopy(state.stepQueue, nextQueueIndex)
+      ) {
         delete answerPayloads[nextStepId]
       }
 
@@ -287,4 +304,36 @@ export function transitionLessonSession(
   }
 
   throw new LessonSessionTransitionError(state, event)
+}
+
+function createActiveLessonSession(
+  answerPayloads: Readonly<Record<string, LearnerStepDraftAnswer>>,
+  completedStepIds: readonly string[],
+  originalStepIds: readonly string[]
+): ActiveLessonSession & { readonly status: "active" } {
+  return {
+    activity: "idle",
+    answerPayloads,
+    checked: false,
+    completedStepIds,
+    currentQueueIndex: 0,
+    mistakeCount: 0,
+    progressPercent: lessonProgressPercent(
+      completedStepIds.length,
+      originalStepIds.length
+    ),
+    status: "active",
+    stepQueue: remainingLessonStepIds(originalStepIds, completedStepIds),
+    submitError: null,
+    totalAttempts: 0,
+  }
+}
+
+function isRequeuedStepCopy(
+  stepQueue: readonly string[],
+  nextQueueIndex: number
+): boolean {
+  const nextStepId = stepQueue[nextQueueIndex]
+  if (nextStepId === undefined) return false
+  return stepQueue.slice(0, nextQueueIndex).includes(nextStepId)
 }

@@ -21,6 +21,7 @@ import type {
 import type {
   CompleteLearnerLessonTransitionResult,
   LearnerTransitionError,
+  SaveLearnerLessonProgressResult,
   SaveLearnerStepDraftResult,
   StartLearnerLessonResult,
 } from "#learning/domain/learner-transition"
@@ -41,6 +42,14 @@ type CompleteLearningLessonCommand = Readonly<{
   lessonId: LessonId
   mistakeCount: number
   totalAttempts: number
+}>
+
+type SaveLearningLessonProgressCommand = Readonly<{
+  completedStepIds: readonly LessonStepId[]
+  currentStepId: LessonStepId
+  expectedCurriculumVersionId: CurriculumVersionId
+  learnerId: LearnerId
+  lessonId: LessonId
 }>
 
 type SaveLearningStepDraftCommand = Readonly<{
@@ -87,6 +96,9 @@ export type LearningApplication = Readonly<{
     readonly learnerId: LearnerId
     readonly lessonId: LessonId
   }) => Promise<Result<LearnerLesson, LearningReadError>>
+  saveLessonProgress: (
+    command: SaveLearningLessonProgressCommand
+  ) => Promise<Result<SaveLearnerLessonProgressResult, LearningCommandError>>
   saveStepDraft: (
     command: SaveLearningStepDraftCommand
   ) => Promise<Result<SaveLearnerStepDraftResult, LearningCommandError>>
@@ -132,6 +144,29 @@ export function createLearningApplication(
         case "not-found":
           return err({ kind: "lesson-not-found" })
       }
+    },
+    async saveLessonProgress(command) {
+      const authorization = await authorizeLearner(
+        dependencies,
+        command.learnerId
+      )
+      if (authorization.isErr()) return err(authorization.error)
+      const curriculum = await readLessonCurriculum(dependencies, command)
+      if (curriculum === null) {
+        return err({ kind: "lesson-not-found", lessonId: command.lessonId })
+      }
+      const saved = await dependencies.transitionRepository.saveLessonProgress(
+        {
+          completedStepIds: command.completedStepIds,
+          currentStepId: command.currentStepId,
+          expectedCurriculumVersionId: command.expectedCurriculumVersionId,
+          lessonId: command.lessonId,
+          occurredAt: dependencies.clock.now(),
+          userId: command.learnerId,
+        },
+        curriculum
+      )
+      return saved.isErr() ? err(saved.error) : ok(saved.value)
     },
     async saveStepDraft(command) {
       const authorization = await authorizeLearner(

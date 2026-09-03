@@ -258,6 +258,7 @@ function createLesson(
     drafts: [...drafts],
     id: "lesson-1",
     learning: {
+      completedStepIds: [],
       completedSteps: 0,
       currentStepId: "step-mc",
       currentStepIndex: 0,

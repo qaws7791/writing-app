@@ -108,6 +108,9 @@ export const learnerLessonProgress = sqliteTable(
   "learner_lesson_progress",
   {
     completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+    completedStepIdsJson: text("completed_step_ids_json")
+      .notNull()
+      .default("[]"),
     courseId: text("course_id").notNull(),
     curriculumVersionId: text("curriculum_version_id").notNull(),
     currentStepId: text("current_step_id").notNull(),
@@ -149,6 +152,10 @@ export const learnerLessonProgress = sqliteTable(
     check(
       "learner_lesson_progress_status_check",
       sql`${table.status} IN ('in_progress', 'completed')`
+    ),
+    check(
+      "learner_lesson_progress_completed_step_ids_json_check",
+      sql`json_valid(${table.completedStepIdsJson}) AND json_type(${table.completedStepIdsJson}) = 'array'`
     ),
     index("learner_lesson_progress_user_course_idx").on(
       table.userId,

@@ -19,7 +19,7 @@
 - `@workspace/contracts/learning/learner-content`와 `@workspace/contracts/learning/learner-transition`은 공개 레슨, 정답 키와 해설을 포함한 스텝 투영, 타입별 draft answer, stable item ID 제출, 평가 결과 및 레슨 완료 전이 계약을 소유한다.
 - `@workspace/contracts/learning/step-grading`은 9개 상호작용 스텝의 정답 여부와 항목별 verdict를 0ms 순수 함수로 판정하는 `evaluateStepSubmission`을 소유한다.
 - `@workspace/learning`은 레슨 전체 완료, 정답률 및 소요시간 계산, 진도율 산정, 잠금 해제, 코스 완료 및 학습 활동 기록을 소유한다.
-- application 공개 경계는 `readLearnerHome`, `readCourseCatalog`, `readCourseDetail`, `readLesson`, `startLesson`, `saveStepDraft`, `completeLesson`을 중심으로 구성한다. HTTP route는 application을 직접 호출한다.
+- application 공개 경계는 `readLearnerHome`, `readCourseCatalog`, `readCourseDetail`, `readLesson`, `startLesson`, `saveLessonProgress`, `saveStepDraft`, `completeLesson`을 중심으로 구성한다. HTTP route는 application을 직접 호출한다.
 - 레슨 완료 정책(`planCompleteLesson`)은 lesson scope, 잠금, 기존 진행, 제출된 완료 스텝 목록과 시도/오답 횟수 snapshot을 받아 정답률 산정, 레슨 완료, 코스 완료, 학습 활동 일자 기록 effect를 계획한다. Drizzle repository는 한 transaction에서 load → decide → apply를 수행한다.
 - 학습자 레슨 조회는 `presentLearnerStep`이 정답 키와 해설을 포함하여 클라이언트에 투영하며, 선택지·낱말·타일 등은 HMAC 결정적 순열로 배열한다.
 

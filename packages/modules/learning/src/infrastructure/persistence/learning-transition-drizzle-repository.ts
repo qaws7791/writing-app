@@ -27,6 +27,12 @@ import {
 } from "#learning/infrastructure/persistence/schema"
 import { readLearnerStepDrafts } from "#learning/infrastructure/persistence/learner-step-draft-drizzle"
 import {
+  inProgressLearningProjection,
+  mergeCompletedStepIds,
+  parseCompletedStepIds,
+  serializeCompletedStepIds,
+} from "#learning/infrastructure/persistence/completed-step-ids"
+import {
   planCompleteLesson,
   type CompleteLessonEffect,
   type CompleteLessonPlan,
@@ -41,6 +47,8 @@ import type {
   CompleteLearnerLessonTransitionResult,
   LearnerLessonScope,
   LearnerTransitionError,
+  SaveLearnerLessonProgressCommand,
+  SaveLearnerLessonProgressResult,
   SaveLearnerStepDraftCommand,
   SaveLearnerStepDraftResult,
   StartLearnerLessonCommand,
@@ -85,6 +93,12 @@ export function createDrizzleLearnerTransitionRepository(
     },
     async findPinnedScope(input) {
       return readPinnedLearningScope(db, input)
+    },
+    async saveLessonProgress(command, curriculum) {
+      return db.transaction(
+        (transaction) => saveLessonProgress(transaction, command, curriculum),
+        { behavior: "immediate" }
+      )
     },
     async saveStepDraft(command, curriculum) {
       return db.transaction(
@@ -133,11 +147,7 @@ function saveStepDraft(
     })
   }
   const progress = readLessonProgress(transaction, command.userId, scope)
-  if (
-    progress === null ||
-    progress.status !== inProgressStatus ||
-    progress.currentStepId !== command.stepId
-  ) {
+  if (progress === null || progress.status !== inProgressStatus) {
     return err({
       kind: "step-sequence-conflict",
       lessonId: command.lessonId,
@@ -337,6 +347,7 @@ function applyStartLessonEffect(
           courseId: effect.courseId,
           curriculumVersionId: effect.curriculumVersionId,
           currentStepId: effect.firstStepId,
+          completedStepIdsJson: serializeCompletedStepIds([]),
           lessonId: effect.lessonId,
           startedAt: effect.occurredAt,
           status: inProgressStatus,
@@ -356,6 +367,102 @@ function applyStartLessonEffect(
         userId: effect.userId,
       })
   }
+}
+
+function saveLessonProgress(
+  transaction: LearningTransaction,
+  command: SaveLearnerLessonProgressCommand,
+  curriculum: LearningCurriculum
+): Result<SaveLearnerLessonProgressResult, LearnerTransitionError> {
+  const scope = findPinnedLessonScope(transaction, command, curriculum)
+  if (scope === null) {
+    return err(
+      findCurriculumLesson(curriculum, command.lessonId) === null
+        ? { kind: "lesson-not-found", lessonId: command.lessonId }
+        : { kind: "lesson-locked", lessonId: command.lessonId }
+    )
+  }
+  if (scope.curriculumVersionId !== command.expectedCurriculumVersionId) {
+    return err({
+      kind: "curriculum-version-changed",
+      lessonId: command.lessonId,
+    })
+  }
+
+  const progress = readLessonProgress(transaction, command.userId, scope)
+  if (progress === null || progress.status !== inProgressStatus) {
+    return err({
+      kind: "step-sequence-conflict",
+      lessonId: command.lessonId,
+      stepId: command.currentStepId,
+    })
+  }
+
+  const orderedStepIds = readLessonStepIds(curriculum, scope)
+  const validStepIds = new Set(orderedStepIds)
+  if (
+    !validStepIds.has(command.currentStepId) ||
+    command.completedStepIds.some((stepId) => !validStepIds.has(stepId)) ||
+    command.completedStepIds.includes(command.currentStepId)
+  ) {
+    return err({
+      kind: "step-sequence-conflict",
+      lessonId: command.lessonId,
+      stepId: command.currentStepId,
+    })
+  }
+
+  const storedCompletedStepIds = parseCompletedStepIds(
+    progress.completedStepIdsJson,
+    validStepIds
+  )
+  const completedStepIds = mergeCompletedStepIds(
+    storedCompletedStepIds,
+    command.completedStepIds,
+    orderedStepIds
+  )
+  if (completedStepIds.includes(command.currentStepId)) {
+    return err({
+      kind: "step-sequence-conflict",
+      lessonId: command.lessonId,
+      stepId: command.currentStepId,
+    })
+  }
+
+  transaction
+    .update(learnerLessonProgress)
+    .set({
+      completedStepIdsJson: serializeCompletedStepIds(completedStepIds),
+      currentStepId: command.currentStepId,
+      updatedAt: command.occurredAt,
+    })
+    .where(
+      and(
+        eq(learnerLessonProgress.userId, command.userId),
+        eq(
+          learnerLessonProgress.curriculumVersionId,
+          scope.curriculumVersionId
+        ),
+        eq(learnerLessonProgress.lessonId, scope.lessonId),
+        eq(learnerLessonProgress.status, inProgressStatus)
+      )
+    )
+    .run()
+
+  return ok({
+    ...readLessonLearningState(
+      transaction,
+      command.userId,
+      scope,
+      orderedStepIds.map((id) => ({ id }))
+    ),
+    drafts: readLearnerStepDrafts(transaction, {
+      courseId: scope.courseId,
+      curriculumVersionId: scope.curriculumVersionId,
+      lessonId: scope.lessonId,
+      userId: command.userId,
+    }),
+  })
 }
 
 function completeLesson(
@@ -694,6 +801,7 @@ function readLessonProgress(
     db
       .select({
         completedAt: learnerLessonProgress.completedAt,
+        completedStepIdsJson: learnerLessonProgress.completedStepIdsJson,
         currentStepId: learnerLessonProgress.currentStepId,
         status: learnerLessonProgress.status,
         updatedAt: learnerLessonProgress.updatedAt,
@@ -743,18 +851,21 @@ function readLessonLearningState(
       version,
     })
   }
-  const currentStepIndex = steps.findIndex(
-    (step) => step.id === progress.currentStepId
-  )
-  if (currentStepIndex < 0) throw new Error("Stored current step was not found")
+  const orderedStepIds = steps.map((step) => lessonStepIdSchema.parse(step.id))
+  const validStepIds = new Set(orderedStepIds)
+  const projection = inProgressLearningProjection({
+    completedStepIds: parseCompletedStepIds(
+      progress.completedStepIdsJson,
+      validStepIds
+    ),
+    currentStepId: lessonStepIdSchema.parse(progress.currentStepId),
+    orderedStepIds,
+  })
+  if (steps.findIndex((step) => step.id === progress.currentStepId) < 0) {
+    throw new Error("Stored current step was not found")
+  }
   return inProgressLessonLearningStateSchema.parse({
-    completedSteps: currentStepIndex,
-    currentStepId: progress.currentStepId,
-    currentStepIndex,
-    progressPercent:
-      steps.length === 0
-        ? 0
-        : Math.round((currentStepIndex / steps.length) * 100),
+    ...projection,
     status: "in_progress",
     totalSteps: steps.length,
     version,

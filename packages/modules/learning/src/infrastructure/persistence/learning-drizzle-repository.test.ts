@@ -153,6 +153,28 @@ const secondCurriculum: LearningCurriculum = {
   title: "개정 학습 코스",
 }
 
+const extraFirstLessonStepId = lessonStepIdSchema.parse("step-1b")
+
+const twoStepCurriculum: LearningCurriculum = {
+  ...curriculum,
+  lessons: [
+    {
+      ...firstCurriculumLesson,
+      steps: [
+        ...firstCurriculumLesson.steps,
+        {
+          body: "본문 1b",
+          id: extraFirstLessonStepId,
+          sortOrder: 2,
+          title: "첫 레슨 둘째 단계",
+          type: "READING",
+        },
+      ],
+    },
+    secondCurriculumLesson,
+  ],
+}
+
 const startFirstLesson = {
   expectedCurriculumVersionId: firstCurriculumVersionId,
   lessonId: firstLessonId,
@@ -265,6 +287,110 @@ describe("learning SQLite transition repository", () => {
       ])
     }, writingCurriculum)
   })
+
+  it("진행 중인 레슨의 다른 원본 스텝 draft를 허용한다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(startFirstLesson, twoStepCurriculum)
+      const saved = await repository.saveStepDraft(
+        {
+          answer: { selectedOptionId: optionA, type: "MULTIPLE_CHOICE" },
+          expectedCurriculumVersionId: firstCurriculumVersionId,
+          expectedVersion: null,
+          lessonId: firstLessonId,
+          occurredAt,
+          stepId: extraFirstLessonStepId,
+          userId: learnerId,
+        },
+        {
+          ...twoStepCurriculum,
+          lessons: [
+            {
+              ...firstCurriculumLesson,
+              steps: [
+                {
+                  correct: optionB,
+                  explanation: "해설",
+                  id: firstStepId,
+                  options: [
+                    { id: optionA, text: "첫째" },
+                    { id: optionB, text: "둘째" },
+                  ],
+                  question: "정답은?",
+                  sortOrder: 1,
+                  type: "MULTIPLE_CHOICE",
+                },
+                {
+                  correct: optionA,
+                  explanation: "둘째 해설",
+                  id: extraFirstLessonStepId,
+                  options: [
+                    { id: optionA, text: "첫째" },
+                    { id: optionB, text: "둘째" },
+                  ],
+                  question: "둘째 정답은?",
+                  sortOrder: 2,
+                  type: "MULTIPLE_CHOICE",
+                },
+              ],
+            },
+            secondCurriculumLesson,
+          ],
+        }
+      )
+
+      expect(saved.isOk()).toBe(true)
+      expect(saved._unsafeUnwrap()).toMatchObject({
+        stepId: extraFirstLessonStepId,
+        version: 0,
+      })
+    }, twoStepCurriculum)
+  })
+
+  it("원본 완료 스텝을 저장한 뒤 조회하면 그 집합으로 hydrate한다", async () => {
+    await withLearningDatabase(async (fixture) => {
+      const repository = createDrizzleLearnerTransitionRepository(
+        fixture.database.db
+      )
+      await repository.startLesson(startFirstLesson, twoStepCurriculum)
+      const persisted = await repository.saveLessonProgress(
+        {
+          completedStepIds: [firstStepId],
+          currentStepId: extraFirstLessonStepId,
+          expectedCurriculumVersionId: firstCurriculumVersionId,
+          lessonId: firstLessonId,
+          occurredAt: updatedAt,
+          userId: learnerId,
+        },
+        twoStepCurriculum
+      )
+      const application = createLearningTestApplication(
+        fixture,
+        twoStepCurriculum
+      )
+      const lesson = (
+        await application.readLesson({
+          learnerId,
+          lessonId: firstLessonId,
+        })
+      )._unsafeUnwrap()
+
+      expect(persisted._unsafeUnwrap()).toMatchObject({
+        completedStepIds: [firstStepId],
+        completedSteps: 1,
+        currentStepId: extraFirstLessonStepId,
+        status: "in_progress",
+      })
+      expect(lesson.learning).toMatchObject({
+        completedStepIds: [firstStepId],
+        completedSteps: 1,
+        currentStepId: extraFirstLessonStepId,
+        status: "in_progress",
+      })
+    }, twoStepCurriculum)
+  })
 })
 
 async function withLearningDatabase(
@@ -276,6 +402,7 @@ async function withLearningDatabase(
     runCurrentTestMigration(database.sqlite)
     aLearner(database.sqlite, { id: learnerId, name: "학습자" })
     const firstStep = selectedCurriculum.lessons[0]?.steps[0]
+    const firstLessonSteps = selectedCurriculum.lessons[0]?.steps ?? []
     if (firstStep === undefined) {
       throw new Error("Learning repository fixture requires a first step")
     }
@@ -288,6 +415,10 @@ async function withLearningDatabase(
           stepType: "READING",
         },
       ],
+      additionalSteps: firstLessonSteps.slice(1).map((step) => ({
+        stepId: step.id,
+        stepType: step.type,
+      })),
       courseId,
       courseTitle: "학습 코스",
       curriculumVersionId: firstCurriculumVersionId,
@@ -304,13 +435,16 @@ async function withLearningDatabase(
   }
 }
 
-function createLearningTestApplication(fixture: LearningFixture) {
+function createLearningTestApplication(
+  fixture: LearningFixture,
+  selectedCurriculum: LearningCurriculum = curriculum
+) {
   const clock = { now: () => new Date(occurredAt) }
   const content: LearningContentQueryPort = {
     async findCurriculumByLesson(input) {
       const selected =
         input.curriculumVersionId === firstCurriculumVersionId
-          ? curriculum
+          ? selectedCurriculum
           : secondCurriculum
       return selected.lessons.some((lesson) => lesson.id === input.lessonId)
         ? selected
@@ -321,7 +455,7 @@ function createLearningTestApplication(fixture: LearningFixture) {
       input.courseId !== courseId
         ? null
         : input.curriculumVersionId === firstCurriculumVersionId
-          ? curriculum
+          ? selectedCurriculum
           : input.curriculumVersionId === secondCurriculumVersionId ||
               input.curriculumVersionId === undefined
             ? secondCurriculum

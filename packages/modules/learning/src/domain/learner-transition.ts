@@ -42,6 +42,15 @@ export type SaveLearnerStepDraftCommand = {
   readonly userId: LearnerId
 }
 
+export type SaveLearnerLessonProgressCommand = {
+  readonly completedStepIds: readonly LessonStepId[]
+  readonly currentStepId: LessonStepId
+  readonly expectedCurriculumVersionId: CurriculumVersionId
+  readonly lessonId: LessonId
+  readonly occurredAt: Date
+  readonly userId: LearnerId
+}
+
 export type LearnerTransitionError =
   | { readonly kind: "lesson-not-found"; readonly lessonId: LessonId }
   | { readonly kind: "lesson-locked"; readonly lessonId: LessonId }
@@ -79,6 +88,7 @@ export type CompleteLearnerLessonCommand = {
 
 export type StartLearnerLessonResult = LessonLearningState &
   Readonly<{ drafts: readonly LearnerStepDraft[] }>
+export type SaveLearnerLessonProgressResult = StartLearnerLessonResult
 export type SaveLearnerStepDraftResult = LearnerStepDraft
 
 export type CompleteLearnerLessonTransitionResult = {

@@ -77,6 +77,7 @@ export const notStartedLessonLearningStateSchema = z.strictObject({
 })
 
 export const inProgressLessonLearningStateSchema = z.strictObject({
+  completedStepIds: z.array(lessonStepIdSchema),
   completedSteps: nonNegativeIntegerSchema,
   currentStepId: lessonStepIdSchema,
   currentStepIndex: nonNegativeIntegerSchema,

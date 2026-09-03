@@ -38,6 +38,7 @@
 - `lesson_step_versions.content_json`
 - `learner_course_progress.curriculum_version_id`
 - `learner_lesson_progress.current_step_id`
+- `learner_lesson_progress.completed_step_ids_json`
 - `learner_lesson_answers.answer_json`
 - `ai_feedback_attempts.result_json`
 

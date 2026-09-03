@@ -101,6 +101,7 @@ export type LessonLearningState =
       version: CurriculumVersionRef
     }>
   | Readonly<{
+      completedStepIds: readonly LessonStepId[]
       completedSteps: number
       currentStepId: LessonStepId
       currentStepIndex: number
