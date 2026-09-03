@@ -29,6 +29,7 @@ import {
 } from "@workspace/ui/components/learning/insight"
 import { cn } from "@workspace/ui/lib/utils"
 
+import { getWritingDraftStore } from "@/features/writing/api/writing-device-draft"
 import {
   formatWritingTimestamp,
   groupWritingsByTask,
@@ -83,6 +84,11 @@ export function WritingHomePage({
     setWritings((current) =>
       current.filter((writing) => writing.id !== deleteTarget.id)
     )
+    try {
+      await getWritingDraftStore().deleteByWritingId(deleteTarget.id)
+    } catch {
+      // 서버 삭제는 이미 성공했다. 기기 초안 정리는 다음 로그아웃에서 맞춘다.
+    }
     setDeleting(false)
     setDeleteTarget(null)
     setStatusMessage("글을 삭제했습니다.")

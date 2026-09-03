@@ -4,6 +4,11 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import { getWriting } from "@workspace/http-client/learner"
 
 import {
+  hashWritingDraftBody,
+  readWritingDeviceDraftDecision,
+  type WritingDraftStore,
+} from "@/features/writing/api/writing-device-draft"
+import {
   saveWritingDraft,
   type WritingSaveTransport,
 } from "@/features/writing/api/writing-transport"
@@ -16,7 +21,8 @@ import {
 } from "@/shared/http/learner-api-client"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
-const autosaveDelayMs = 800
+export const writingAutosaveIdleDelayMs = 800
+export const writingAutosaveMaxWaitMs = 5_000
 
 export type WritingDraftValues = Readonly<{
   body: string
@@ -48,26 +54,44 @@ type WritingRecord = {
 
 export function useWritingAutosave({
   initialWriting,
+  learnerId,
   onPersistedWriting,
+  onRecoveredWriting,
   onServerWritingApplied,
+  store,
 }: {
   readonly initialWriting: LearnerWritingDetailDto
+  readonly learnerId?: string
   readonly onPersistedWriting?: (writing: LearnerWritingDetailDto) => void
+  readonly onRecoveredWriting?: (writing: LearnerWritingDetailDto) => void
   readonly onServerWritingApplied: (writing: LearnerWritingDetailDto) => void
+  readonly store?: WritingDraftStore
 }) {
   const recordRef = useRef<WritingRecord | null>(null)
-  const timerRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
+  const idleTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(
+    null
+  )
+  const maxWaitTimerRef = useRef<ReturnType<
+    typeof globalThis.setTimeout
+  > | null>(null)
   const flushWritingRef = useRef<
     (transport: WritingSaveTransport) => Promise<void>
   >(async () => undefined)
+  const commitDeviceDraftRef = useRef<() => Promise<void>>(
+    async () => undefined
+  )
   const inFlightPromiseRef = useRef<Promise<void> | null>(null)
   const reconcilePromiseRef = useRef<Promise<void> | null>(null)
-  const unloadRequestedRef = useRef(false)
+  const deviceWriteChainRef = useRef(Promise.resolve())
+  const deviceBodyRef = useRef<string | null>(null)
   const mountedRef = useRef(false)
   const readAbortSignal = useUnmountAbortSignal()
   const onPersistedWritingRef = useRef(onPersistedWriting)
+  const onRecoveredWritingRef = useRef(onRecoveredWriting)
   const onServerWritingAppliedRef = useRef(onServerWritingApplied)
   const [dirty, setDirty] = useState(false)
+  const [recovered, setRecovered] = useState(false)
+  const [ready, setReady] = useState(store === undefined)
   const [status, setStatus] = useState<WritingAutosaveStatus>({
     kind: "saved",
     updatedAt: initialWriting.updatedAt,
@@ -87,6 +111,10 @@ export function useWritingAutosave({
   useEffect(() => {
     onPersistedWritingRef.current = onPersistedWriting
   }, [onPersistedWriting])
+
+  useEffect(() => {
+    onRecoveredWritingRef.current = onRecoveredWriting
+  }, [onRecoveredWriting])
 
   useEffect(() => {
     onServerWritingAppliedRef.current = onServerWritingApplied
@@ -109,10 +137,48 @@ export function useWritingAutosave({
   )
 
   const clearScheduledSave = useCallback(() => {
-    if (timerRef.current === null) return
-    globalThis.clearTimeout(timerRef.current)
-    timerRef.current = null
+    if (idleTimerRef.current !== null) {
+      globalThis.clearTimeout(idleTimerRef.current)
+      idleTimerRef.current = null
+    }
+    if (maxWaitTimerRef.current !== null) {
+      globalThis.clearTimeout(maxWaitTimerRef.current)
+      maxWaitTimerRef.current = null
+    }
   }, [])
+
+  const commitDeviceDraft = useCallback(async (): Promise<void> => {
+    if (store === undefined || learnerId === undefined) return
+
+    const run = async () => {
+      const record = readWritingRecord(recordRef)
+      try {
+        const checksum = await hashWritingDraftBody(record.draft.body)
+        await store.put({
+          baseVersion: record.expectedVersion,
+          body: record.draft.body,
+          checksum,
+          learnerId,
+          savedAt: Date.now(),
+          writingId: initialWriting.id,
+        })
+        deviceBodyRef.current = record.draft.body
+      } catch {
+        return
+      }
+    }
+
+    const nextWrite = deviceWriteChainRef.current.then(run, run)
+    deviceWriteChainRef.current = nextWrite.then(
+      () => undefined,
+      () => undefined
+    )
+    await nextWrite
+  }, [initialWriting.id, learnerId, store])
+
+  useEffect(() => {
+    commitDeviceDraftRef.current = commitDeviceDraft
+  }, [commitDeviceDraft])
 
   const reconcile = useCallback((): Promise<void> => {
     if (reconcilePromiseRef.current !== null) {
@@ -183,29 +249,28 @@ export function useWritingAutosave({
   const flushWritingWithTransport = useCallback(
     async (transport: WritingSaveTransport): Promise<void> => {
       clearScheduledSave()
-      if (transport.kind === "unload") unloadRequestedRef.current = true
 
-      const runningRequest = inFlightPromiseRef.current
-      if (runningRequest !== null) {
-        await runningRequest
-        return
+      if (inFlightPromiseRef.current !== null) {
+        await inFlightPromiseRef.current
+        return flushWritingWithTransport(transport)
       }
+
+      const record = readWritingRecord(recordRef)
+      if (!record.dirty || record.conflict !== null) return
 
       const saveSequence = (async () => {
         while (true) {
-          const record = readWritingRecord(recordRef)
-          if (!record.dirty || record.conflict !== null) return
+          const activeRecord = readWritingRecord(recordRef)
+          if (!activeRecord.dirty || activeRecord.conflict !== null) return
 
           if (!browserIsOnline()) {
             setSafeStatus({ kind: "offline" })
             return
           }
 
-          const sentDraft = record.draft
-          const sentVersion = record.expectedVersion
-          const activeTransport: WritingSaveTransport =
-            unloadRequestedRef.current ? { kind: "unload" } : transport
-          record.inFlight = true
+          const sentDraft = activeRecord.draft
+          const sentVersion = activeRecord.expectedVersion
+          activeRecord.inFlight = true
           setSafeStatus({ kind: "saving" })
 
           const result = await settleLearnerApiRequest(
@@ -214,11 +279,11 @@ export function useWritingAutosave({
                 ...sentDraft,
                 expectedVersion: sentVersion,
               },
-              transport: activeTransport,
+              transport,
               writingId: initialWriting.id,
             })
           )
-          record.inFlight = false
+          activeRecord.inFlight = false
 
           if (result.status === "error") {
             if (isLearnerApiAbortedError(result.error)) return
@@ -238,25 +303,28 @@ export function useWritingAutosave({
             return
           }
 
-          record.expectedVersion = result.value.version
-          record.savedDraft = sentDraft
-          record.updatedAt = result.value.updatedAt
-          record.dirty = !sameDraft(record.draft, sentDraft)
-          record.conflict = null
-          setSafeDirty(record.dirty)
+          activeRecord.expectedVersion = result.value.version
+          activeRecord.savedDraft = sentDraft
+          activeRecord.updatedAt = result.value.updatedAt
+          activeRecord.dirty = !sameDraft(activeRecord.draft, sentDraft)
+          activeRecord.conflict = null
+          setSafeDirty(activeRecord.dirty)
 
-          if (!record.dirty) {
+          if (!activeRecord.dirty) {
             setSafeStatus({
               kind: "saved",
               updatedAt: result.value.updatedAt,
             })
             onPersistedWritingRef.current?.(result.value)
+            if (store !== undefined && learnerId !== undefined) {
+              deviceBodyRef.current = sentDraft.body
+              await store.delete(learnerId, initialWriting.id)
+            }
             return
           }
         }
       })().finally(() => {
         inFlightPromiseRef.current = null
-        unloadRequestedRef.current = false
       })
 
       inFlightPromiseRef.current = saveSequence
@@ -265,9 +333,11 @@ export function useWritingAutosave({
     [
       clearScheduledSave,
       initialWriting.id,
+      learnerId,
       reconcile,
       setSafeDirty,
       setSafeStatus,
+      store,
     ]
   )
 
@@ -276,12 +346,21 @@ export function useWritingAutosave({
   }, [flushWritingWithTransport])
 
   const scheduleSave = useCallback(() => {
-    clearScheduledSave()
-    timerRef.current = globalThis.setTimeout(() => {
-      timerRef.current = null
+    if (idleTimerRef.current !== null) {
+      globalThis.clearTimeout(idleTimerRef.current)
+    }
+    idleTimerRef.current = globalThis.setTimeout(() => {
+      idleTimerRef.current = null
       void flushWritingRef.current(defaultTransport())
-    }, autosaveDelayMs)
-  }, [clearScheduledSave, defaultTransport])
+    }, writingAutosaveIdleDelayMs)
+
+    if (maxWaitTimerRef.current === null) {
+      maxWaitTimerRef.current = globalThis.setTimeout(() => {
+        maxWaitTimerRef.current = null
+        void flushWritingRef.current(defaultTransport())
+      }, writingAutosaveMaxWaitMs)
+    }
+  }, [defaultTransport])
 
   const stageWriting = useCallback(
     (draft: WritingDraftValues) => {
@@ -292,10 +371,16 @@ export function useWritingAutosave({
 
       if (!record.dirty) {
         record.conflict = null
+        deviceBodyRef.current = record.draft.body
         clearScheduledSave()
         setSafeStatus({ kind: "saved", updatedAt: record.updatedAt })
+        if (store !== undefined && learnerId !== undefined) {
+          void store.delete(learnerId, initialWriting.id)
+        }
         return
       }
+
+      void commitDeviceDraftRef.current()
 
       if (record.conflict !== null) {
         record.conflict = { ...record.conflict, localDraft: draft }
@@ -311,7 +396,15 @@ export function useWritingAutosave({
       setSafeStatus({ kind: "saving" })
       scheduleSave()
     },
-    [clearScheduledSave, scheduleSave, setSafeDirty, setSafeStatus]
+    [
+      clearScheduledSave,
+      initialWriting.id,
+      learnerId,
+      scheduleSave,
+      setSafeDirty,
+      setSafeStatus,
+      store,
+    ]
   )
 
   const flushWriting = useCallback(
@@ -346,20 +439,118 @@ export function useWritingAutosave({
     const serverWriting = record.conflict.serverWriting
     clearScheduledSave()
     updateRecordFromServer(record, serverWriting)
+    deviceBodyRef.current = serverWriting.body
     setSafeDirty(false)
     setSafeStatus({ kind: "saved", updatedAt: serverWriting.updatedAt })
     onServerWritingAppliedRef.current(serverWriting)
-  }, [clearScheduledSave, setSafeDirty, setSafeStatus])
+    if (store !== undefined && learnerId !== undefined) {
+      void store.delete(learnerId, initialWriting.id)
+    }
+  }, [
+    clearScheduledSave,
+    initialWriting.id,
+    learnerId,
+    setSafeDirty,
+    setSafeStatus,
+    store,
+  ])
 
   const hasUnsavedChanges = useCallback((): boolean => {
     const record = readWritingRecord(recordRef)
-    return record.dirty || record.inFlight || record.conflict !== null
+    if (record.conflict !== null) return true
+    if (!record.dirty) return false
+    return deviceBodyRef.current !== record.draft.body
   }, [])
 
   const readExpectedVersion = useCallback(
     (): number => readWritingRecord(recordRef).expectedVersion,
     []
   )
+
+  useEffect(() => {
+    if (store === undefined || learnerId === undefined) {
+      setReady(true)
+      return
+    }
+
+    let cancelled = false
+
+    void (async () => {
+      try {
+        const local = await store.get(learnerId, initialWriting.id)
+        if (cancelled) return
+
+        const checksumMatches =
+          local === null ||
+          (await hashWritingDraftBody(local.body)) === local.checksum
+        const decision = readWritingDeviceDraftDecision({
+          local: checksumMatches ? local : "corrupt",
+          serverBody: initialWriting.body,
+          serverVersion: initialWriting.version,
+        })
+        const record = readWritingRecord(recordRef)
+
+        switch (decision.kind) {
+          case "server":
+            if (local !== null) {
+              await store.delete(learnerId, initialWriting.id)
+            }
+            break
+          case "discard-corrupt":
+            await store.delete(learnerId, initialWriting.id)
+            break
+          case "recover": {
+            record.draft = { body: decision.draft.body }
+            record.dirty = !sameDraft(record.draft, record.savedDraft)
+            deviceBodyRef.current = decision.draft.body
+            setSafeDirty(record.dirty)
+            setRecovered(true)
+            onRecoveredWritingRef.current?.({
+              ...initialWriting,
+              body: decision.draft.body,
+            })
+            if (record.dirty) {
+              setSafeStatus({ kind: "saving" })
+              void flushWritingRef.current(defaultTransport())
+            }
+            break
+          }
+          case "conflict": {
+            record.draft = { body: decision.draft.body }
+            record.dirty = true
+            record.conflict = {
+              localDraft: record.draft,
+              serverWriting: initialWriting,
+            }
+            deviceBodyRef.current = decision.draft.body
+            setSafeDirty(true)
+            setRecovered(true)
+            onRecoveredWritingRef.current?.({
+              ...initialWriting,
+              body: decision.draft.body,
+            })
+            setSafeStatus({ kind: "conflict", ...record.conflict })
+            break
+          }
+        }
+      } catch {
+        return
+      } finally {
+        if (!cancelled) setReady(true)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    defaultTransport,
+    initialWriting,
+    learnerId,
+    setSafeDirty,
+    setSafeStatus,
+    store,
+  ])
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -370,12 +561,13 @@ export function useWritingAutosave({
     const handleOnline = () => {
       void reconcile()
     }
-    const handlePageHide = () => {
+    const handleHiddenFlush = () => {
+      void commitDeviceDraftRef.current()
       void flushWritingRef.current({ kind: "unload" })
     }
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        void flushWritingRef.current({ kind: "unload" })
+        handleHiddenFlush()
       } else {
         void reconcile()
       }
@@ -383,24 +575,31 @@ export function useWritingAutosave({
 
     window.addEventListener("beforeunload", handleBeforeUnload)
     window.addEventListener("online", handleOnline)
-    window.addEventListener("pagehide", handlePageHide)
+    window.addEventListener("pagehide", handleHiddenFlush)
     document.addEventListener("visibilitychange", handleVisibilityChange)
+    document.addEventListener("freeze", handleHiddenFlush)
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload)
       window.removeEventListener("online", handleOnline)
-      window.removeEventListener("pagehide", handlePageHide)
+      window.removeEventListener("pagehide", handleHiddenFlush)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
+      document.removeEventListener("freeze", handleHiddenFlush)
       clearScheduledSave()
+      void commitDeviceDraftRef.current()
+      void flushWritingRef.current({ kind: "unload" })
     }
   }, [clearScheduledSave, hasUnsavedChanges, reconcile])
 
   return {
+    commitDeviceDraft,
     dirty,
     flushWriting,
     hasUnsavedChanges,
     readExpectedVersion,
+    ready,
     reconcile,
+    recovered,
     retryLocalWriting,
     stageWriting,
     status,

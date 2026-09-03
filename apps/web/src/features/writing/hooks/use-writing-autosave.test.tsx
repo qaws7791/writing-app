@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react"
+import { act, cleanup, renderHook } from "@testing-library/react"
 import {
   afterAll,
   afterEach,
@@ -22,7 +22,15 @@ import {
   throwMswNetworkErrorFixture,
 } from "@workspace/http-client/msw-fixtures"
 
-import { useWritingAutosave } from "@/features/writing/hooks/use-writing-autosave"
+import {
+  createMemoryWritingDraftStore,
+  hashWritingDraftBody,
+} from "@/features/writing/api/writing-device-draft"
+import {
+  useWritingAutosave,
+  writingAutosaveIdleDelayMs,
+  writingAutosaveMaxWaitMs,
+} from "@/features/writing/hooks/use-writing-autosave"
 import type {
   LearnerSaveWritingBodyDto,
   LearnerWritingDetailDto,
@@ -48,9 +56,19 @@ beforeEach(() => {
       }
     }
   )
+  server.use(
+    getSaveWritingMockHandler200(async ({ request }) => {
+      const body = await readJson<LearnerSaveWritingBodyDto>(request)
+      return createWriting({
+        body: body.body,
+        version: body.expectedVersion + 1,
+      })
+    })
+  )
 })
 
 afterEach(() => {
+  cleanup()
   server.resetHandlers()
   vi.useRealTimers()
 })
@@ -82,7 +100,7 @@ describe("useWritingAutosave", () => {
 
     act(() => {
       result.current.stageWriting({ body: "첫 수정" })
-      vi.advanceTimersByTime(800)
+      vi.advanceTimersByTime(writingAutosaveIdleDelayMs)
     })
     await firstRequestStarted.promise
 
@@ -225,15 +243,229 @@ describe("useWritingAutosave", () => {
     expect(recoveredRequests).toEqual([expect.objectContaining(localDraft)])
     expect(result.current.status).toMatchObject({ kind: "saved" })
   })
+
+  it("계속 입력해도 maxWait 안에 서버 저장을 보낸다", async () => {
+    const requests: LearnerSaveWritingBodyDto[] = []
+    const firstRequestStarted = createDeferred<void>()
+    server.use(
+      getSaveWritingMockHandler200(async ({ request }) => {
+        const body = await readJson<LearnerSaveWritingBodyDto>(request)
+        requests.push(body)
+        if (requests.length === 1) firstRequestStarted.resolve()
+        return createWriting({
+          body: body.body,
+          version: body.expectedVersion + 1,
+        })
+      })
+    )
+    const { result } = renderWritingAutosave()
+
+    act(() => {
+      result.current.stageWriting({ body: "연속 0" })
+    })
+    for (let index = 1; index <= 12; index += 1) {
+      act(() => {
+        vi.advanceTimersByTime(400)
+        result.current.stageWriting({ body: `연속 ${index}` })
+      })
+    }
+    act(() => {
+      vi.advanceTimersByTime(writingAutosaveMaxWaitMs - 400 * 12)
+    })
+    await firstRequestStarted.promise
+
+    expect(requests[0]).toMatchObject({
+      body: "연속 12",
+      expectedVersion: 1,
+    })
+  })
+
+  it("unmount는 idle debounce 전에 마지막 본문을 저장한다", async () => {
+    const requests: LearnerSaveWritingBodyDto[] = []
+    const requestStarted = createDeferred<void>()
+    server.use(
+      getSaveWritingMockHandler200(async ({ request }) => {
+        const body = await readJson<LearnerSaveWritingBodyDto>(request)
+        requests.push(body)
+        requestStarted.resolve()
+        return createWriting({
+          body: body.body,
+          version: 2,
+        })
+      })
+    )
+    const { result, unmount } = renderWritingAutosave()
+
+    act(() => {
+      result.current.stageWriting({ body: "이탈 직전" })
+    })
+    unmount()
+    await requestStarted.promise
+
+    expect(requests).toEqual([
+      expect.objectContaining({
+        body: "이탈 직전",
+        expectedVersion: 1,
+      }),
+    ])
+  })
+
+  it("같은 version의 기기 초안을 복구하고 서버에 저장한다", async () => {
+    const recoveredBody = "기기 본문"
+    const store = createMemoryWritingDraftStore([
+      {
+        baseVersion: 1,
+        body: recoveredBody,
+        checksum: await hashWritingDraftBody(recoveredBody),
+        learnerId: "learner-1",
+        savedAt: 1,
+        writingId: "writing-1",
+      },
+    ])
+    const requests: LearnerSaveWritingBodyDto[] = []
+    const onRecoveredWriting = vi.fn()
+    server.use(
+      getSaveWritingMockHandler200(async ({ request }) => {
+        const body = await readJson<LearnerSaveWritingBodyDto>(request)
+        requests.push(body)
+        return createWriting({
+          body: body.body,
+          version: 2,
+        })
+      })
+    )
+    const { result } = renderWritingAutosave(createWriting(), vi.fn(), {
+      learnerId: "learner-1",
+      onRecoveredWriting,
+      store,
+    })
+
+    await waitUntilReady(result)
+
+    expect(onRecoveredWriting).toHaveBeenCalledWith(
+      expect.objectContaining({ body: recoveredBody })
+    )
+    expect(result.current.recovered).toBe(true)
+    await act(async () => {
+      await result.current.flushWriting()
+    })
+    expect(requests).toEqual([
+      expect.objectContaining({
+        body: recoveredBody,
+        expectedVersion: 1,
+      }),
+    ])
+    expect(await store.get("learner-1", "writing-1")).toBeNull()
+  })
+
+  it("checksum이 불량인 기기 초안은 버리고 서버 본문을 유지한다", async () => {
+    const store = createMemoryWritingDraftStore([
+      {
+        baseVersion: 1,
+        body: "손상된 본문",
+        checksum: "not-a-checksum",
+        learnerId: "learner-1",
+        savedAt: 1,
+        writingId: "writing-1",
+      },
+    ])
+    const onRecoveredWriting = vi.fn()
+    const { result } = renderWritingAutosave(createWriting(), vi.fn(), {
+      learnerId: "learner-1",
+      onRecoveredWriting,
+      store,
+    })
+
+    await waitUntilReady(result)
+
+    expect(onRecoveredWriting).not.toHaveBeenCalled()
+    expect(result.current.recovered).toBe(false)
+    expect(await store.get("learner-1", "writing-1")).toBeNull()
+  })
+
+  it("서버 version이 앞선 기기 초안은 충돌로 연다", async () => {
+    const localBody = "이 화면의 본문"
+    const serverWriting = createWriting({
+      body: "다른 화면의 본문",
+      version: 2,
+    })
+    const store = createMemoryWritingDraftStore([
+      {
+        baseVersion: 1,
+        body: localBody,
+        checksum: await hashWritingDraftBody(localBody),
+        learnerId: "learner-1",
+        savedAt: 1,
+        writingId: "writing-1",
+      },
+    ])
+    const { result } = renderWritingAutosave(serverWriting, vi.fn(), {
+      learnerId: "learner-1",
+      store,
+    })
+
+    await waitUntilReady(result)
+
+    expect(result.current.status).toEqual({
+      kind: "conflict",
+      localDraft: { body: localBody },
+      serverWriting,
+    })
+  })
+
+  it("기기 커밋 뒤에는 서버 dirty여도 나가기 경고를 열지 않는다", async () => {
+    const store = createMemoryWritingDraftStore()
+    const { result } = renderWritingAutosave(createWriting(), vi.fn(), {
+      learnerId: "learner-1",
+      store,
+    })
+
+    await waitUntilReady(result)
+    act(() => {
+      result.current.stageWriting({ body: "기기에만 남은 본문" })
+    })
+    await act(async () => {
+      await result.current.commitDeviceDraft()
+    })
+
+    expect(result.current.dirty).toBe(true)
+    expect(result.current.hasUnsavedChanges()).toBe(false)
+  })
 })
 
 function renderWritingAutosave(
   initialWriting = createWriting(),
-  onServerWritingApplied = vi.fn()
+  onServerWritingApplied = vi.fn(),
+  options?: {
+    readonly learnerId: string
+    readonly onRecoveredWriting?: (writing: LearnerWritingDetailDto) => void
+    readonly store: ReturnType<typeof createMemoryWritingDraftStore>
+  }
 ) {
   return renderHook(() =>
-    useWritingAutosave({ initialWriting, onServerWritingApplied })
+    options === undefined
+      ? useWritingAutosave({ initialWriting, onServerWritingApplied })
+      : useWritingAutosave({
+          initialWriting,
+          learnerId: options.learnerId,
+          onServerWritingApplied,
+          store: options.store,
+          ...(options.onRecoveredWriting === undefined
+            ? {}
+            : { onRecoveredWriting: options.onRecoveredWriting }),
+        })
   )
+}
+
+async function waitUntilReady(
+  result: ReturnType<typeof renderWritingAutosave>["result"]
+): Promise<void> {
+  await act(async () => {
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+  })
+  expect(result.current.ready).toBe(true)
 }
 
 async function createWritingConflict(

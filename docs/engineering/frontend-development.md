@@ -21,7 +21,7 @@
 - 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/shared/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
 - Better Auth integration과 credential·session schema는 auth infra, 학습자 profile·상태 repository와 관리자 session 해석은 identity module이 소유한다. API composition은 두 경계를 vendor-neutral port로 연결하며, Next.js 앱은 DB나 ORM에 직접 접근하지 않고 공개 HTTP API를 호출한다.
 - TanStack Query, Zustand, React Hook Form, `next-intl` 같은 라이브러리는 기본 전제가 아니다. 현재 feature의 요구와 기존 도구로 해결할 수 없는 문제가 확인되고 소유권·번들·운영 비용이 정당화될 때만 별도 결정으로 도입한다.
-- 작성 세션 본문 캔버스는 Lexical을 사용한다. 결정과 범위는 [ADR-0037](./adr/ADR-0037-lexical-compose-canvas.md)이 소유한다. 점검 고칠 일의 인라인 마크는 [ADR-0038](./adr/ADR-0038-inline-writing-check-marks.md)이 소유한다.
+- 작성 세션 본문 캔버스는 Lexical을 사용한다. 결정과 범위는 [ADR-0037](./adr/ADR-0037-lexical-compose-canvas.md)이 소유한다. 점검 고칠 일의 인라인 마크는 [ADR-0038](./adr/ADR-0038-inline-writing-check-marks.md)이 소유한다. 본문 내구 경계는 [ADR-0039](./adr/ADR-0039-writing-durable-device-draft.md)가 소유한다.
 
 ## 소스 구조와 의존성
 
@@ -190,7 +190,7 @@
 - 매칭 스텝의 로컬 선택 전이와 stable ID 제출 변환은 web feature가 소유하고, 정답 pair와 verdict는 `evaluateStepSubmission`만 사용한다.
 - 쓰기 홈은 서버에서 글 목록을 조회하고 앱 shell 안에서 이어쓰기·삭제와 카탈로그 경로를 제공한다.
 - 카탈로그는 발행된 과제만 보여 주고 `시작하기`로 새 글을 만든다.
-- 작성 세션은 상호작용 leaf가 본문, 마지막 서버 version과 미전송 입력을 소유한다. 입력 정지 800ms와 blur·hidden·나가기에서 저장하며 실패와 충돌에도 로컬 입력을 지우지 않는다.
+- 작성 세션은 상호작용 leaf가 본문, 마지막 서버 version, 기기 초안과 미전송 입력을 소유한다. 화면은 키마다 갱신한다. 기기는 서버 ACK 없이 본문을 커밋한다. 서버는 idle과 계속 입력 상한, blur·hidden·나가기·라우트 unmount에서 본문 전체를 저장한다. 실패와 충돌에도 로컬 입력을 지우지 않는다. 다시 열면 기기 초안과 서버 글을 대조한다.
 - 점검은 서버 결과를 표시한다. client가 점검 가능 여부를 다시 계산하지 않는다.
 
 ## 어드민 경험

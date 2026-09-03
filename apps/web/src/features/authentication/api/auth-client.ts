@@ -7,6 +7,7 @@ import {
   createVerifiedLoginPagePath,
   resolveSafeNextPath,
 } from "@/features/authentication/model/auth-navigation"
+import { getWritingDraftStore } from "@/features/writing/api/writing-device-draft"
 
 export async function requestEmailLogin(input: {
   readonly email: string
@@ -133,6 +134,11 @@ function createWebAuthClient({
     },
     async requestLogout(callbackPath) {
       const safeCallbackPath = resolveSafeNextPath(callbackPath)
+      try {
+        await getWritingDraftStore().clearAll()
+      } catch {
+        // IndexedDB 정리 실패가 로그아웃을 막지 않는다.
+      }
       await authClient.signOut()
 
       return safeCallbackPath

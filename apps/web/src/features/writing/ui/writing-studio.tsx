@@ -68,6 +68,10 @@ import {
   WritingBriefTitle,
 } from "@workspace/ui/components/learning/writing-brief"
 
+import {
+  getWritingDraftStore,
+  requestWritingDraftPersistence,
+} from "@/features/writing/api/writing-device-draft"
 import { useWritingAutosave } from "@/features/writing/hooks/use-writing-autosave"
 import { WritingCheckGuidePopover } from "@/features/writing/ui/writing-check-guide-popover"
 import {
@@ -84,8 +88,10 @@ type StudioPanel = "brief" | "closed" | "feedback"
 
 export function WritingStudio({
   initialWriting,
+  learnerId,
 }: {
   readonly initialWriting: LearnerWritingDetailDto
+  readonly learnerId: string
 }) {
   const router = useRouter()
   const [writing, setWriting] = useState(initialWriting)
@@ -163,11 +169,19 @@ export function WritingStudio({
     }))
   }, [])
 
+  const draftStore = getWritingDraftStore()
   const autosave = useWritingAutosave({
     initialWriting,
+    learnerId,
     onPersistedWriting: applyPersistedWriting,
+    onRecoveredWriting: applyWriting,
     onServerWritingApplied: applyWriting,
+    store: draftStore,
   })
+
+  useEffect(() => {
+    void requestWritingDraftPersistence()
+  }, [])
 
   const hasCheck = writing.check !== null
 
@@ -181,10 +195,15 @@ export function WritingStudio({
 
   const handleLeave = async () => {
     setActionError(null)
-    await autosave.flushWriting()
+    await autosave.commitDeviceDraft()
     if (autosave.hasUnsavedChanges()) {
-      setLeaveDialogOpen(true)
-      return
+      await autosave.flushWriting()
+      if (autosave.hasUnsavedChanges()) {
+        setLeaveDialogOpen(true)
+        return
+      }
+    } else {
+      void autosave.flushWriting()
     }
     router.push("/app/writing")
   }
@@ -194,7 +213,7 @@ export function WritingStudio({
     setActionError(null)
     await autosave.flushWriting()
 
-    if (autosave.hasUnsavedChanges()) {
+    if (autosave.dirty) {
       setChecking(false)
       setActionError(
         "입력한 내용은 이 화면에 남아 있습니다. 저장 문제를 해결한 뒤 다시 점검해 주세요."
@@ -243,7 +262,7 @@ export function WritingStudio({
 
     closeCheckGuide()
     await autosave.flushWriting()
-    if (autosave.hasUnsavedChanges()) {
+    if (autosave.dirty) {
       setActionError(
         "입력한 내용은 이 화면에 남아 있습니다. 저장 문제를 해결한 뒤 다시 점검해 주세요."
       )
@@ -465,6 +484,11 @@ export function WritingStudio({
               </p>
               <WritingSaveStatus status={autosave.status} />
             </div>
+            {autosave.recovered ? (
+              <span className="sr-only" role="status">
+                이 기기에서 글을 복구했습니다.
+              </span>
+            ) : null}
             {checkAnnounce === null ? null : (
               <span className="sr-only" role="status">
                 {checkAnnounce}
@@ -521,7 +545,7 @@ export function WritingStudio({
             aria-labelledby="writing-studio-editor-label"
             className="min-h-0 flex-1 bg-transparent"
             contentClassName={writingStudioCanvasContentClassName}
-            disabled={checking}
+            disabled={checking || !autosave.ready}
             id="writing-studio-editor"
             onBlur={() => void autosave.flushWriting()}
             onChange={handleBodyChange}

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { getWriting } from "@workspace/http-client/learner"
+import { getProfile, getWriting } from "@workspace/http-client/learner"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import { WritingStudio } from "@/features/writing/ui/writing-studio"
@@ -25,11 +25,12 @@ export default async function WritingStudioRoute({
     redirect(createLoginPagePath(studioPath))
   }
 
-  const result = await settleLearnerApiRequest(
-    getWriting(writingId, requestOptions)
-  )
-  if (result.status === "error") {
-    if (isLearnerApiAuthenticationError(result.error)) {
+  const [writingResult, profileResult] = await Promise.all([
+    settleLearnerApiRequest(getWriting(writingId, requestOptions)),
+    settleLearnerApiRequest(getProfile(requestOptions)),
+  ])
+  if (writingResult.status === "error") {
+    if (isLearnerApiAuthenticationError(writingResult.error)) {
       redirect(createLoginPagePath(studioPath))
     }
 
@@ -43,5 +44,25 @@ export default async function WritingStudioRoute({
     )
   }
 
-  return <WritingStudio initialWriting={result.value} />
+  if (profileResult.status === "error") {
+    if (isLearnerApiAuthenticationError(profileResult.error)) {
+      redirect(createLoginPagePath(studioPath))
+    }
+
+    return (
+      <AppRouteNotice
+        description="글을 열 수 없습니다. 잠시 뒤 다시 시도해 주세요."
+        linkHref="/app/writing"
+        linkLabel="쓰기 홈으로"
+        title="글을 열 수 없습니다."
+      />
+    )
+  }
+
+  return (
+    <WritingStudio
+      initialWriting={writingResult.value}
+      learnerId={profileResult.value.user.id}
+    />
+  )
 }
