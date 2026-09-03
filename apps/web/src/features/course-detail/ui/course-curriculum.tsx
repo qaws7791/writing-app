@@ -148,12 +148,12 @@ function CurriculumLesson({
   const accessibleName = `${lesson.title}, ${statusLabel}, ${lesson.estimatedMinutes}분`
 
   const className = cn(
-    "flex min-h-14 min-w-0 items-center gap-3 rounded-2xl px-3 py-3 outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
+    "flex min-h-14 min-w-0 items-center gap-3 rounded-2xl border px-3 py-3 outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/25",
     locked
-      ? "cursor-not-allowed opacity-60"
+      ? "cursor-not-allowed border-transparent opacity-60"
       : isCurrent
-        ? "bg-card shadow-xs hover:bg-card"
-        : "hover:bg-muted/55"
+        ? "border-border/80 bg-card shadow-xs hover:bg-card"
+        : "border-transparent hover:bg-muted/55"
   )
   const content = (
     <>
