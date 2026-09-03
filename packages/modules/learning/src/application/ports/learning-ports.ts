@@ -12,8 +12,6 @@ import type {
 import type {
   CompleteLearnerLessonCommand,
   CompleteLearnerLessonTransitionResult,
-  CompleteLearnerStepCommand,
-  CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
   SaveLearnerStepDraftCommand,
   SaveLearnerStepDraftResult,
@@ -70,12 +68,6 @@ export type LearningTransitionRepository = Readonly<{
     curriculum: LearningCurriculum
   ) => Promise<
     Result<CompleteLearnerLessonTransitionResult, LearnerTransitionError>
-  >
-  completeStep: (
-    command: CompleteLearnerStepCommand,
-    curriculum: LearningCurriculum
-  ) => Promise<
-    Result<CompleteLearnerStepTransitionResult, LearnerTransitionError>
   >
   findPinnedScope: (input: {
     readonly courseId?: CourseId

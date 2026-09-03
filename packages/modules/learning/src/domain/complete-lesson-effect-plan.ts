@@ -41,7 +41,7 @@ export type CompleteLessonSnapshot =
       readonly steps: readonly LearningStep[]
     }
 
-type CompleteLessonEffect =
+export type CompleteLessonEffect =
   | {
       readonly answer: LearnerStepSubmission
       readonly courseId: CourseId

@@ -10,7 +10,7 @@
 - `packages/infra/http-platform`은 Hono/OpenAPI app, canonical error, request security, OpenAPI helper를 소유한다. 자체 route framework는 두지 않으며 각 제품 module의 HTTP interface가 `app.openapi(route, handler)`로 endpoint method·path·canonical contract·auth·handler를 직접 등록한다. 제품 정책은 같은 module의 domain·application에 두고, API composition root는 module 등록 함수와 health·OpenAPI 같은 실행 경계 route를 명시적으로 호출한다.
 - `packages/infra/observability`는 Pino logger와 공통 관측 event 계약을 소유하고 제품별 audit 분류는 API에 남긴다.
 - `packages/infra/auth`는 Better Auth server/client integration, credential·session schema와 migration, 비밀번호·session token 정규화와 인증 메일 전달 Port·adapter를 소유한다. 제품 profile·status는 소유하지 않고 인증된 vendor-neutral identity를 identity module에 제공한다.
-- `packages/infra/db`, `ai`, `event-bus`, `storage`, `http-client`는 각각 schema-neutral SQLite connection·transaction·migration runner·backup·destructive guard, AI provider runtime, process-local event 전달, object storage SDK, Orval 생성 admin·learner client와 얇은 fetch mutator를 소유한다. DB infra는 application schema·migration SQL·seed를 소유하거나 재수출하지 않는다.
+- `packages/infra/db`, `ai`, `storage`, `http-client`는 각각 schema-neutral SQLite connection·transaction·migration runner·backup·destructive guard, AI provider runtime, object storage SDK, Orval 생성 admin·learner client와 얇은 fetch mutator를 소유한다. DB infra는 application schema·migration SQL·seed를 소유하거나 재수출하지 않는다.
 - `packages/shared`의 `types`, `kernel`, `errors`, `contracts`, `ui`는 각각 transport-neutral 타입, 최소 실행 원시값, 공통 경계 오류, wire schema, 순수 표현 UI를 소유한다.
 - 공개 subpath key와 target은 각 package manifest가 소유하고 TypeScript와 실제 consumer build가 해석한다.
 

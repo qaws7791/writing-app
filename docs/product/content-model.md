@@ -50,8 +50,8 @@ Course
 - 스텝 상태는 코스 상태와 같은 `active`, `archived`를 사용한다.
 - 스텝 wire 계약은 `packages/shared/contracts/src/content/steps`의 타입별 파일과 `steps/index.ts`의 명시 조합으로 관리한다.
 - 집필 분량·품질 상·하한은 [`authoring-limits.ts`](../../packages/shared/contracts/src/content/authoring/authoring-limits.ts)와 [`authoring-text-schemas.ts`](../../packages/shared/contracts/src/content/authoring/authoring-text-schemas.ts)가 소유하며, 스텝 DTO schema에 포함된다.
-- 새 스텝 타입을 추가할 때는 DTO schema, 완료 방식, draft·서버 평가 정책, 학습 답변 schema, DB seed 정규화, API OpenAPI schema, web renderer와 admin 편집 폼을 함께 검토한다.
-- `lessonStepDefinitions`는 타입별 DTO schema, 완료 방식, draft 가능 여부와 서버 평가 여부를 같은 계약으로 묶어 누락을 빠르게 드러내기 위한 기준이다.
+- 새 스텝 타입을 추가할 때는 DTO schema, 완료 방식, draft 가능 여부, 클라이언트 채점 정책, 학습 답변 schema, DB seed 정규화, API OpenAPI schema, web renderer와 admin 편집 폼을 함께 검토한다.
+- `lessonStepDefinitions`는 타입별 DTO schema, 완료 방식과 draft 가능 여부를 같은 계약으로 묶어 누락을 빠르게 드러내기 위한 기준이다.
 
 ## 확정 스텝 타입
 
@@ -109,7 +109,7 @@ Course
 
 - 상호작용형 스텝 답변은 코스, curriculum version, 레슨과 스텝 범위에 속한다.
 - `READING`과 `COMPARE`는 확인 동작만 가지며 답안·draft·평가 payload가 없다.
-- 나머지 상호작용형 스텝은 타입별 최종 답안, 부분 draft와 서버 evaluation 계약을 가진다.
+- 나머지 상호작용형 스텝은 타입별 최종 답안과 부분 draft를 가진다. 정답 판정은 클라이언트 `evaluateStepSubmission`이 소유하고, 서버는 레슨 완료 커밋만 소유한다.
 - 중복 문구가 가능한 선택형 활동의 화면 identity와 정답 판정은 문구나 배열 위치가 아니라 stable item ID를 기준으로 한다.
 - 연속 학습일은 클라이언트 상태가 아니라 진행 저장, 답변 저장과 레슨 완료 같은 서버 이벤트로 계산한다.
 - 학습 활동 날짜는 플랫폼 학습 시간대 `Asia/Seoul`의 논리 날짜를 사용한다.

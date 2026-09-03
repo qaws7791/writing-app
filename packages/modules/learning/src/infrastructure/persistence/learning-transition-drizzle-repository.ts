@@ -26,13 +26,8 @@ import {
 } from "#learning/infrastructure/persistence/schema"
 import { readLearnerStepDrafts } from "#learning/infrastructure/persistence/learner-step-draft-drizzle"
 import {
-  planCompleteStep,
-  type CompleteStepEffect,
-  type CompleteStepPlan,
-  type CompleteStepSnapshot,
-} from "#learning/domain/complete-step-effect-plan"
-import {
   planCompleteLesson,
+  type CompleteLessonEffect,
   type CompleteLessonPlan,
   type CompleteLessonSnapshot,
 } from "#learning/domain/complete-lesson-effect-plan"
@@ -43,8 +38,6 @@ import {
 import type {
   CompleteLearnerLessonCommand,
   CompleteLearnerLessonTransitionResult,
-  CompleteLearnerStepCommand,
-  CompleteLearnerStepTransitionResult,
   LearnerLessonScope,
   LearnerTransitionError,
   SaveLearnerStepDraftCommand,
@@ -89,12 +82,6 @@ export function createDrizzleLearnerTransitionRepository(
     async completeLesson(command, curriculum) {
       return db.transaction(
         (transaction) => completeLesson(transaction, command, curriculum),
-        { behavior: "immediate" }
-      )
-    },
-    async completeStep(command, curriculum) {
-      return db.transaction(
-        (transaction) => completeStep(transaction, command, curriculum),
         { behavior: "immediate" }
       )
     },
@@ -450,116 +437,9 @@ function applyCompleteLessonPlan(
   })
 }
 
-function completeStep(
-  transaction: LearningTransaction,
-  command: CompleteLearnerStepCommand,
-  curriculum: LearningCurriculum
-): Result<CompleteLearnerStepTransitionResult, LearnerTransitionError> {
-  const snapshot = loadCompleteStepSnapshot(transaction, command, curriculum)
-  const plan = planCompleteStep(command, snapshot)
-  return applyCompleteStepPlan(transaction, plan, curriculum)
-}
-
-function loadCompleteStepSnapshot(
-  transaction: LearningTransaction,
-  command: CompleteLearnerStepCommand,
-  curriculum: LearningCurriculum
-): CompleteStepSnapshot {
-  const scope = findPinnedLessonScope(transaction, command, curriculum)
-  if (scope === null) {
-    return {
-      kind: "lesson-scope-missing",
-      publishedLessonExists:
-        findCurriculumLesson(curriculum, command.lessonId) !== null,
-    }
-  }
-
-  const completedLessonIds = readCompletedLessonIds(
-    transaction,
-    command.userId,
-    scope
-  )
-  const progress = readLessonProgress(transaction, command.userId, scope)
-  return {
-    completedLessonIds,
-    courseCompletionLessonIds: readCourseCompletionLessonIds(curriculum),
-    hasSavedAnswer: hasSavedAnswer(transaction, command, scope),
-    kind: "lesson",
-    progress:
-      progress === null
-        ? { kind: "not-started" }
-        : progress.status === completedStatus
-          ? { kind: "completed" }
-          : {
-              currentStepId: lessonStepIdSchema.parse(progress.currentStepId),
-              kind: "in-progress",
-            },
-    scope,
-    steps: readLessonSteps(curriculum, scope).map((step) => step.content),
-  }
-}
-
-function applyCompleteStepPlan(
-  transaction: LearningTransaction,
-  plan: CompleteStepPlan,
-  curriculum: LearningCurriculum
-): Result<CompleteLearnerStepTransitionResult, LearnerTransitionError> {
-  if (plan.kind === "rejected") return err(plan.error)
-
-  for (const effect of plan.effects) {
-    applyCompleteStepEffect(transaction, effect)
-  }
-  const steps = plan.stepIds.map((id) => ({ id }))
-  switch (plan.kind) {
-    case "retry":
-      return ok({
-        evaluation: plan.evaluation,
-        kind: "retry",
-        learning: readInProgressState(
-          transaction,
-          plan.userId,
-          plan.scope,
-          steps
-        ),
-      })
-    case "replay-advanced":
-    case "accept-step":
-      return ok({
-        evaluation: plan.evaluation,
-        kind: "advanced",
-        learning: readInProgressState(
-          transaction,
-          plan.userId,
-          plan.scope,
-          steps
-        ),
-      })
-    case "replay-completed":
-      return ok(
-        readCompletedResult(
-          transaction,
-          plan.userId,
-          plan.scope,
-          steps,
-          curriculum
-        )
-      )
-    case "accept-lesson": {
-      const completed = readCompletedResult(
-        transaction,
-        plan.userId,
-        plan.scope,
-        steps,
-        curriculum
-      )
-      return ok({ ...completed, evaluation: plan.evaluation })
-    }
-  }
-}
-
 function applyCompleteStepEffect(
   transaction: LearningTransaction,
-  effect: CompleteStepEffect
+  effect: CompleteLessonEffect
 ): void {
   switch (effect.kind) {
     case "save-accepted-answer": {
@@ -596,32 +476,12 @@ function applyCompleteStepEffect(
         .run()
       return
     }
-    case "advance-lesson-step":
-      transaction
-        .update(learnerLessonProgress)
-        .set({
-          currentStepId: effect.nextStepId,
-          updatedAt: effect.occurredAt,
-        })
-        .where(
-          and(
-            eq(learnerLessonProgress.userId, effect.userId),
-            eq(
-              learnerLessonProgress.curriculumVersionId,
-              effect.curriculumVersionId
-            ),
-            eq(learnerLessonProgress.lessonId, effect.lessonId),
-            eq(learnerLessonProgress.currentStepId, effect.fromStepId),
-            eq(learnerLessonProgress.status, inProgressStatus)
-          )
-        )
-        .run()
-      return
     case "complete-lesson":
       transaction
         .update(learnerLessonProgress)
         .set({
           completedAt: effect.occurredAt,
+          currentStepId: effect.finalStepId,
           status: completedStatus,
           updatedAt: effect.occurredAt,
         })
@@ -633,7 +493,6 @@ function applyCompleteStepEffect(
               effect.curriculumVersionId
             ),
             eq(learnerLessonProgress.lessonId, effect.lessonId),
-            eq(learnerLessonProgress.currentStepId, effect.finalStepId),
             eq(learnerLessonProgress.status, inProgressStatus)
           )
         )
@@ -856,29 +715,6 @@ function readLessonProgress(
   )
 }
 
-function hasSavedAnswer(
-  db: TransitionDatabase,
-  command: CompleteLearnerStepCommand,
-  scope: LessonScope
-): boolean {
-  return (
-    db
-      .select({ stepId: learnerLessonAnswers.stepId })
-      .from(learnerLessonAnswers)
-      .where(
-        and(
-          eq(learnerLessonAnswers.userId, command.userId),
-          eq(
-            learnerLessonAnswers.curriculumVersionId,
-            scope.curriculumVersionId
-          ),
-          eq(learnerLessonAnswers.stepId, command.stepId)
-        )
-      )
-      .get() !== undefined
-  )
-}
-
 function readLessonLearningState(
   db: TransitionDatabase,
   userId: string,
@@ -927,27 +763,13 @@ function readLessonLearningState(
   })
 }
 
-function readInProgressState(
-  db: TransitionDatabase,
-  userId: string,
-  scope: LessonScope,
-  steps: readonly { readonly id: string }[]
-) {
-  return inProgressLessonLearningStateSchema.parse(
-    readLessonLearningState(db, userId, scope, steps)
-  )
-}
-
 function readCompletedResult(
   db: TransitionDatabase,
   userId: string,
   scope: LessonScope,
   steps: readonly { readonly id: string }[],
   curriculum: LearningCurriculum
-): Extract<
-  CompleteLearnerStepTransitionResult,
-  { readonly kind: "lesson-completed" }
-> {
+): CompleteLearnerLessonTransitionResult {
   const learning = readLessonLearningState(db, userId, scope, steps)
   if (learning.status !== completedStatus) {
     throw new Error("Lesson completion was not stored")
@@ -998,7 +820,6 @@ function readCompletedResult(
     accuracyPercent,
     courseLearning: readCourseLearningState(db, userId, scope, curriculum),
     durationMinutes,
-    evaluation: null,
     kind: "lesson-completed",
     lessonCompletion: learning.completion,
     streakDays,

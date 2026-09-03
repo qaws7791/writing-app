@@ -34,7 +34,6 @@ const learnerDependencies = {
       readLesson: contractOnly,
       saveStepDraft: contractOnly,
       startLesson: contractOnly,
-      submitStep: contractOnly,
     },
     cursor: createLearnerCursorCodec("openapi-cursor-signing-secret-32-bytes"),
     session: { resolveLearner: contractOnly },

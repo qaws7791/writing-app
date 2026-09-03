@@ -71,16 +71,9 @@ export type LearningCourseSummary = Readonly<{
 import type {
   LearnerStepDraftAnswer,
   LearnerStepSubmission,
-  StepEvaluation,
-  StepItemVerdict,
 } from "@workspace/contracts/learning/learner-transition"
 
-export type {
-  LearnerStepDraftAnswer,
-  LearnerStepSubmission,
-  StepEvaluation,
-  StepItemVerdict,
-}
+export type { LearnerStepDraftAnswer, LearnerStepSubmission }
 
 export type LearnerStepDraft = Readonly<{
   answer: LearnerStepDraftAnswer

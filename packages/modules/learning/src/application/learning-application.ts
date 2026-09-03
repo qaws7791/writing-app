@@ -20,15 +20,11 @@ import type {
 } from "#learning/application/ports/learner-read-model-repository"
 import type {
   CompleteLearnerLessonTransitionResult,
-  CompleteLearnerStepTransitionResult,
   LearnerTransitionError,
   SaveLearnerStepDraftResult,
   StartLearnerLessonResult,
 } from "#learning/domain/learner-transition"
-import type {
-  LearnerStepDraftAnswer,
-  LearnerStepSubmission,
-} from "#learning/domain/learning-types"
+import type { LearnerStepDraftAnswer } from "#learning/domain/learning-types"
 import type { LearningApplicationDependencies } from "#learning/application/ports/learning-ports"
 
 type StartLearningLessonCommand = Readonly<{
@@ -38,7 +34,6 @@ type StartLearningLessonCommand = Readonly<{
 }>
 
 type CompleteLearningLessonCommand = Readonly<{
-  answers?: readonly LearnerStepSubmission[]
   completedStepIds: readonly LessonStepId[]
   durationSeconds: number
   expectedCurriculumVersionId: CurriculumVersionId
@@ -47,24 +42,6 @@ type CompleteLearningLessonCommand = Readonly<{
   mistakeCount: number
   totalAttempts: number
 }>
-
-type SubmitLearningStepCommand = Readonly<{
-  learnerId: LearnerId
-  lessonId: LessonId
-  stepId: LessonStepId
-}> &
-  (
-    | Readonly<{
-        completion: Readonly<{
-          acceptIncorrect?: boolean
-          kind: "answer"
-          submission: LearnerStepSubmission
-        }>
-      }>
-    | Readonly<{
-        completion: Readonly<{ kind: "acknowledge" }>
-      }>
-  )
 
 type SaveLearningStepDraftCommand = Readonly<{
   answer: LearnerStepDraftAnswer
@@ -110,11 +87,6 @@ export type LearningApplication = Readonly<{
     readonly learnerId: LearnerId
     readonly lessonId: LessonId
   }) => Promise<Result<LearnerLesson, LearningReadError>>
-  submitStep: (
-    command: SubmitLearningStepCommand
-  ) => Promise<
-    Result<CompleteLearnerStepTransitionResult, LearningCommandError>
-  >
   saveStepDraft: (
     command: SaveLearningStepDraftCommand
   ) => Promise<Result<SaveLearnerStepDraftResult, LearningCommandError>>
@@ -219,7 +191,6 @@ export function createLearningApplication(
       }
       const committed = await dependencies.transitionRepository.completeLesson(
         {
-          answers: command.answers,
           completedStepIds: command.completedStepIds,
           durationSeconds: command.durationSeconds,
           expectedCurriculumVersionId: command.expectedCurriculumVersionId,
@@ -227,28 +198,6 @@ export function createLearningApplication(
           mistakeCount: command.mistakeCount,
           occurredAt: dependencies.clock.now(),
           totalAttempts: command.totalAttempts,
-          userId: command.learnerId,
-        },
-        curriculum
-      )
-      return committed.isErr() ? err(committed.error) : ok(committed.value)
-    },
-    async submitStep(command) {
-      const authorization = await authorizeLearner(
-        dependencies,
-        command.learnerId
-      )
-      if (authorization.isErr()) return err(authorization.error)
-      const curriculum = await readLessonCurriculum(dependencies, command)
-      if (curriculum === null) {
-        return err({ kind: "lesson-not-found", lessonId: command.lessonId })
-      }
-      const committed = await dependencies.transitionRepository.completeStep(
-        {
-          completion: command.completion,
-          lessonId: command.lessonId,
-          occurredAt: dependencies.clock.now(),
-          stepId: command.stepId,
           userId: command.learnerId,
         },
         curriculum

@@ -37,7 +37,6 @@ type LessonStepDefinition = {
   readonly answerable: boolean
   readonly completion: "acknowledge" | "answer"
   readonly draftable: boolean
-  readonly evaluatedByServer: boolean
   readonly schema: z.ZodType<unknown>
 }
 
@@ -46,77 +45,66 @@ export const lessonStepDefinitions = {
     answerable: false,
     completion: "acknowledge",
     draftable: false,
-    evaluatedByServer: false,
     schema: readingStepDtoSchema,
   },
   COMPARE: {
     answerable: false,
     completion: "acknowledge",
     draftable: false,
-    evaluatedByServer: false,
     schema: compareStepDtoSchema,
   },
   MULTIPLE_CHOICE: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: multipleChoiceStepDtoSchema,
   },
   FILL_BLANK: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: fillBlankStepDtoSchema,
   },
   SELECT: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: selectStepDtoSchema,
   },
   ORDER: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: orderStepDtoSchema,
   },
   MATCH: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: matchStepDtoSchema,
   },
   CATEGORIZE: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: categorizeStepDtoSchema,
   },
   TRUE_FALSE: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: trueFalseStepDtoSchema,
   },
   SENTENCE_BUILD: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: sentenceBuildStepDtoSchema,
   },
   ERROR_CORRECT: {
     answerable: true,
     completion: "answer",
     draftable: true,
-    evaluatedByServer: true,
     schema: errorCorrectStepDtoSchema,
   },
 } as const satisfies Record<LessonStepType, LessonStepDefinition>

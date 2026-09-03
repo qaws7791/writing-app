@@ -10,9 +10,7 @@ import {
 } from "@workspace/contracts/learning/learner-content"
 import {
   completeLearnerLessonResultSchema,
-  completeLearnerStepResultSchema,
   type CompleteLearnerLessonResult,
-  type CompleteLearnerStepResult,
 } from "@workspace/contracts/learning/learner-transition"
 import {
   AppError,
@@ -38,10 +36,7 @@ import type {
   LearnerCursorCodec,
   LearnerCursorPosition,
 } from "#learning/infrastructure/persistence/learner-cursor"
-import type {
-  CompleteLearnerLessonTransitionResult,
-  CompleteLearnerStepTransitionResult,
-} from "#learning/domain/learner-transition"
+import type { CompleteLearnerLessonTransitionResult } from "#learning/domain/learner-transition"
 
 export type LearnerReadTransportError = Readonly<{ kind: "invalid-cursor" }>
 
@@ -133,42 +128,6 @@ export function unwrapLearningResult<TValue>(
 ): TValue {
   if (result.isErr()) throw mapLearningError(result.error)
   return result.value
-}
-
-export function presentCompleteStepResult(
-  result: CompleteLearnerStepTransitionResult
-): CompleteLearnerStepResult {
-  let presented: unknown
-  switch (result.kind) {
-    case "retry": {
-      presented = {
-        evaluation: result.evaluation,
-        learning: result.learning,
-        status: "retry",
-      }
-      break
-    }
-    case "advanced":
-      presented = {
-        evaluation: result.evaluation,
-        learning: result.learning,
-        status: "advanced",
-      }
-      break
-    case "lesson-completed":
-      presented = {
-        accuracyPercent: result.accuracyPercent,
-        courseLearning: result.courseLearning,
-        durationMinutes: result.durationMinutes,
-        evaluation: result.evaluation,
-        lessonCompletion: result.lessonCompletion,
-        status: "lesson_completed",
-        streakDays: result.streakDays,
-        streakIncreased: result.streakIncreased,
-      }
-      break
-  }
-  return completeLearnerStepResultSchema.parse(presented)
 }
 
 export function presentCompleteLessonResult(

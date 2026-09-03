@@ -10,14 +10,14 @@
 - Google 또는 이메일·비밀번호로 가입하고 로그인한다.
 - 학습자 홈에서 코스를 선택하고 레슨을 이어서 학습한다.
 - 발행된 쓰기 과제를 고르고 일반 텍스트 글을 작성한 뒤 AI 점검으로 다듬고 마친다.
-- 8개 활동 유형을 완료하고 서버에 진행과 초안을 저장한다.
+- 11개 활동 유형을 완료하고 서버에 진행과 초안을 저장한다.
 - 프로필과 라이트·다크·시스템 테마를 관리한다.
 - owner 관리자가 코스와 쓰기 과제, 콘텐츠 이미지, 사용자 상태와 핵심 지표를 관리한다.
 - owner 관리자가 승인된 AI 에이전트에 운영 조회를 위임한다.
 - owner 관리자가 승인된 AI 에이전트에 코스 초안 생성·저장·보관 해제를 제한적으로 자동 실행하도록 위임한다.
 - owner 관리자가 AI 에이전트의 코스 발행·보관과 사용자 상태 변경·삭제를 요청마다 승인한다.
 
-8개 활동 유형은 `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `MATCH`, `CATEGORIZE`다.
+11개 활동 유형은 확인 2종 `READING`, `COMPARE`와 채점 9종 `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `MATCH`, `CATEGORIZE`, `TRUE_FALSE`, `SENTENCE_BUILD`, `ERROR_CORRECT`다.
 
 ## 명시적 비범위
 

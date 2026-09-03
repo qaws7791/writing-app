@@ -19,9 +19,7 @@ export function createLearningContentQueryPort(
         courseId: reference.courseId,
         curriculumVersionId: reference.curriculumVersionId,
       })
-      return curriculum === null
-        ? null
-        : mapPublishedCurriculum(content, curriculum)
+      return curriculum === null ? null : mapPublishedCurriculum(curriculum)
     },
     async listPublishedCourses() {
       const courses = await content.listPublishedCourses()
@@ -31,25 +29,11 @@ export function createLearningContentQueryPort(
       content.resolveAssetReferences(assetIds),
     async readCurriculum(query) {
       const curriculum = await content.readCurriculum(query)
-      return curriculum === null
-        ? null
-        : mapPublishedCurriculum(content, curriculum)
+      return curriculum === null ? null : mapPublishedCurriculum(curriculum)
     },
   }
 }
 
-async function mapPublishedCurriculum(
-  content: ContentApplication,
-  curriculum: PublishedCurriculum
-) {
-  const publishedCourses = await content.listPublishedCourses()
-  const contentStatus = publishedCourses.some(
-    (course) =>
-      course.courseId === curriculum.courseId &&
-      course.versionId === curriculum.curriculumVersionId
-  )
-    ? ("active" as const)
-    : ("archived" as const)
-
-  return mapPublishedLearningCurriculum(curriculum, contentStatus)
+function mapPublishedCurriculum(curriculum: PublishedCurriculum) {
+  return mapPublishedLearningCurriculum(curriculum, curriculum.status)
 }

@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { learnerLessonResponseSchema } from "#contracts/learning/learner-api"
 import {
   completeLearnerLessonBodySchema,
-  completeLearnerStepBodySchema,
   learnerStepSubmissionSchema,
   saveLearnerStepDraftBodySchema,
 } from "#contracts/learning/learner-transition"
@@ -15,12 +14,13 @@ describe("learner API wire invariants", () => {
       type: "MULTIPLE_CHOICE",
       unknown: true,
     })
-    const requestWithUnknownField = completeLearnerStepBodySchema.safeParse({
+    const requestWithUnknownField = saveLearnerStepDraftBodySchema.safeParse({
       answer: {
         selectedOptionId: "option-1",
         type: "MULTIPLE_CHOICE",
       },
-      kind: "answer",
+      expectedCurriculumVersionId: "course-1-v1",
+      expectedVersion: null,
       unknown: true,
     })
 
@@ -31,16 +31,13 @@ describe("learner API wire invariants", () => {
   })
 
   it("배열 위치 대신 stable item ID를 가진 답안만 허용한다", () => {
-    const stableIdAnswer = completeLearnerStepBodySchema.safeParse({
-      answer: {
-        selectedItemIds: ["segment-1"],
-        type: "SELECT",
-      },
-      kind: "answer",
+    const stableIdAnswer = learnerStepSubmissionSchema.safeParse({
+      selectedItemIds: ["segment-1"],
+      type: "SELECT",
     })
-    const indexAnswer = completeLearnerStepBodySchema.safeParse({
-      answer: { selectedIndexes: [0], type: "SELECT" },
-      kind: "answer",
+    const indexAnswer = learnerStepSubmissionSchema.safeParse({
+      selectedIndexes: [0],
+      type: "SELECT",
     })
 
     expect({

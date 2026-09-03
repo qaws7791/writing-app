@@ -35,6 +35,7 @@ export function decidePublishCurriculum(input: {
     description: input.draft.description,
     publishedAt: input.now,
     revision: input.draft.revision,
+    status: contentStatuses.active,
     title: input.draft.title,
     units: input.draft.units,
     visualKey: input.draft.visualKey,

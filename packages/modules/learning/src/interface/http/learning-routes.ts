@@ -8,7 +8,6 @@ import type { MiddlewareHandler } from "hono"
 import { apiErrorSchema } from "@workspace/contracts/api-error"
 import {
   learnerCompleteLessonResponseSchema,
-  learnerCompleteStepResponseSchema,
   learnerCourseCategoriesResponseSchema,
   learnerCourseDetailResponseSchema,
   learnerCourseListResponseSchema,
@@ -23,7 +22,6 @@ import {
 } from "@workspace/contracts/learning/learner-api"
 import {
   completeLearnerLessonBodySchema,
-  completeLearnerStepBodySchema,
   completeLearnerStepParamsSchema,
   saveLearnerStepDraftBodySchema,
   startLearnerLessonBodySchema,
@@ -45,7 +43,6 @@ import {
   encodeLearnerCoursePage,
   encodeLearnerProgressPage,
   presentCompleteLessonResult,
-  presentCompleteStepResult,
   unwrapLearningResult,
 } from "#learning/interface/http/learning-http-mapper"
 
@@ -83,7 +80,6 @@ export function registerLearningRoutes<TEnv extends LearningHonoEnv>(
   registerProgressRoute(app, input, authenticated)
   registerStartLessonRoute(app, input, authenticated)
   registerSaveStepDraftRoute(app, input, authenticated)
-  registerCompleteStepRoute(app, input, authenticated)
   registerCompleteLessonRoute(app, input, authenticated)
 }
 
@@ -291,71 +287,6 @@ function registerStartLessonRoute<TEnv extends LearningHonoEnv>(
   })
 }
 
-function registerCompleteStepRoute<TEnv extends LearningHonoEnv>(
-  app: OpenAPIHono<TEnv>,
-  input: LearningRouteDependencies,
-  authenticated: AuthenticatedRouteOptions
-): void {
-  const route = createRoute({
-    method: "post",
-    operationId: "completeLearnerStep",
-    path: "/learning/lessons/{lessonId}/steps/{stepId}/complete",
-    request: {
-      body: {
-        content: {
-          "application/json": { schema: completeLearnerStepBodySchema },
-        },
-        required: true,
-      },
-      params: completeLearnerStepParamsSchema,
-    },
-    responses: authenticatedResponses(
-      jsonResponse(
-        "단계 완료와 다음 학습 상태입니다.",
-        learnerCompleteStepResponseSchema
-      ),
-      {
-        400: errorResponse("잘못된 요청입니다."),
-        404: errorResponse("레슨을 찾을 수 없습니다."),
-        409: errorResponse("현재 학습 순서와 요청이 다릅니다."),
-      }
-    ),
-    summary: "현재 레슨 단계 완료",
-    ...authenticated,
-  } satisfies RouteConfig)
-  app.openapi(route, async (context) => {
-    const params = context.req.valid("param")
-    const body = context.req.valid("json")
-    const command = {
-      learnerId: context.var.learningLearner.learnerId,
-      lessonId: params.lessonId,
-      stepId: params.stepId,
-    }
-    const result =
-      body.kind === "answer"
-        ? await input.application.submitStep({
-            ...command,
-            completion: {
-              ...(body.acceptIncorrect === true
-                ? { acceptIncorrect: true }
-                : {}),
-              kind: "answer",
-              submission: body.answer,
-            },
-          })
-        : await input.application.submitStep({
-            ...command,
-            completion: { kind: body.kind },
-          })
-    return context.json(
-      learnerCompleteStepResponseSchema.parse(
-        presentCompleteStepResult(unwrapLearningResult(result))
-      ),
-      200
-    )
-  })
-}
-
 function registerSaveStepDraftRoute<TEnv extends LearningHonoEnv>(
   app: OpenAPIHono<TEnv>,
   input: LearningRouteDependencies,
@@ -442,7 +373,6 @@ function registerCompleteLessonRoute<TEnv extends LearningHonoEnv>(
     const params = context.req.valid("param")
     const body = context.req.valid("json")
     const result = await input.application.completeLesson({
-      answers: body.answers,
       completedStepIds: body.completedStepIds,
       durationSeconds: body.durationSeconds,
       expectedCurriculumVersionId: body.expectedCurriculumVersionId,

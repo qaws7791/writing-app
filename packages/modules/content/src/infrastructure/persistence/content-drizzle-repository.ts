@@ -1687,6 +1687,7 @@ function readCurriculum(
     description: version.description,
     publishedAt: new Date(version.publishedAt),
     revision: version.revision,
+    status: course.status,
     title: version.title,
     units: readCurriculumUnits(database, version.id),
     visualKey: readCourseVisualKey(version.visualKey),

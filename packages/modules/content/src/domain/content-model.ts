@@ -112,6 +112,7 @@ export type PublishedCurriculumRevision = Readonly<{
   description: string
   publishedAt: Date
   revision: number
+  status: ContentStatus
   title: string
   units: readonly CurriculumUnit[]
   visualKey: CourseVisualKey

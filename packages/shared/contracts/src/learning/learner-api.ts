@@ -10,7 +10,6 @@ import {
 } from "#contracts/learning/learner-content"
 import {
   completeLearnerLessonResultSchema,
-  completeLearnerStepResultSchema,
   saveLearnerStepDraftResponseSchema,
   startLearnerLessonResponseSchema,
 } from "#contracts/learning/learner-transition"
@@ -25,7 +24,6 @@ export const learnerCourseCategoriesResponseSchema =
 export const learnerStartLessonResponseSchema = startLearnerLessonResponseSchema
 export const learnerSaveStepDraftResponseSchema =
   saveLearnerStepDraftResponseSchema
-export const learnerCompleteStepResponseSchema = completeLearnerStepResultSchema
 export const learnerCompleteLessonResponseSchema =
   completeLearnerLessonResultSchema
 
@@ -61,7 +59,4 @@ export type LearnerSaveStepDraftResponse = z.infer<
 >
 export type LearnerCompleteLessonResponse = z.infer<
   typeof learnerCompleteLessonResponseSchema
->
-export type LearnerCompleteStepResponse = z.infer<
-  typeof learnerCompleteStepResponseSchema
 >

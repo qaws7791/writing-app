@@ -33,11 +33,6 @@ import type { LearningContentQueryPort } from "#learning/application/ports/learn
 import type { LearningCurriculum } from "#learning/domain/learning-types"
 import { createDrizzleLearningReadRepository } from "#learning/infrastructure/persistence/learning-read-drizzle-repository"
 import { createDrizzleLearnerTransitionRepository } from "#learning/infrastructure/persistence/learning-transition-drizzle-repository"
-import {
-  learnerActivityDays,
-  learnerLessonAnswers,
-  learnerStepDrafts,
-} from "#learning/infrastructure/persistence/schema"
 
 type LearningFixture = Readonly<{
   database: WritingAppDatabaseClient
@@ -204,152 +199,6 @@ describe("learning SQLite transition repository", () => {
         courseVersion: expectedVersion,
         lessonVersion: expectedVersion,
         startedVersion: expectedVersion,
-      })
-    })
-  })
-
-  it("완료 성공 transaction에서 answer 저장과 draft 삭제를 함께 commit한다", async () => {
-    await withLearningDatabase(async (fixture) => {
-      const repository = createDrizzleLearnerTransitionRepository(
-        fixture.database.db
-      )
-      await repository.startLesson(startFirstLesson, writingCurriculum)
-      await repository.saveStepDraft(
-        {
-          answer: {
-            selectedOptionId: optionB,
-            type: "MULTIPLE_CHOICE",
-          },
-          expectedCurriculumVersionId: firstCurriculumVersionId,
-          expectedVersion: null,
-          lessonId: firstLessonId,
-          occurredAt,
-          stepId: firstStepId,
-          userId: learnerId,
-        },
-        writingCurriculum
-      )
-
-      await repository.completeStep(
-        {
-          completion: {
-            kind: "answer",
-            submission: {
-              selectedOptionId: optionB,
-              type: "MULTIPLE_CHOICE",
-            },
-          },
-          lessonId: firstLessonId,
-          occurredAt,
-          stepId: firstStepId,
-          userId: learnerId,
-        },
-        writingCurriculum
-      )
-
-      expect(readSubmissionState(fixture.database)).toEqual({
-        answers: [
-          {
-            answerJson: JSON.stringify({
-              selectedOptionId: "option-b",
-              type: "MULTIPLE_CHOICE",
-            }),
-          },
-        ],
-        drafts: [],
-      })
-    }, writingCurriculum)
-  })
-
-  it("완료 transaction 후반 실패 시 answer와 draft 삭제를 함께 rollback한다", async () => {
-    await withLearningDatabase(async (fixture) => {
-      const repository = createDrizzleLearnerTransitionRepository(
-        fixture.database.db
-      )
-      await repository.startLesson(startFirstLesson, writingCurriculum)
-      await repository.saveStepDraft(
-        {
-          answer: { selectedOptionId: optionB, type: "MULTIPLE_CHOICE" },
-          expectedCurriculumVersionId: firstCurriculumVersionId,
-          expectedVersion: null,
-          lessonId: firstLessonId,
-          occurredAt,
-          stepId: firstStepId,
-          userId: learnerId,
-        },
-        writingCurriculum
-      )
-      fixture.database.sqlite.exec(`
-        CREATE TRIGGER fail_answer_activity
-        BEFORE UPDATE ON learner_activity_days
-        BEGIN
-          SELECT RAISE(ABORT, 'injected answer activity failure');
-        END;
-      `)
-
-      await expect(
-        repository.completeStep(
-          {
-            completion: {
-              kind: "answer",
-              submission: {
-                selectedOptionId: optionB,
-                type: "MULTIPLE_CHOICE",
-              },
-            },
-            lessonId: firstLessonId,
-            occurredAt,
-            stepId: firstStepId,
-            userId: learnerId,
-          },
-          writingCurriculum
-        )
-      ).rejects.toThrow("injected answer activity failure")
-      expect(readSubmissionState(fixture.database)).toEqual({
-        answers: [],
-        drafts: [
-          {
-            answerJson: JSON.stringify({
-              selectedOptionId: "option-b",
-              type: "MULTIPLE_CHOICE",
-            }),
-            version: 0,
-          },
-        ],
-      })
-    }, writingCurriculum)
-  })
-
-  it("완료 replay는 완료 집계를 exactly once로 유지한다", async () => {
-    await withLearningDatabase(async (fixture) => {
-      const repository = createDrizzleLearnerTransitionRepository(
-        fixture.database.db
-      )
-      await repository.startLesson(startFirstLesson, curriculum)
-      const command = {
-        completion: { kind: "acknowledge" as const },
-        lessonId: firstLessonId,
-        occurredAt,
-        stepId: firstStepId,
-        userId: learnerId,
-      }
-
-      const first = await repository.completeStep(command, curriculum)
-      const replay = await repository.completeStep(command, curriculum)
-      const activity = fixture.database.db
-        .select({ completedLessons: learnerActivityDays.completedLessons })
-        .from(learnerActivityDays)
-        .where(eq(learnerActivityDays.userId, learnerId))
-        .get()
-
-      expect({
-        completedLessons: activity?.completedLessons,
-        firstKind: first._unsafeUnwrap().kind,
-        replayKind: replay._unsafeUnwrap().kind,
-      }).toEqual({
-        completedLessons: 1,
-        firstKind: "lesson-completed",
-        replayKind: "lesson-completed",
       })
     })
   })
@@ -598,20 +447,4 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
     .set({ publishedCurriculumVersionId: secondCurriculumVersionId })
     .where(eq(courses.id, courseId))
     .run()
-}
-
-function readSubmissionState(database: WritingAppDatabaseClient) {
-  return {
-    answers: database.db
-      .select({ answerJson: learnerLessonAnswers.answerJson })
-      .from(learnerLessonAnswers)
-      .all(),
-    drafts: database.db
-      .select({
-        answerJson: learnerStepDrafts.answerJson,
-        version: learnerStepDrafts.version,
-      })
-      .from(learnerStepDrafts)
-      .all(),
-  }
 }

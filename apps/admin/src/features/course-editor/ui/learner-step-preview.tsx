@@ -7,12 +7,15 @@ import type { EditorStep } from "@/features/course-editor/model/editor-step"
 import { orderAdminPreviewItems } from "@/features/course-editor/model/learner-step-preview-presentation"
 import { CategorizeAnswer } from "@workspace/ui/components/learning/categorize-answer"
 import { CompareStepView } from "@workspace/ui/components/learning/compare-step-view"
+import { ErrorCorrectAnswer } from "@workspace/ui/components/learning/error-correct-answer"
 import { FillBlankAnswer } from "@workspace/ui/components/learning/fill-blank-answer"
 import { MatchAnswer } from "@workspace/ui/components/learning/match-answer"
 import { MultipleChoiceAnswer } from "@workspace/ui/components/learning/multiple-choice-answer"
 import { ReadingStepView } from "@workspace/ui/components/learning/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/learning/select-answer"
+import { SentenceBuildAnswer } from "@workspace/ui/components/learning/sentence-build-answer"
 import { Step } from "@workspace/ui/components/learning/step"
+import { TrueFalseAnswer } from "@workspace/ui/components/learning/true-false-answer"
 
 const OrderAnswer = dynamic(() =>
   import("@workspace/ui/components/learning/order-answer").then(
@@ -130,5 +133,53 @@ function renderStepPreview(step: EditorStep): ReactNode {
           title={step.title}
         />
       )
+    case "TRUE_FALSE":
+      return (
+        <TrueFalseAnswer
+          correctAnswer={step.correct}
+          prompt={step.question}
+          statement={step.statement}
+        />
+      )
+    case "SENTENCE_BUILD":
+      return (
+        <SentenceBuildAnswer
+          correctTileIds={step.correct}
+          prompt={step.question}
+          tiles={orderAdminPreviewItems(
+            step.tileIds.map((id, index) => ({
+              id,
+              text: step.tiles[index] ?? "",
+            })),
+            step.id,
+            step.correct
+          )}
+        />
+      )
+    case "ERROR_CORRECT":
+      return (
+        <ErrorCorrectAnswer
+          correctErrorSegmentId={step.correctSegment}
+          correctFixId={step.correctFix}
+          fixes={orderAdminPreviewItems(
+            step.fixIds.map((id, index) => ({
+              id,
+              text: step.fixes[index] ?? "",
+            })),
+            step.id
+          )}
+          prompt={step.question}
+          segments={step.segmentIds.map((id, index) => ({
+            id,
+            text: step.segments[index] ?? "",
+          }))}
+        />
+      )
+    default:
+      return assertNever(step)
   }
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unsupported editor step: ${JSON.stringify(value)}`)
 }

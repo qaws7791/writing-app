@@ -13,11 +13,7 @@ import {
   lockedLessonLearningStateSchema,
   notStartedLessonLearningStateSchema,
 } from "#contracts/learning/learner-content"
-import {
-  learnerStepDraftSchema,
-  learnerStepSubmissionSchema,
-  stepEvaluationSchema,
-} from "#contracts/learning/learner-step-answer"
+import { learnerStepDraftSchema } from "#contracts/learning/learner-step-answer"
 
 export {
   learnerStepDraftAnswerSchema,
@@ -43,40 +39,7 @@ export const completeLearnerStepParamsSchema = z.strictObject({
   stepId: lessonStepIdSchema,
 })
 
-export const completeLearnerStepBodySchema = z.discriminatedUnion("kind", [
-  z.strictObject({ kind: z.literal("acknowledge") }),
-  z.strictObject({
-    acceptIncorrect: z.boolean().optional(),
-    answer: learnerStepSubmissionSchema,
-    kind: z.literal("answer"),
-  }),
-])
-
-export const completeLearnerStepResultSchema = z.discriminatedUnion("status", [
-  z.strictObject({
-    evaluation: stepEvaluationSchema,
-    learning: inProgressLessonLearningStateSchema,
-    status: z.literal("retry"),
-  }),
-  z.strictObject({
-    evaluation: stepEvaluationSchema.nullable(),
-    learning: inProgressLessonLearningStateSchema,
-    status: z.literal("advanced"),
-  }),
-  z.strictObject({
-    accuracyPercent: z.number().int().min(0).max(100),
-    courseLearning: courseLearningStateSchema,
-    durationMinutes: z.number().int().min(0),
-    evaluation: stepEvaluationSchema.nullable(),
-    lessonCompletion: lessonCompletionSchema,
-    status: z.literal("lesson_completed"),
-    streakDays: z.number().int().min(0),
-    streakIncreased: z.boolean(),
-  }),
-])
-
 export const completeLearnerLessonBodySchema = z.strictObject({
-  answers: z.array(learnerStepSubmissionSchema).optional(),
   completedStepIds: z.array(lessonStepIdSchema),
   durationSeconds: z.number().int().min(0),
   expectedCurriculumVersionId: curriculumVersionIdSchema,
@@ -108,12 +71,6 @@ export const saveLearnerStepDraftResponseSchema = learnerStepDraftSchema
 
 export type StartLearnerLessonBody = z.infer<
   typeof startLearnerLessonBodySchema
->
-export type CompleteLearnerStepBody = z.infer<
-  typeof completeLearnerStepBodySchema
->
-export type CompleteLearnerStepResult = z.infer<
-  typeof completeLearnerStepResultSchema
 >
 export type CompleteLearnerLessonBody = z.infer<
   typeof completeLearnerLessonBodySchema
