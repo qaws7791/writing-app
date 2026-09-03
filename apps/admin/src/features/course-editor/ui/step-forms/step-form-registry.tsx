@@ -34,77 +34,15 @@ const stepFormByType = {
   TRUE_FALSE: TrueFalseStepForm,
 } satisfies StepFormRegistry
 
+type AnyStepFormProps = StepFormProps<EditorStep["type"]>
+
 export function renderStepForm(
   step: EditorStep,
   onChange: (step: EditorStep) => void,
-  assetUpload: StepFormProps<EditorStep["type"]>["assetUpload"]
+  assetUpload: AnyStepFormProps["assetUpload"]
 ): React.ReactNode {
-  switch (step.type) {
-    case "CATEGORIZE": {
-      const StepForm = stepFormByType.CATEGORIZE
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "COMPARE": {
-      const StepForm = stepFormByType.COMPARE
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "FILL_BLANK": {
-      const StepForm = stepFormByType.FILL_BLANK
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "MATCH": {
-      const StepForm = stepFormByType.MATCH
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "MULTIPLE_CHOICE": {
-      const StepForm = stepFormByType.MULTIPLE_CHOICE
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "ORDER": {
-      const StepForm = stepFormByType.ORDER
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "READING": {
-      const StepForm = stepFormByType.READING
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "SELECT": {
-      const StepForm = stepFormByType.SELECT
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "TRUE_FALSE": {
-      const StepForm = stepFormByType.TRUE_FALSE
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "SENTENCE_BUILD": {
-      const StepForm = stepFormByType.SENTENCE_BUILD
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-    case "ERROR_CORRECT": {
-      const StepForm = stepFormByType.ERROR_CORRECT
-      return (
-        <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
-      )
-    }
-  }
+  const StepForm = stepFormByType[step.type] as (
+    props: AnyStepFormProps
+  ) => React.ReactNode
+  return <StepForm assetUpload={assetUpload} onChange={onChange} step={step} />
 }

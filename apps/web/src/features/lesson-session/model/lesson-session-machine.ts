@@ -1,20 +1,20 @@
 import type {
-  LessonCompleteLessonResult,
-  LessonStepDraftAnswer,
-  LessonStepEvaluation,
-} from "@/features/lesson-session/model/lesson-view-model"
+  CompleteLearnerLessonResult,
+  LearnerStepDraftAnswer,
+  StepEvaluation,
+} from "@workspace/contracts/learning/learner-transition"
 
 type LessonCheckedState =
   | false
   | {
       readonly correct: boolean
-      readonly evaluation?: LessonStepEvaluation | null | undefined
+      readonly evaluation?: StepEvaluation | null | undefined
       readonly explanation?: string | undefined
     }
 
 type ActiveLessonSession = {
   readonly activity: "idle" | "submitting"
-  readonly answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
+  readonly answerPayloads: Readonly<Record<string, LearnerStepDraftAnswer>>
   readonly checked: LessonCheckedState
   readonly completedStepIds: readonly string[]
   readonly currentQueueIndex: number
@@ -30,7 +30,7 @@ export type LessonSessionState =
   | { readonly status: "starting" }
   | (ActiveLessonSession & { readonly status: "active" })
   | {
-      readonly completion: LessonCompleteLessonResult | null
+      readonly completion: CompleteLearnerLessonResult | null
       readonly currentStepIndex: number
       readonly status: "complete"
     }
@@ -38,7 +38,7 @@ export type LessonSessionState =
 export type LessonSessionEvent =
   | { readonly type: "START_REQUESTED" }
   | {
-      readonly answerPayloads: Readonly<Record<string, LessonStepDraftAnswer>>
+      readonly answerPayloads: Readonly<Record<string, LearnerStepDraftAnswer>>
       readonly currentStepIndex: number
       readonly initialStepIds: readonly string[]
       readonly progressPercent: number
@@ -46,17 +46,17 @@ export type LessonSessionEvent =
     }
   | { readonly message: string; readonly type: "START_FAILED" }
   | {
-      readonly payload: LessonStepDraftAnswer
+      readonly payload: LearnerStepDraftAnswer
       readonly stepId: string
       readonly type: "ANSWER_PAYLOAD_CHANGED"
     }
   | {
-      readonly payload: LessonStepDraftAnswer | null
+      readonly payload: LearnerStepDraftAnswer | null
       readonly stepId: string
       readonly type: "DRAFT_RECONCILED"
     }
   | {
-      readonly evaluation?: LessonStepEvaluation | null | undefined
+      readonly evaluation?: StepEvaluation | null | undefined
       readonly explanation?: string | undefined
       readonly isCorrect: boolean
       readonly stepId: string
@@ -67,7 +67,7 @@ export type LessonSessionEvent =
   | { readonly type: "COMPLETE_LESSON_REQUESTED" }
   | { readonly message: string; readonly type: "COMPLETE_LESSON_FAILED" }
   | {
-      readonly completion: LessonCompleteLessonResult
+      readonly completion: CompleteLearnerLessonResult
       readonly type: "COMPLETE_LESSON_SUCCEEDED"
     }
 
@@ -84,7 +84,7 @@ export function createLessonSessionState(
   currentStepIndex: number,
   hasStarted: boolean,
   isComplete: boolean,
-  initialDrafts: Readonly<Record<string, LessonStepDraftAnswer>>,
+  initialDrafts: Readonly<Record<string, LearnerStepDraftAnswer>>,
   initialProgressPercent: number,
   initialStepIds: readonly string[]
 ): LessonSessionState {

@@ -71,7 +71,7 @@ export const learnerBlocks: BlockDoc[] = [
     slug: "lesson-session",
     title: "Lesson Session",
     description:
-      "학습자 레슨 세션입니다. 읽기·객관식·참거짓·빈칸·구간 선택·순서·짝 맞추기·분류·비교·문장 조립·받아쓰기·오류 교정·문단 구성 열세 가지 스텝을 순서대로 둘러봅니다.",
+      "학습자 레슨 세션입니다. 읽기·객관식·참거짓·빈칸·구간 선택·순서·짝 맞추기·분류·비교·문장 조립·오류 교정은 확정 스텝입니다. 받아쓰기(TRANSCRIBE)·문단 구성(PARAGRAPH_ORGANIZE)은 제외 타입이며 제품 앱 경로가 아닌 문서 예제입니다.",
     installName: "lesson-session",
   },
   {

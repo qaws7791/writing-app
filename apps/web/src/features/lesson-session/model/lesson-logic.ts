@@ -1,14 +1,14 @@
 import type {
-  Lesson,
-  LessonStep,
-  LessonStepDraftAnswer,
-} from "@/features/lesson-session/model/lesson-view-model"
+  LearnerLesson,
+  LearnerLessonStep,
+} from "@workspace/contracts/learning/learner-content"
+import type { LearnerStepDraftAnswer } from "@workspace/contracts/learning/learner-transition"
 
-export type LessonStepAnswerPayload = LessonStepDraftAnswer
+export type LessonStepAnswerPayload = LearnerStepDraftAnswer
 
 export function getLessonStep(
-  lesson: Lesson,
+  lesson: LearnerLesson,
   stepIndex: number
-): LessonStep | null {
+): LearnerLessonStep | null {
   return lesson.steps[stepIndex] ?? null
 }

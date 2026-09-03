@@ -15,6 +15,7 @@ import {
   type LessonId,
   type LessonStepId,
 } from "@workspace/contracts/content/ids"
+import type { LessonStepDto } from "@workspace/contracts/content/steps"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   learnerActivityDays,
@@ -52,10 +53,7 @@ import {
   type StartLessonSnapshot,
 } from "#learning/domain/start-lesson-decision"
 import type { LearningTransitionRepository } from "#learning/application/ports/learning-ports"
-import type {
-  LearningCurriculum,
-  LearningStep,
-} from "#learning/domain/learning-types"
+import type { LearningCurriculum } from "#learning/domain/learning-types"
 import { err, ok, type Result } from "@workspace/kernel/result"
 
 type LearningTransaction = Parameters<
@@ -668,7 +666,7 @@ function readLessonStepIds(
 function readLessonSteps(
   curriculum: LearningCurriculum,
   scope: LessonScope
-): readonly Readonly<{ content: LearningStep; id: LessonStepId }>[] {
+): readonly Readonly<{ content: LessonStepDto; id: LessonStepId }>[] {
   return (
     [...(findCurriculumLesson(curriculum, scope.lessonId)?.steps ?? [])]
       .sort((left, right) => left.sortOrder - right.sortOrder)

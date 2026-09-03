@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation"
 import { LessonActiveScreen } from "@/features/lesson-session/ui/lesson-active-screen"
 import { LessonCompleteScreen } from "@/features/lesson-session/ui/lesson-complete-screen"
 import { useLessonSession } from "@/features/lesson-session/hooks/use-lesson-session"
+import type { LearnerLesson } from "@workspace/contracts/learning/learner-content"
 import { getLessonStep } from "@/features/lesson-session/model/lesson-logic"
-import type { Lesson } from "@/features/lesson-session/model/lesson-view-model"
 import { useIsHydrated } from "@/shared/hooks/use-is-hydrated"
 
 type LessonExperienceProps = {
-  readonly lesson: Lesson
+  readonly lesson: LearnerLesson
 }
 
 export function LessonExperience(props: LessonExperienceProps) {

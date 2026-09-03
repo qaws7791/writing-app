@@ -1,9 +1,7 @@
 "use client"
 
-import type {
-  Lesson as LessonViewModel,
-  LessonCompleteLessonResult,
-} from "@/features/lesson-session/model/lesson-view-model"
+import type { LearnerLesson } from "@workspace/contracts/learning/learner-content"
+import type { CompleteLearnerLessonResult } from "@workspace/contracts/learning/learner-transition"
 import { CheckCircleIcon } from "@workspace/ui/components/icons/authentication-icons"
 import { Button } from "@workspace/ui/components/primitives/button"
 import {
@@ -19,8 +17,8 @@ export function LessonCompleteScreen({
   onCourse,
   onNext,
 }: {
-  readonly completion: LessonCompleteLessonResult | null
-  readonly lesson: LessonViewModel
+  readonly completion: CompleteLearnerLessonResult | null
+  readonly lesson: LearnerLesson
   readonly onCourse: () => void
   readonly onNext: (nextLessonId: string) => void
 }) {

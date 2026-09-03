@@ -45,7 +45,12 @@ const definitions = [
     "최근 학습 리듬을 주간 이력으로 보여 주며 스트릭 불안 대신 다음 행동을 남깁니다.",
     "Learning",
   ],
-  ["calendar", "Calendar", "날짜 또는 날짜 범위를 탐색하고 선택합니다.", "Date & Time"],
+  [
+    "calendar",
+    "Calendar",
+    "날짜 또는 날짜 범위를 탐색하고 선택합니다. 제품 앱은 사용하지 않으며 UI 문서 범위입니다.",
+    "Date & Time",
+  ],
   ["card", "Card", "관련된 정보와 작업을 하나의 표면에 그룹화합니다.", "Data Display"],
   ["carousel", "Carousel", "한 줄로 넘치는 카드를 드래그와 버튼으로 탐색합니다.", "Navigation"],
   [
@@ -76,7 +81,12 @@ const definitions = [
   ["goal", "Goal", "오늘이나 이번 주 학습 목표와 남은 작업량을 점수 없이 보여 줍니다.", "Learning"],
   ["input", "Input", "한 줄 텍스트 데이터를 입력받습니다.", "Forms"],
   ["input-group", "Input Group", "입력과 아이콘, 버튼, 접두·접미 요소를 결합합니다.", "Forms"],
-  ["input-otp", "Input OTP", "일회용 인증 코드를 칸 단위로 입력받습니다.", "Forms"],
+  [
+    "input-otp",
+    "Input OTP",
+    "일회용 인증 코드를 칸 단위로 입력받습니다. 제품 앱은 사용하지 않으며 UI 문서 범위입니다.",
+    "Forms",
+  ],
   ["insight", "Insight", "해설, 생각해보기, 정오답 피드백을 조용한 패널로 전달합니다.", "Learning"],
   ["item", "Item", "목록의 미디어, 본문, 메타데이터와 작업을 정렬합니다.", "Data Display"],
   ["kbd", "Kbd", "키보드 키나 단축키를 시각적으로 표현합니다.", "Typography"],

@@ -3,6 +3,7 @@ import {
   orderLearnerStepItems,
   orderLearnerStepItemsAvoidingPrefix,
 } from "@workspace/contracts/learning/step-presentation-order"
+import type { LessonStepDto } from "@workspace/contracts/content/steps"
 import type {
   CurriculumVersionId,
   LessonId,
@@ -22,7 +23,6 @@ import type {
   CurriculumVersionRef,
   LearningLessonReference,
   LessonLearningState,
-  LearningStep,
 } from "#learning/domain/learning-types"
 
 export type LearnerCourseListProjectionRow = {
@@ -427,7 +427,7 @@ export type LearnerStepPresentationContext = {
  * 각 variant는 중첩 값까지 공개 필드만 새 객체로 구성한다.
  */
 export function presentLearnerStep(
-  step: LearningStep,
+  step: LessonStepDto,
   context: LearnerStepPresentationContext
 ): LearnerLessonStep {
   const scope = createPresentationScope(step, context)
@@ -644,7 +644,7 @@ function requireContentAssetReference<
 }
 
 function createPresentationScope(
-  step: LearningStep,
+  step: LessonStepDto,
   context: LearnerStepPresentationContext
 ): string {
   return createLearnerStepPresentationScope({

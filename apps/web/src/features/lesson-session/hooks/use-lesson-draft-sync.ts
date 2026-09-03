@@ -16,9 +16,11 @@ import {
 import {
   parseLessonStepDraft,
   parseLessonStepDrafts,
-  type LessonStepDraft,
-  type LessonStepDraftAnswer,
 } from "@/features/lesson-session/model/lesson-view-model"
+import type {
+  LearnerStepDraft,
+  LearnerStepDraftAnswer,
+} from "@workspace/contracts/learning/learner-transition"
 import { useUnmountAbortSignal } from "@/shared/http/use-unmount-abort-signal"
 
 const AUTOSAVE_DELAY_MS = 800
@@ -29,16 +31,16 @@ export type LessonDraftFlushResult =
   | { readonly status: "ready" }
 
 type DraftRecord = {
-  answer: LessonStepDraftAnswer
+  answer: LearnerStepDraftAnswer
   dirty: boolean
   expectedVersion: number | null
   inFlight: Promise<void> | null
-  savedAnswer: LessonStepDraftAnswer | null
+  savedAnswer: LearnerStepDraftAnswer | null
   updatedAt: string | null
 }
 
 type CurrentDraftResult =
-  | { readonly draft: LessonStepDraft | null; readonly status: "ok" }
+  | { readonly draft: LearnerStepDraft | null; readonly status: "ok" }
   | { readonly status: "error" }
 
 export function useLessonDraftSync({
@@ -48,11 +50,11 @@ export function useLessonDraftSync({
   onServerDraftApplied,
 }: {
   readonly expectedCurriculumVersionId: string
-  readonly initialDrafts: readonly LessonStepDraft[]
+  readonly initialDrafts: readonly LearnerStepDraft[]
   readonly lessonId: string
   readonly onServerDraftApplied: (
     stepId: string,
-    answer: LessonStepDraftAnswer | null
+    answer: LearnerStepDraftAnswer | null
   ) => void
 }) {
   const recordsRef = useRef<Map<string, DraftRecord> | null>(null)
@@ -121,9 +123,9 @@ export function useLessonDraftSync({
   )
 
   const applyServerDrafts = useCallback(
-    (serverDrafts: readonly LessonStepDraft[]) => {
+    (serverDrafts: readonly LearnerStepDraft[]) => {
       const records = readDraftRecords(recordsRef)
-      const serverDraftByStepId = new Map<string, LessonStepDraft>(
+      const serverDraftByStepId = new Map<string, LearnerStepDraft>(
         serverDrafts.map((draft) => [draft.stepId, draft])
       )
 
@@ -329,7 +331,7 @@ export function useLessonDraftSync({
   ])
 
   const stageDraft = useCallback(
-    (stepId: string, answer: LessonStepDraftAnswer) => {
+    (stepId: string, answer: LearnerStepDraftAnswer) => {
       const records = readDraftRecords(recordsRef)
       const record = records.get(stepId) ?? createUnsavedDraftRecord(answer)
       records.set(stepId, record)
@@ -406,14 +408,14 @@ export function useLessonDraftSync({
 }
 
 function createDraftRecords(
-  drafts: readonly LessonStepDraft[]
+  drafts: readonly LearnerStepDraft[]
 ): Map<string, DraftRecord> {
   return new Map(
     drafts.map((draft) => [draft.stepId, createServerDraftRecord(draft)])
   )
 }
 
-function createServerDraftRecord(draft: LessonStepDraft): DraftRecord {
+function createServerDraftRecord(draft: LearnerStepDraft): DraftRecord {
   return {
     answer: draft.answer,
     dirty: false,
@@ -424,7 +426,7 @@ function createServerDraftRecord(draft: LessonStepDraft): DraftRecord {
   }
 }
 
-function createUnsavedDraftRecord(answer: LessonStepDraftAnswer): DraftRecord {
+function createUnsavedDraftRecord(answer: LearnerStepDraftAnswer): DraftRecord {
   return {
     answer,
     dirty: true,
@@ -437,7 +439,7 @@ function createUnsavedDraftRecord(answer: LessonStepDraftAnswer): DraftRecord {
 
 function rebaseDirtyRecord(
   record: DraftRecord,
-  draft: LessonStepDraft | null
+  draft: LearnerStepDraft | null
 ): void {
   record.expectedVersion = draft?.version ?? null
   record.savedAnswer = draft?.answer ?? null
@@ -447,7 +449,7 @@ function rebaseDirtyRecord(
 
 function updateRecordFromServer(
   record: DraftRecord,
-  draft: LessonStepDraft
+  draft: LearnerStepDraft
 ): void {
   record.answer = draft.answer
   record.dirty = false
@@ -458,7 +460,7 @@ function updateRecordFromServer(
 
 function serverBaseChanged(
   record: DraftRecord,
-  draft: LessonStepDraft | null
+  draft: LearnerStepDraft | null
 ): boolean {
   return (
     (draft?.version ?? null) !== record.expectedVersion ||
@@ -481,8 +483,8 @@ function browserIsOnline(): boolean {
 }
 
 function sameOptionalAnswer(
-  left: LessonStepDraftAnswer | undefined,
-  right: LessonStepDraftAnswer | null
+  left: LearnerStepDraftAnswer | undefined,
+  right: LearnerStepDraftAnswer | null
 ): boolean {
   return left === undefined
     ? right === null
@@ -490,15 +492,120 @@ function sameOptionalAnswer(
 }
 
 function sameNullableAnswer(
-  left: LessonStepDraftAnswer,
-  right: LessonStepDraftAnswer | null
+  left: LearnerStepDraftAnswer,
+  right: LearnerStepDraftAnswer | null
 ): boolean {
   return right !== null && sameDraftAnswer(left, right)
 }
 
 function sameDraftAnswer(
-  left: LessonStepDraftAnswer,
-  right: LessonStepDraftAnswer
+  left: LearnerStepDraftAnswer,
+  right: LearnerStepDraftAnswer
 ): boolean {
-  return JSON.stringify(left) === JSON.stringify(right)
+  if (left.type !== right.type) return false
+  switch (left.type) {
+    case "MULTIPLE_CHOICE":
+      return (
+        right.type === "MULTIPLE_CHOICE" &&
+        left.selectedOptionId === right.selectedOptionId
+      )
+    case "FILL_BLANK":
+      return (
+        right.type === "FILL_BLANK" &&
+        sameIdList(left.selectedChoiceIds, right.selectedChoiceIds)
+      )
+    case "SELECT":
+      return (
+        right.type === "SELECT" &&
+        sameIdList(left.selectedItemIds, right.selectedItemIds)
+      )
+    case "ORDER":
+      return (
+        right.type === "ORDER" &&
+        sameIdList(left.orderedItemIds, right.orderedItemIds)
+      )
+    case "MATCH":
+      return right.type === "MATCH" && sameMatchPairs(left.pairs, right.pairs)
+    case "CATEGORIZE":
+      return (
+        right.type === "CATEGORIZE" &&
+        sameCategorizeAssignments(left.assignments, right.assignments)
+      )
+    case "TRUE_FALSE":
+      return (
+        right.type === "TRUE_FALSE" &&
+        left.selectedAnswer === right.selectedAnswer
+      )
+    case "SENTENCE_BUILD":
+      return (
+        right.type === "SENTENCE_BUILD" &&
+        sameIdList(left.selectedTileIds, right.selectedTileIds)
+      )
+    case "ERROR_CORRECT":
+      return (
+        right.type === "ERROR_CORRECT" &&
+        left.selectedFixId === right.selectedFixId &&
+        left.selectedSegmentId === right.selectedSegmentId
+      )
+  }
+}
+
+function sameIdList(
+  left: readonly string[],
+  right: readonly string[]
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every((id, index) => id === right[index])
+  )
+}
+
+function sameMatchPairs(
+  left: readonly Readonly<{ leftItemId: string; rightItemId: string }>[],
+  right: readonly Readonly<{ leftItemId: string; rightItemId: string }>[]
+): boolean {
+  if (left.length !== right.length) return false
+  const sortedLeft = sortByPairIds(left)
+  const sortedRight = sortByPairIds(right)
+  return sortedLeft.every(
+    (pair, index) =>
+      pair.leftItemId === sortedRight[index]?.leftItemId &&
+      pair.rightItemId === sortedRight[index]?.rightItemId
+  )
+}
+
+function sortByPairIds(
+  pairs: readonly Readonly<{ leftItemId: string; rightItemId: string }>[]
+): readonly Readonly<{ leftItemId: string; rightItemId: string }>[] {
+  return [...pairs].sort((left, right) => {
+    const leftOrder = left.leftItemId.localeCompare(right.leftItemId)
+    return leftOrder !== 0
+      ? leftOrder
+      : left.rightItemId.localeCompare(right.rightItemId)
+  })
+}
+
+function sameCategorizeAssignments(
+  left: readonly Readonly<{ categoryId: string; itemId: string }>[],
+  right: readonly Readonly<{ categoryId: string; itemId: string }>[]
+): boolean {
+  if (left.length !== right.length) return false
+  const sortedLeft = sortByAssignmentIds(left)
+  const sortedRight = sortByAssignmentIds(right)
+  return sortedLeft.every(
+    (assignment, index) =>
+      assignment.categoryId === sortedRight[index]?.categoryId &&
+      assignment.itemId === sortedRight[index]?.itemId
+  )
+}
+
+function sortByAssignmentIds(
+  assignments: readonly Readonly<{ categoryId: string; itemId: string }>[]
+): readonly Readonly<{ categoryId: string; itemId: string }>[] {
+  return [...assignments].sort((left, right) => {
+    const itemOrder = left.itemId.localeCompare(right.itemId)
+    return itemOrder !== 0
+      ? itemOrder
+      : left.categoryId.localeCompare(right.categoryId)
+  })
 }

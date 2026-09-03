@@ -182,7 +182,7 @@ function projectCourseDetail(
     .all()
   const bundle: LearnerCourseProjectionBundle = {
     course: {
-      contentStatus: curriculum.contentStatus ?? "active",
+      contentStatus: curriculum.contentStatus,
       id: curriculum.courseId,
     },
     courseProgress:

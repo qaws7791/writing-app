@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react"
 import { evaluateStepSubmission } from "@workspace/contracts/learning/step-grading"
 import { learnerStepSubmissionSchema } from "@workspace/contracts/learning/learner-transition"
+import type {
+  LearnerLesson,
+  LearnerLessonStep,
+} from "@workspace/contracts/learning/learner-content"
 import type { LessonStepId } from "@workspace/contracts/content/ids"
 import type {
-  Lesson,
-  LessonStep,
-  LessonStepDraft,
-  LessonStepDraftAnswer,
-} from "@/features/lesson-session/model/lesson-view-model"
+  LearnerStepDraft,
+  LearnerStepDraftAnswer,
+} from "@workspace/contracts/learning/learner-transition"
 import {
   getLessonStep,
   type LessonStepAnswerPayload,
@@ -31,7 +33,11 @@ const LESSON_START_ERROR = "잠시 후 다시 시도해 주세요."
 const LESSON_STEP_ERROR =
   "작성한 내용은 그대로 있어요. 잠시 후 다시 시도해 주세요."
 
-export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
+export function useLessonSession({
+  lesson,
+}: {
+  readonly lesson: LearnerLesson
+}) {
   const initialState = resolveInitialSessionState(lesson)
   const readAbortSignal = useUnmountAbortSignal()
   const effects = useMemo(
@@ -48,7 +54,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   const sessionStartTimeRef = useRef<number | null>(null)
 
   const applyServerDraft = useCallback(
-    (stepId: string, answer: LessonStepDraftAnswer | null) => {
+    (stepId: string, answer: LearnerStepDraftAnswer | null) => {
       if (sessionStateRef.current.status !== "active") return
       send({ payload: answer, stepId, type: "DRAFT_RECONCILED" })
     },
@@ -316,7 +322,7 @@ export function useLessonSession({ lesson }: { readonly lesson: Lesson }) {
   }
 }
 
-function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
+function resolveInitialSessionState(lesson: LearnerLesson): LessonSessionState {
   const stepIds = lesson.steps.map((s) => s.id)
   switch (lesson.learning.status) {
     case "not_started":
@@ -345,12 +351,12 @@ function resolveInitialSessionState(lesson: Lesson): LessonSessionState {
 }
 
 function toDraftAnswerPayloads(
-  drafts: readonly LessonStepDraft[]
-): Readonly<Record<string, LessonStepDraftAnswer>> {
+  drafts: readonly LearnerStepDraft[]
+): Readonly<Record<string, LearnerStepDraftAnswer>> {
   return Object.fromEntries(drafts.map((draft) => [draft.stepId, draft.answer]))
 }
 
-function isEvaluatedChoiceStep(step: LessonStep): boolean {
+function isEvaluatedChoiceStep(step: LearnerLessonStep): boolean {
   return (
     step.type === "CATEGORIZE" ||
     step.type === "ERROR_CORRECT" ||

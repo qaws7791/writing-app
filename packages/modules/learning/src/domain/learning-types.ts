@@ -9,8 +9,6 @@ import type {
 
 import type { LessonStepDto } from "@workspace/contracts/content/steps"
 
-export type LearningStep = LessonStepDto
-
 type LearningCurriculumLesson = Readonly<{
   category: string | null
   description: string | null
@@ -18,7 +16,7 @@ type LearningCurriculumLesson = Readonly<{
   id: LessonId
   sortOrder: number
   status: "active" | "archived"
-  steps: readonly LearningStep[]
+  steps: readonly LessonStepDto[]
   summary: readonly string[]
   title: string
   unitId: UnitId
@@ -27,7 +25,7 @@ type LearningCurriculumLesson = Readonly<{
 
 export type LearningCurriculum = Readonly<{
   category: string
-  contentStatus?: "active" | "archived"
+  contentStatus: "active" | "archived"
   courseId: CourseId
   coverAssetId: ContentAssetId | null
   curriculumVersionId: CurriculumVersionId

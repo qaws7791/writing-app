@@ -22,7 +22,7 @@ import { ReadingStepView } from "@workspace/ui/components/learning/reading-step-
 import { SelectAnswer } from "@workspace/ui/components/learning/select-answer"
 import { SentenceBuildAnswer } from "@workspace/ui/components/learning/sentence-build-answer"
 import { TrueFalseAnswer } from "@workspace/ui/components/learning/true-false-answer"
-import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
+import type { LearnerLessonStep } from "@workspace/contracts/learning/learner-content"
 import type { LessonStepType } from "@workspace/contracts/content/steps"
 
 const OrderAnswer = dynamic(() =>
@@ -39,7 +39,7 @@ export type LessonStepRendererProps = {
     readonly payload: LessonStepAnswerPayload
     readonly stepId: string
   }) => void
-  readonly step: LessonStep
+  readonly step: LearnerLessonStep
 }
 
 const lessonStepRendererByType = {
@@ -94,7 +94,7 @@ function renderStep({
   readonly answerPayload: LessonStepAnswerPayload | undefined
   readonly checked: LessonStepCheckedState | false
   readonly emitAnswer: (payload: LessonStepAnswerPayload) => void
-  readonly step: LessonStep
+  readonly step: LearnerLessonStep
 }): ReactNode {
   const checkedVisual = toLessonStepCheckedVisual(step, checked)
 

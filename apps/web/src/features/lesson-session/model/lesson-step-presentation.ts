@@ -1,5 +1,5 @@
 import type { LessonStepCheckedState } from "@/features/lesson-session/model/lesson-step-policy"
-import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
+import type { LearnerLessonStep } from "@workspace/contracts/learning/learner-content"
 
 type LessonStepCheckedPresentation =
   | false
@@ -11,7 +11,7 @@ type LessonStepCheckedPresentation =
     }
 
 export function toLessonStepCheckedVisual(
-  step: LessonStep,
+  step: LearnerLessonStep,
   checked: LessonStepCheckedState | false
 ): LessonStepCheckedPresentation {
   if (checked === false) return false

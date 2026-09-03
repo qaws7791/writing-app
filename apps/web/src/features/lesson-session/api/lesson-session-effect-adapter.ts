@@ -3,13 +3,14 @@ import {
   startLearnerLesson,
 } from "@workspace/http-client/learner"
 
+import type {
+  CompleteLearnerLessonBody,
+  CompleteLearnerLessonResult,
+} from "@workspace/contracts/learning/learner-transition"
 import { getLessonUserMessage } from "@/features/lesson-session/model/lesson-user-message"
 import {
   toLessonCompleteLessonResult,
   toLessonStartResult,
-  type LessonCompleteLessonBody,
-  type LessonCompleteLessonResult,
-  type LessonStartResult,
 } from "@/features/lesson-session/model/lesson-view-model"
 import {
   readLearnerApiErrorCode,
@@ -19,17 +20,17 @@ import {
 type LessonCompleteOutcome =
   | { readonly status: "error"; readonly message: string }
   | {
-      readonly completion: LessonCompleteLessonResult
+      readonly completion: CompleteLearnerLessonResult
       readonly status: "ok"
     }
 
 export type LessonSessionEffects = {
   readonly completeLesson: (input: {
-    readonly request: LessonCompleteLessonBody
+    readonly request: CompleteLearnerLessonBody
   }) => Promise<LessonCompleteOutcome>
   readonly start: () => Promise<
     | {
-        readonly learning: LessonStartResult
+        readonly learning: ReturnType<typeof toLessonStartResult>
         readonly status: "ok"
       }
     | { readonly message: string; readonly status: "error" }

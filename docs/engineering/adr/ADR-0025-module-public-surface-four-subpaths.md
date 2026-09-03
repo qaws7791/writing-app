@@ -30,3 +30,9 @@
 ## 영향
 
 모듈 exports 합계는 약 20개(모듈당 4개)로 고정된다. 조립·fake 주입은 `module.ts` 파라미터로 옮긴다. 상세 관례는 [`package-interface-and-import-rules.md`](../package-interface-and-import-rules.md)가 소유한다.
+
+## 후속 결정 (2026-09-03)
+
+런타임 4 subpath는 유지한다.
+
+집필 CLI와 모듈 테스트가 쓰는 extra subpath는 예외다. extra key 목록은 각 module manifest가 소유한다. CLI·테스트를 조립 표면에 섞지 않기 위해 extra를 `./module`로 접지 않는다.

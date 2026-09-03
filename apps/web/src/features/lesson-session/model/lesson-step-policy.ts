@@ -1,19 +1,19 @@
+import type { LearnerLessonStep } from "@workspace/contracts/learning/learner-content"
 import type {
-  LessonStep,
-  LessonStepDraftAnswer,
-  LessonStepEvaluation,
-} from "@/features/lesson-session/model/lesson-view-model"
+  LearnerStepDraftAnswer,
+  StepEvaluation,
+} from "@workspace/contracts/learning/learner-transition"
 
 export type LessonStepCheckedState = {
   readonly correct: boolean
-  readonly evaluation?: LessonStepEvaluation | null | undefined
+  readonly evaluation?: StepEvaluation | null | undefined
   readonly explanation?: string | undefined
 }
 
 export type LessonStepSubmissionMode = "instant" | "manual"
 
 export function getLessonStepSubmissionMode(
-  step: LessonStep
+  step: LearnerLessonStep
 ): LessonStepSubmissionMode {
   switch (step.type) {
     case "MULTIPLE_CHOICE":
@@ -33,8 +33,8 @@ export function getLessonStepSubmissionMode(
 }
 
 export function isLessonStepSubmittable(
-  step: LessonStep,
-  payload: LessonStepDraftAnswer | undefined
+  step: LearnerLessonStep,
+  payload: LearnerStepDraftAnswer | undefined
 ): boolean {
   switch (step.type) {
     case "CATEGORIZE":
@@ -82,13 +82,13 @@ export function isLessonStepSubmittable(
   }
 }
 
-export function getLessonStepActionLabel(step: LessonStep): string {
+export function getLessonStepActionLabel(step: LearnerLessonStep): string {
   return step.type === "READING" || step.type === "COMPARE"
     ? "이해했어요"
     : "확인하기"
 }
 
-export function getLessonStepPendingLabel(step: LessonStep): string {
+export function getLessonStepPendingLabel(step: LearnerLessonStep): string {
   return step.type === "READING" || step.type === "COMPARE"
     ? "계속하는 중…"
     : "확인하는 중…"

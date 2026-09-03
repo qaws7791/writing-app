@@ -1295,7 +1295,7 @@ export function InputGroupCustomControl() {
   "input-otp": {
     slug: "input-otp",
     summary:
-      "Input OTP는 하나의 접근 가능한 입력을 여러 슬롯으로 보여 주어 인증 코드와 짧은 PIN을 빠르게 입력하게 합니다.",
+      "Input OTP는 하나의 접근 가능한 입력을 여러 슬롯으로 보여 주어 인증 코드와 짧은 PIN을 빠르게 입력하게 합니다. 제품 앱(apps/web, apps/admin)은 사용하지 않으며 UI 문서 범위입니다.",
     examples: [
       {
         id: "basic",
@@ -2508,7 +2508,7 @@ export function TextareaInputGroup() {
   calendar: {
     slug: "calendar",
     summary:
-      "Calendar는 React DayPicker 위에 Luma의 원형 날짜 셀과 넉넉한 탐색 제어를 입힌 날짜·기간 선택 컴포넌트입니다.",
+      "Calendar는 React DayPicker 위에 Luma의 원형 날짜 셀과 넉넉한 탐색 제어를 입힌 날짜·기간 선택 컴포넌트입니다. 제품 앱(apps/web, apps/admin)은 사용하지 않으며 UI 문서 범위입니다.",
     examples: [
       {
         id: "basic",

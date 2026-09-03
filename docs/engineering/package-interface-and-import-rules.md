@@ -23,6 +23,7 @@
 - config package는 server parser와 browser-safe 설정을 서로 다른 subpath로 분리하고 client graph가 secret-bearing parser를 소비하지 않게 한다.
 - auth infra는 learner/admin과 client/server, 이메일 전달 Port·adapter, schema·migration·seed tooling 경계를 분리한다. root barrel과 client/server forwarding 경로는 제공하지 않는다.
 - 제품 module은 `./module`, `./http`, `./ports`, `./migration-schema` subpath만 공개한다([ADR-0025](./adr/ADR-0025-module-public-surface-four-subpaths.md)). `./module`은 조립 팩토리와 DB tooling이 쓰는 seed·purge 진입점, `./http`는 route 등록과 Hono env 계약, `./ports`는 외부가 구현하거나 소비하는 포트 타입·도메인 상수, `./migration-schema`는 Drizzle table 정의를 소유한다. consumer는 domain·infrastructure 내부 경로를 import하지 않는다.
+- 집필 CLI와 모듈 테스트는 런타임 4 subpath 밖의 extra를 import할 수 있다. extra key는 각 module manifest가 소유한다. 제품 런타임 앱은 extra를 import하지 않는다.
 - HTTP route는 wire 어휘를 소유한 module이 등록한다. 다른 module의 계약으로 응답하는 route는 만들지 않으며, 자기 route가 없는 module은 `./http`를 공개하지 않는다.
 - 제품 module은 wildcard subpath를 쓰지 않는다. `dependency-cruiser.config.mjs`가 manifest `exports`에서 경계 패턴을 파생하므로 wildcard는 경계 검사를 무력화한다.
 - `packages/shared/ui`는 순수 표현 계층이므로 `./blocks/*`, `./components/*`, `./hooks/*`, `./lib/*` wildcard와 font·style 진입점을 공개한다. Registry block은 example composition이며 제품 API나 production data를 소유하지 않는다.

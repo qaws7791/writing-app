@@ -7,7 +7,7 @@ import {
   getLessonStepSubmissionMode,
   isLessonStepSubmittable,
 } from "@/features/lesson-session/model/lesson-step-policy"
-import type { LessonStep } from "@/features/lesson-session/model/lesson-view-model"
+import type { LearnerLessonStep } from "@workspace/contracts/learning/learner-content"
 
 describe("lesson-step-policy", () => {
   describe("getLessonStepSubmissionMode", () => {
@@ -23,7 +23,7 @@ describe("lesson-step-policy", () => {
         question: "질문",
         sortOrder: 1,
         type: "MULTIPLE_CHOICE",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const tfStep = {
         correct: true,
@@ -33,7 +33,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         statement: "진술",
         type: "TRUE_FALSE",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       expect(getLessonStepSubmissionMode(mcStep)).toBe("instant")
       expect(getLessonStepSubmissionMode(tfStep)).toBe("instant")
@@ -46,7 +46,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         title: "제목",
         type: "READING",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const compareStep = {
         analysis: "두 판본의 차이를 봅니다.",
@@ -58,7 +58,7 @@ describe("lesson-step-policy", () => {
           { label: "A", mark: "A", text: "본문 A" },
           { label: "B", mark: "B", text: "본문 B" },
         ],
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const selectStep = {
         correct: ["seg-1"],
@@ -68,7 +68,7 @@ describe("lesson-step-policy", () => {
         question: "질문",
         sortOrder: 1,
         type: "SELECT",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const fillBlankStep = {
         answer: ["c-1"],
@@ -79,7 +79,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         template: "___",
         type: "FILL_BLANK",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const matchStep = {
         explanation: "설명",
@@ -90,7 +90,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         title: "제목",
         type: "MATCH",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const categorizeStep = {
         categories: [{ id: "cat-1", text: "분류 1" }],
@@ -100,7 +100,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         title: "제목",
         type: "CATEGORIZE",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const orderStep = {
         correct: ["item-1"],
@@ -110,7 +110,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         title: "제목",
         type: "ORDER",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const sentenceBuildStep = {
         correct: ["t-1"],
@@ -121,7 +121,7 @@ describe("lesson-step-policy", () => {
         tileCount: 1,
         tiles: [{ id: "t-1", text: "어절 1" }],
         type: "SENTENCE_BUILD",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const errorCorrectStep = {
         correctFix: "fix-1",
@@ -133,7 +133,7 @@ describe("lesson-step-policy", () => {
         segments: [{ id: "seg-1", text: "구간 1" }],
         sortOrder: 1,
         type: "ERROR_CORRECT",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       expect(getLessonStepSubmissionMode(readingStep)).toBe("manual")
       expect(getLessonStepSubmissionMode(compareStep)).toBe("manual")
@@ -149,7 +149,7 @@ describe("lesson-step-policy", () => {
 
   describe("isLessonStepSubmittable", () => {
     it("MULTIPLE_CHOICE는 옵션이 선택되면 submittable하다", () => {
-      const step: LessonStep = {
+      const step: LearnerLessonStep = {
         correct: "opt-1",
         explanation: "설명",
         id: "step-mc" as LessonStepId,
@@ -175,7 +175,7 @@ describe("lesson-step-policy", () => {
     })
 
     it("TRUE_FALSE는 불리언 값이 선택되면 submittable하다", () => {
-      const step: LessonStep = {
+      const step: LearnerLessonStep = {
         correct: true,
         explanation: "설명",
         id: "step-tf" as LessonStepId,
@@ -209,7 +209,7 @@ describe("lesson-step-policy", () => {
         sortOrder: 1,
         title: "제목",
         type: "READING",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       const mcStep = {
         correct: "opt-1",
@@ -219,7 +219,7 @@ describe("lesson-step-policy", () => {
         question: "질문",
         sortOrder: 1,
         type: "MULTIPLE_CHOICE",
-      } satisfies LessonStep
+      } satisfies LearnerLessonStep
 
       expect(getLessonStepActionLabel(readingStep)).toBe("이해했어요")
       expect(getLessonStepPendingLabel(readingStep)).toBe("계속하는 중…")

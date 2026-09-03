@@ -3,13 +3,21 @@ import type { ContentApplication } from "@workspace/content/ports"
 import type { LearningContentQueryPort } from "#learning/application/ports/learning-ports"
 import { mapPublishedLearningCurriculum } from "#learning/infrastructure/persistence/published-curriculum-mapper"
 
+export type LearningContentApplicationQuery = Pick<
+  ContentApplication,
+  | "findCurriculumByLesson"
+  | "listPublishedCourses"
+  | "readCurriculum"
+  | "resolveAssetReferences"
+>
+
 type PublishedCurriculum = NonNullable<
-  Awaited<ReturnType<ContentApplication["readCurriculum"]>>
+  Awaited<ReturnType<LearningContentApplicationQuery["readCurriculum"]>>
 >
 
 /** content 모듈의 발행 커리큘럼을 learning 어휘로 옮기는 어댑터. */
 export function createLearningContentQueryPort(
-  content: ContentApplication
+  content: LearningContentApplicationQuery
 ): LearningContentQueryPort {
   return {
     async findCurriculumByLesson(query) {

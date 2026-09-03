@@ -10,9 +10,9 @@ import {
 } from "@/features/lesson-session/model/lesson-step-policy"
 import { LessonStepRenderer } from "@/features/lesson-session/ui/lesson-step-renderer"
 import type {
-  Lesson,
-  LessonStep,
-} from "@/features/lesson-session/model/lesson-view-model"
+  LearnerLesson,
+  LearnerLessonStep,
+} from "@workspace/contracts/learning/learner-content"
 import {
   LessonCheckedFooter,
   LessonProgressHeader,
@@ -64,13 +64,13 @@ export function LessonActiveScreen({
   readonly checked: LessonCheckedState
   readonly completeError: null | string
   readonly contentRef: Ref<HTMLElement>
-  readonly currentStep: LessonStep
+  readonly currentStep: LearnerLessonStep
   readonly currentStepIndex: number
   readonly exitError: null | string
   readonly isReady: boolean
   readonly isLeaving: boolean
   readonly isSubmitting: boolean
-  readonly lesson: Lesson
+  readonly lesson: LearnerLesson
   readonly onAnswerPayloadChange: (change: {
     readonly payload: LessonStepAnswerPayload
     readonly stepId: string

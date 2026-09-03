@@ -5,10 +5,8 @@ import type {
   LessonId,
   LessonStepId,
 } from "@workspace/types/ids"
-import type {
-  LearnerStepSubmission,
-  LearningStep,
-} from "#learning/domain/learning-types"
+import type { LessonStepDto } from "@workspace/contracts/content/steps"
+import type { LearnerStepSubmission } from "#learning/domain/learning-types"
 import {
   toLearningDateKey,
   type LearningDateKey,
@@ -38,7 +36,7 @@ export type CompleteLessonSnapshot =
       readonly kind: "lesson"
       readonly progress: LessonProgressSnapshot
       readonly scope: LearnerLessonScope
-      readonly steps: readonly LearningStep[]
+      readonly steps: readonly LessonStepDto[]
     }
 
 export type CompleteLessonEffect =

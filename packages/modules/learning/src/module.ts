@@ -1,4 +1,3 @@
-import type { ContentApplication } from "@workspace/content/ports"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
 import {
@@ -12,7 +11,10 @@ import {
   type LearningReportingQuery,
 } from "#learning/application/learning-reporting"
 import type { LearningApplicationDependencies } from "#learning/application/ports/learning-ports"
-import { createLearningContentQueryPort } from "#learning/infrastructure/adapters/content-query-adapter"
+import {
+  createLearningContentQueryPort,
+  type LearningContentApplicationQuery,
+} from "#learning/infrastructure/adapters/content-query-adapter"
 import { createDrizzleLearningReadRepository } from "#learning/infrastructure/persistence/learning-read-drizzle-repository"
 import {
   createLearnerCursorCodec,
@@ -39,7 +41,7 @@ export function createLearningModule(
     "content" | "readRepository" | "transitionRepository"
   > &
     Readonly<{
-      content: ContentApplication
+      content: LearningContentApplicationQuery
       cursorSigningSecret: string
       database: WritingAppDatabase
       presentationSecret: string

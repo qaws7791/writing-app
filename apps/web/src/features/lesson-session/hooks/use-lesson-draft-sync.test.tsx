@@ -22,10 +22,8 @@ import {
   throwMswNetworkErrorFixture,
 } from "@workspace/http-client/msw-fixtures"
 
-import {
-  parseLessonStepDrafts,
-  type LessonStepDraftAnswer,
-} from "@/features/lesson-session/model/lesson-view-model"
+import { parseLessonStepDrafts } from "@/features/lesson-session/model/lesson-view-model"
+import type { LearnerStepDraftAnswer } from "@workspace/contracts/learning/learner-transition"
 import { useLessonDraftSync } from "@/features/lesson-session/hooks/use-lesson-draft-sync"
 import type {
   LearnerLessonDto,
@@ -37,15 +35,15 @@ import { createLearnerLessonWireFixture } from "@/test/learner-api-fixtures"
 const initialAnswer = {
   selectedOptionId: "option-1",
   type: "MULTIPLE_CHOICE",
-} as LessonStepDraftAnswer
+} as LearnerStepDraftAnswer
 const localAnswer = {
   selectedOptionId: "option-2",
   type: "MULTIPLE_CHOICE",
-} as LessonStepDraftAnswer
+} as LearnerStepDraftAnswer
 const latestAnswer = {
   selectedOptionId: "option-1",
   type: "MULTIPLE_CHOICE",
-} as LessonStepDraftAnswer
+} as LearnerStepDraftAnswer
 const server = setupServer()
 const nativeRequest = globalThis.Request
 
@@ -91,7 +89,7 @@ describe("useLessonDraftSync", () => {
           return firstSave.promise
         }
         secondRequestStarted.resolve()
-        return createDraft(body.answer as LessonStepDraftAnswer, 3)
+        return createDraft(body.answer as LearnerStepDraftAnswer, 3)
       })
     )
     const { result } = renderDraftSync()
@@ -129,7 +127,7 @@ describe("useLessonDraftSync", () => {
       getSaveLearnerStepDraftMockHandler200(async ({ request }) => {
         const body = await readJson<LearnerSaveStepDraftBodyDto>(request)
         retryRequests.push(body)
-        return createDraft(body.answer as LessonStepDraftAnswer, 4)
+        return createDraft(body.answer as LearnerStepDraftAnswer, 4)
       }),
       getGetLessonMockHandler200(createLesson([serverDraft]))
     )
@@ -184,7 +182,7 @@ describe("useLessonDraftSync", () => {
       getSaveLearnerStepDraftMockHandler200(async ({ request }) => {
         const body = await readJson<LearnerSaveStepDraftBodyDto>(request)
         requests.push(body)
-        return createDraft(body.answer as LessonStepDraftAnswer, 2)
+        return createDraft(body.answer as LearnerStepDraftAnswer, 2)
       })
     )
     const { result } = renderDraftSync()
@@ -199,6 +197,41 @@ describe("useLessonDraftSync", () => {
     expect(requests).toEqual([
       expect.objectContaining({ answer: localAnswer, expectedVersion: 1 }),
     ])
+  })
+
+  it("MATCH 짝 순열만 다른 초안은 다시 저장하지 않는다", async () => {
+    const savedAnswer = {
+      pairs: [
+        { leftItemId: "left-1", rightItemId: "right-1" },
+        { leftItemId: "left-2", rightItemId: "right-2" },
+      ],
+      type: "MATCH",
+    } as LearnerStepDraftAnswer
+    const permutedAnswer = {
+      pairs: [
+        { leftItemId: "left-2", rightItemId: "right-2" },
+        { leftItemId: "left-1", rightItemId: "right-1" },
+      ],
+      type: "MATCH",
+    } as LearnerStepDraftAnswer
+    const requests: LearnerSaveStepDraftBodyDto[] = []
+    server.use(
+      getSaveLearnerStepDraftMockHandler200(async ({ request }) => {
+        const body = await readJson<LearnerSaveStepDraftBodyDto>(request)
+        requests.push(body)
+        return createDraft(body.answer as LearnerStepDraftAnswer, 2)
+      })
+    )
+    const { result } = renderDraftSync([createDraft(savedAnswer, 1)])
+
+    act(() => {
+      result.current.stageDraft("step-mc", permutedAnswer)
+    })
+    await act(async () => {
+      await result.current.flushStepDraft("step-mc")
+    })
+
+    expect(requests).toEqual([])
   })
 })
 
@@ -254,7 +287,7 @@ function createLesson(
 }
 
 function createDraft(
-  answer: LessonStepDraftAnswer,
+  answer: LearnerStepDraftAnswer,
   version: number
 ): LearnerStepDraftDto {
   return {
