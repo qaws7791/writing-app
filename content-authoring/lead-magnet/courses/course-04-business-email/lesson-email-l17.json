@@ -1,0 +1,163 @@
+[
+  {
+    "type": "compare",
+    "title": "책임 주체 표현 비교",
+    "analysis": "누가 할 일인지 능동형으로 밝혀야 명확해요.",
+    "versions": [
+      {
+        "label": "피동형",
+        "text": "일정의 재조정이 요구됩니다.",
+        "mark": "요구됩니다"
+      },
+      {
+        "label": "능동형",
+        "text": "기획팀이 일정을 재조정해 주세요.",
+        "mark": "재조정해 주세요"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 업무 지시문인가요?",
+    "statement": "'검토 바랍니다'보다 '디자인팀에서 시안을 검토해 주세요'가 명확하다.",
+    "correct": true,
+    "explanation": "주체와 행동을 직접 밝혀야 책임 소재가 분명해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "책임 주체가 드러난 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "처리가 필요합니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "재검토가 요망됩니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "운영팀이 반영해 주세요"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "행동할 주체와 요청 동작을 함께 써야 정확해요."
+  },
+  {
+    "type": "select",
+    "question": "모호한 피동 표현 구간은?",
+    "segments": ["오류 해결을 위해 ", "서버 재부팅이 ", "요구됩니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'요구됩니다' 대신 '재부팅해 주세요'로 써요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "부탁과 지시의 어조 분류",
+    "categories": [
+      {
+        "id": "cat-req",
+        "label": "정중한 협조 부탁"
+      },
+      {
+        "id": "cat-dir",
+        "label": "명확한 업무 지시"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "일정 확인 부탁드립니다",
+        "categoryId": "cat-req"
+      },
+      {
+        "id": "item-2",
+        "text": "15시까지 반영하세요",
+        "categoryId": "cat-dir"
+      },
+      {
+        "id": "item-3",
+        "text": "검토 부탁드리겠습니다",
+        "categoryId": "cat-req"
+      },
+      {
+        "id": "item-4",
+        "text": "금일 내 제출하십시오",
+        "categoryId": "cat-dir"
+      }
+    ],
+    "explanation": "상대 권한과 관계에 맞게 어조를 선택해야 해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 문장 작성법인가요?",
+    "statement": "부탁할 때는 지시하듯 명령형 종결어미를 쓰는 것이 효과적이다.",
+    "correct": false,
+    "explanation": "협조 요청 시에는 권유·부탁 어조를 써야 해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "피동을 능동으로 바꾼 것은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "개발팀이 수정해 주세요"
+      },
+      {
+        "id": "opt-2",
+        "text": "수정이 진행되어야 합니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "수정이 요구되는 상황입니다"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "주어와 능동형 서술어가 호응해야 뜻이 통해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "업무 지시나 부탁을 할 때는 주체와 ___ 동사를 밝혀 써야 해요.",
+    "words": ["능동적", "수동적", "방관적"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "능동 동사를 써야 누가 무엇을 할지 분명해져요."
+  },
+  {
+    "type": "compare",
+    "title": "명사화와 서술어 비교",
+    "analysis": "명사 나열보다 서술어로 풀어야 읽기 편해요.",
+    "versions": [
+      {
+        "label": "명사형",
+        "text": "해당 건에 대한 조속한 확인 바람.",
+        "mark": "확인 바람"
+      },
+      {
+        "label": "풀어쓰기",
+        "text": "해당 안건을 빠르게 확인해 주세요.",
+        "mark": "확인해 주세요"
+      }
+    ]
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 피동문을 고치세요.",
+    "segments": ["배포 일정의 ", "연기가 고려됩니다."],
+    "segmentIds": ["seg-1", "seg-2"],
+    "correctSegment": "seg-2",
+    "fixes": ["일정 연기 검토 중", "연기 결정 통보"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "책임 주체의 판단을 능동 서술어로 밝혀 써요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "능동적 요청문을 조립하세요.",
+    "tiles": ["마케팅팀이 ", "초안을 ", "직접 검토해 ", "주시기 ", "바랍니다."],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "담당 부서와 요청 행동을 분명하게 연결해요."
+  }
+]

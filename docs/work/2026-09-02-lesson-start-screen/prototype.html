@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
@@ -21,11 +21,14 @@
         --surface: oklch(0.968 0.0038 92);
         --hl2: oklch(0.91 0.13 55);
         --hl3: oklch(0.92 0.12 145);
-        --elev-xs: 0 1px 1px -0.5px oklch(0.28 0.02 70 / 0.05),
+        --elev-xs:
+          0 1px 1px -0.5px oklch(0.28 0.02 70 / 0.05),
           0 2px 4px -2px oklch(0.28 0.02 70 / 0.06);
-        --elev-sm: 0 1px 2px -1px oklch(0.28 0.02 70 / 0.05),
+        --elev-sm:
+          0 1px 2px -1px oklch(0.28 0.02 70 / 0.05),
           0 4px 8px -4px oklch(0.28 0.02 70 / 0.07);
-        --elev-xl: 0 6px 12px -6px oklch(0.28 0.02 70 / 0.06),
+        --elev-xl:
+          0 6px 12px -6px oklch(0.28 0.02 70 / 0.06),
           0 30px 56px -22px oklch(0.28 0.02 70 / 0.13);
         --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
         --studio: oklch(0.205 0.012 70);
@@ -48,7 +51,8 @@
       }
 
       body {
-        font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
+        font-family:
+          "Pretendard Variable", Pretendard, "Apple SD Gothic Neo",
           "Noto Sans KR", sans-serif;
         background: var(--studio);
         color: var(--studio-fg);
@@ -1097,9 +1101,7 @@
               <div class="device-body">
                 <div class="stack">
                   <div class="unit-row">
-                    <p class="eyebrow" style="margin: 0">
-                      유닛 1 · 레슨 1 / 5
-                    </p>
+                    <p class="eyebrow" style="margin: 0">유닛 1 · 레슨 1 / 5</p>
                     <div class="dots" aria-hidden="true">
                       <span class="dot is-on"></span>
                       <span class="dot"></span>
@@ -1338,85 +1340,85 @@
             <p>CTA는 레슨 제목의 동사를 그대로 쓴다. 호응 살리기.</p>
           `,
         },
-      };
+      }
 
-      const tabs = [...document.querySelectorAll(".tab")];
-      const phones = [...document.querySelectorAll(".phone-wrap")];
-      const notePill = document.getElementById("note-pill");
-      const noteTitle = document.getElementById("note-title");
-      const noteBody = document.getElementById("note-body");
-      const viewDetail = document.getElementById("view-detail");
-      const viewCompare = document.getElementById("view-compare");
+      const tabs = [...document.querySelectorAll(".tab")]
+      const phones = [...document.querySelectorAll(".phone-wrap")]
+      const notePill = document.getElementById("note-pill")
+      const noteTitle = document.getElementById("note-title")
+      const noteBody = document.getElementById("note-body")
+      const viewDetail = document.getElementById("view-detail")
+      const viewCompare = document.getElementById("view-compare")
 
       function setView(view) {
-        document.body.dataset.view = view;
-        viewDetail.setAttribute("aria-pressed", String(view === "detail"));
-        viewCompare.setAttribute("aria-pressed", String(view === "compare"));
+        document.body.dataset.view = view
+        viewDetail.setAttribute("aria-pressed", String(view === "detail"))
+        viewCompare.setAttribute("aria-pressed", String(view === "compare"))
         if (view === "compare") {
-          phones.forEach((phone) => phone.removeAttribute("hidden"));
+          phones.forEach((phone) => phone.removeAttribute("hidden"))
         } else {
-          showCandidate(document.body.dataset.candidate);
+          showCandidate(document.body.dataset.candidate)
         }
       }
 
       function showCandidate(id) {
-        document.body.dataset.candidate = id;
+        document.body.dataset.candidate = id
         tabs.forEach((tab) => {
           tab.setAttribute(
             "aria-selected",
             String(tab.dataset.candidate === id)
-          );
-        });
+          )
+        })
         if (document.body.dataset.view === "detail") {
           phones.forEach((phone) => {
-            if (phone.dataset.phone === id) phone.removeAttribute("hidden");
-            else phone.setAttribute("hidden", "");
-          });
+            if (phone.dataset.phone === id) phone.removeAttribute("hidden")
+            else phone.setAttribute("hidden", "")
+          })
         }
-        const note = notes[id];
-        notePill.textContent = note.pill;
-        noteTitle.textContent = note.title;
-        noteBody.innerHTML = note.html;
+        const note = notes[id]
+        notePill.textContent = note.pill
+        noteTitle.textContent = note.title
+        noteBody.innerHTML = note.html
       }
 
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
-          setView("detail");
-          showCandidate(tab.dataset.candidate);
-        });
-      });
+          setView("detail")
+          showCandidate(tab.dataset.candidate)
+        })
+      })
 
-      viewDetail.addEventListener("click", () => setView("detail"));
-      viewCompare.addEventListener("click", () => setView("compare"));
+      viewDetail.addEventListener("click", () => setView("detail"))
+      viewCompare.addEventListener("click", () => setView("compare"))
 
       document.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-launch]");
-        if (!button) return;
-        const device = button.closest(".device");
-        const flash = device.querySelector(".flash");
-        if (!flash) return;
+        const button = event.target.closest("[data-launch]")
+        if (!button) return
+        const device = button.closest(".device")
+        const flash = device.querySelector(".flash")
+        if (!flash) return
         flash.innerHTML =
           "<strong>다음으로 넘어갑니다</strong><span>" +
           button.dataset.launch +
-          "</span>";
-        flash.classList.add("is-on");
-        window.setTimeout(() => flash.classList.remove("is-on"), 1600);
-      });
+          "</span>"
+        flash.classList.add("is-on")
+        window.setTimeout(() => flash.classList.remove("is-on"), 1600)
+      })
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "c" || event.key === "C") {
           setView(
             document.body.dataset.view === "compare" ? "detail" : "compare"
-          );
+          )
         }
-        const map = { 0: "current", 1: "a", 2: "b", 3: "c", 4: "d", 5: "e" };
+        const map = { 0: "current", 1: "a", 2: "b", 3: "c", 4: "d", 5: "e" }
         if (map[event.key]) {
-          setView("detail");
-          showCandidate(map[event.key]);
+          setView("detail")
+          showCandidate(map[event.key])
         }
-      });
+      })
 
-      showCandidate("a");
+      showCandidate("a")
     </script>
   </body>
 </html>

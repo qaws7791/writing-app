@@ -1,0 +1,149 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "본문 과적과 첨부 분리 대조",
+    "analysis": "핵심 요약만 본문에 두고 세부는 첨부로 넘겨요.",
+    "versions": [
+      {
+        "label": "본문 과적",
+        "text": "매출 표 100줄을 본문에 모두 붙여넣었습니다.",
+        "mark": "매출 표 100줄을 본문에"
+      },
+      {
+        "label": "첨부 매핑",
+        "text": "매출 요약은 본문에 두고 세부는 첨부 3쪽을 참조하세요.",
+        "mark": "세부는 첨부 3쪽을 참조하세요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "첨부파일 안내 원칙인가요?",
+    "statement": "첨부파일만 올리고 본문에는 설명을 뺀다.",
+    "correct": false,
+    "explanation": "본문에 파일명과 핵심 요약 3줄을 적어야 열어봐요."
+  },
+  {
+    "type": "select",
+    "question": "첨부로 분리해야 할 세부 내용은?",
+    "segments": [
+      "3분기 매출 15% 성장 ",
+      "핵심 원인 요약 ",
+      "월별 500개 품목 상세표"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "긴 상세 데이터 표는 첨부 문서로 분리해야 깔끔해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 친절한 첨부파일 안내는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "첨부파일 확인 바랍니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "파일을 올렸으니 보세요"
+      },
+      {
+        "id": "opt-3",
+        "text": "결과보고서 4쪽 요약 참고"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "파일의 특정 쪽수나 범위를 지정하면 확인 시간이 줄어요."
+  },
+  {
+    "type": "match",
+    "title": "본문 요약과 첨부파일 매핑",
+    "pairs": [
+      {
+        "left": "핵심 결론",
+        "leftId": "l-1",
+        "right": "본문 3줄 요약",
+        "rightId": "r-1"
+      },
+      {
+        "left": "상세 견적서",
+        "leftId": "l-2",
+        "right": "첨부 1번 엑셀",
+        "rightId": "r-2"
+      },
+      {
+        "left": "회의 녹취록",
+        "leftId": "l-3",
+        "right": "첨부 2번 문서",
+        "rightId": "r-3"
+      },
+      {
+        "left": "디자인 시안",
+        "leftId": "l-4",
+        "right": "첨부 3번 PDF",
+        "rightId": "r-4"
+      }
+    ],
+    "explanation": "본문에는 결론을 담고 세부 근거는 첨부로 연결해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 파일명 표기인가요?",
+    "statement": "첨부파일명: 241015_기획안_v1.pdf",
+    "correct": true,
+    "explanation": "버전과 날짜가 적힌 공식 파일명을 본문에 명시해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "세부 근거: [첨부 1] 운영계획서.pdf ___ 참조",
+    "words": ["제5쪽 요약표", "아무 곳이나", "적당한 부분"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "구체적 쪽수나 표 번호를 짚어줘야 즉시 검토해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "모바일에서 읽기 편한 구성은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "3줄 요약 후 첨부 안내"
+      },
+      {
+        "id": "opt-2",
+        "text": "수십 쪽 보고서 붙여넣기"
+      },
+      {
+        "id": "opt-3",
+        "text": "설명 없이 파일만 첨부"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "모바일 화면에서는 3줄 핵심 요약이 가장 잘 읽혀요."
+  },
+  {
+    "type": "select",
+    "question": "본문에 남겨둘 핵심 요약은?",
+    "segments": [
+      "전체 거래처 원장 목록 ",
+      "신규 제휴 3건 성사 요약 ",
+      "원장 세부 거래 내역"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "결론과 성과 요약은 본문에 남겨 첫눈에 보이게 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 첨부 안내를 고치면?",
+    "segments": ["상세 내역은 ", "첨부파일을 ", "적당히 참고 바랍니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["첨부 2쪽 확인 요망", "알아서 확인 요망"],
+    "fixIds": ["f-1", "f-2"],
+    "correctFix": "f-1",
+    "explanation": "정확한 확인 범위를 지정해야 업무 누락을 막아요."
+  }
+]

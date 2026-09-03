@@ -1,0 +1,134 @@
+[
+  {
+    "type": "reading",
+    "title": "격식을 갖추는 비즈니스 호칭",
+    "body": "공식 메일에서는 사적인 친분보다 격식 있는 호칭이 기본이에요. '홍길동 팀장님'처럼 '성명+직함+님' 순서로 쓰고, 직함 뒤에 '님'을 덧붙이지 않은 '팀장 홍길동님'은 피해요. 상대 회사는 붙여 쓴 '귀사'로 예우해요."
+  },
+  {
+    "type": "compare",
+    "title": "직함과 존칭 표기 순서 대조",
+    "analysis": "'성명+직함+님' 순서가 공적 예절에 가장 알맞아요.",
+    "versions": [
+      {
+        "label": "직함 앞배치",
+        "mark": "팀장 홍길동님",
+        "text": "수신: 기획팀 팀장 홍길동님 안녕하십니까."
+      },
+      {
+        "label": "성명 앞배치",
+        "mark": "홍길동 팀장님",
+        "text": "수신: 기획팀 홍길동 팀장님 안녕하십니까."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 띄어쓰기인가요?",
+    "statement": "'귀사(상대 회사)'는 한 단어이므로 띄어 쓰지 않고 붙여 써요.",
+    "correct": true,
+    "explanation": "'귀사'는 고유한 하나의 명사이므로 '귀 사'로 띄어 쓰지 않아요."
+  },
+  {
+    "type": "select",
+    "question": "어색하게 쓰인 호칭은?",
+    "segments": ["안녕하세요, ", "인사팀 ", "과장 김철수님 ", "확인 바랍니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "'과장 김철수님'보다 '김철수 과장님'으로 표기하는 게 정중해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "상대 기업을 높여 부르는 말은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "귀 부서"
+      },
+      {
+        "id": "opt-2",
+        "text": "귀사"
+      },
+      {
+        "id": "opt-3",
+        "text": "당사"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "상대 기업은 '귀사', 우리 회사를 낮춰 부를 때는 '당사'를 써요."
+  },
+  {
+    "type": "match",
+    "title": "상황별 올바른 호칭 연결",
+    "pairs": [
+      {
+        "left": "상대 회사 지칭",
+        "leftId": "p-1-l",
+        "right": "귀사",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "우리 회사 지칭",
+        "leftId": "p-2-l",
+        "right": "당사 / 저희 회사",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "상대 기관 지칭",
+        "leftId": "p-3-l",
+        "right": "귀원 / 귀처",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "우리 부서 지칭",
+        "leftId": "p-4-l",
+        "right": "저희 부서",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "상대를 높이는 '귀-'와 자신을 낮추는 '당-/저희'를 구분해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 존칭 규칙인가요?",
+    "statement": "외부 거래처에 보낼 때 '사장님실'처럼 부서나 건물에도 '님'을 붙인다.",
+    "correct": false,
+    "explanation": "'님'은 인격체에만 붙이므로 사장실, 대표실로 써야 바릅니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "거래처 공문 첫머리에 '___의 무궁한 발전을 기원합니다'라고 써요.",
+    "words": ["당사", "귀사", "본사", "우리사"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "상대 회사를 정중히 높여 부르는 표준 한자어는 '귀사'입니다."
+  },
+  {
+    "type": "select",
+    "question": "띄어쓰기가 잘못된 부분은?",
+    "segments": ["이번 프로젝트는 ", "귀 사와 ", "협력하게 되어 ", "기쁩니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "'귀사'는 한 단어이므로 공백 없이 붙여 써야 맞습니다.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "과도한 존칭을 바르게 고치세요.",
+    "segments": ["회의 결과는 ", "대표이사님실로 ", "직접 보고하겠습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["대표이사님실로", "대표이사실로"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "장소나 조직 명칭에는 '님'을 붙이지 않고 '대표이사실'로 씁니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "격식 있는 첫인사를 완성하세요.",
+    "tiles": ["안녕하십니까", "개발팀", "이영희", "팀장님", "반갑습니다"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "'소속 + 성명 + 직함 + 님' 순서로 정중하게 호칭을 표기해요."
+  }
+]

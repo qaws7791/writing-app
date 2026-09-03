@@ -1,0 +1,147 @@
+[
+  {
+    "type": "reading",
+    "title": "전문 약어와 사내 은어 번역하기",
+    "body": "내가 매일 쓰는 약어도 외부 파트너에게는 암호문처럼 느껴져요. '지식의 저주'에 빠지지 않으려면, 외부 메일에서는 사내 은어를 쉬운 우리말로 바꾸거나 괄호 안에 친절한 1줄 설명을 덧붙여야 오해와 재질문을 막을 수 있어요."
+  },
+  {
+    "type": "compare",
+    "title": "은어 남발과 친절한 설명 대조",
+    "analysis": "외부 거래처에는 약어 뒤에 쉬운 설명을 병기해요.",
+    "versions": [
+      {
+        "label": "약어 남발",
+        "mark": "이번 스프린트 때 얼라인 맞춰요",
+        "text": "협력사 담당자님 이번 스프린트 때 얼라인 맞춰요"
+      },
+      {
+        "label": "용어 풀이",
+        "mark": "개발 주기 미팅에서 의견을 조율해요",
+        "text": "협력사 담당자님 개발 주기 미팅에서 의견을 조율해요"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "용어 사용 원칙인가요?",
+    "statement": "우리 팀에서만 쓰는 프로젝트 암호명을 거래처 메일에 그대로 써도 된다.",
+    "correct": false,
+    "explanation": "외부 파트너가 이해할 수 있는 공식 명칭으로 바꾸어 써야 해요."
+  },
+  {
+    "type": "select",
+    "question": "외부인이 이해하기 힘든 은어는?",
+    "segments": [
+      "다음 주까지 ",
+      "기획안 디벨롭해서 ",
+      "대표님 결재받고 ",
+      "전달해 드릴게요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "'디벨롭' 대신 '보완/발전' 같은 명확한 한국어를 권장해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "약어를 병기하는 바른 방법은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "핵심지표(KPI)로 풀기"
+      },
+      {
+        "id": "opt-2",
+        "text": "KPI만 단독으로 적기"
+      },
+      {
+        "id": "opt-3",
+        "text": "약어 뜻 퀴즈 내기"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "약어를 처음 쓸 때는 한글 풀이와 함께 괄호로 병기해야 친절해요."
+  },
+  {
+    "type": "match",
+    "title": "비즈니스 은어의 바른 한국어 전환",
+    "pairs": [
+      {
+        "left": "얼라인(align)하다",
+        "leftId": "p-1-l",
+        "right": "방향을 맞추다",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "디벨롭(develop)",
+        "leftId": "p-2-l",
+        "right": "구체화/보완하다",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "핑(ping) 찍다",
+        "leftId": "p-3-l",
+        "right": "가볍게 확인하다",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "어사인(assign)하다",
+        "leftId": "p-4-l",
+        "right": "담당을 배정하다",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "외래어나 은어 대신 뜻이 명확한 우리말을 쓰면 소통이 빨라져요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 약어 소통법인가요?",
+    "statement": "전문 약어를 처음 소개할 때는 공식 명칭과 정의를 함께 병기한다.",
+    "correct": true,
+    "explanation": "수신자가 인터넷 검색을 하지 않도록 배려하는 것이 전문성이에요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "외부 거래처와 소통할 때는 사내 은어 대신 ___ 우리말 표현을 써요.",
+    "words": ["우리 팀만의", "누구나 아는", "복잡하고 어려운", "외래어 섞인"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "수신자의 입장에서 직관적으로 이해할 수 있는 어휘를 골라야 해요."
+  },
+  {
+    "type": "select",
+    "question": "쉬운 말로 바꿀 부분은?",
+    "segments": [
+      "요청하신 일정은 ",
+      "내부적으로 캐파가 부족해 ",
+      "조율이 필요합니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'캐파(Capa)' 대신 '작업 여력'이나 '처리 용량'으로 써보세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "외계어 은어를 바르게 고치세요.",
+    "segments": [
+      "해당 사안은 ",
+      "사수와 싱크 맞추고 ",
+      "다시 연락드리겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["사수와 싱크 맞추고", "사수와 현황을 공유하고"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'싱크 맞추다' 대신 '현황을 공유하다/의견을 맞추다'로 씁니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "친절한 약어 문장을 완성하세요.",
+    "tiles": ["핵심", "성과 지표인", "KPI를", "공유해", "드립니다"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "전문 약어 앞뒤에 풀이말을 붙여주면 수신자가 단번에 이해해요."
+  }
+]

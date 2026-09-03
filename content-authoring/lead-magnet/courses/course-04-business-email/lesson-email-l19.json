@@ -1,0 +1,176 @@
+[
+  {
+    "type": "compare",
+    "title": "메신저 가독성 레이아웃 비교",
+    "analysis": "문장 사이에 여백을 두어야 한눈에 읽혀요.",
+    "versions": [
+      {
+        "label": "줄글벽",
+        "text": "신규 프로젝트 일정이 확정되었으니 디자인팀과 협의해 주세요.",
+        "mark": "협의해 주세요"
+      },
+      {
+        "label": "청킹배치",
+        "text": "프로젝트 일정이 확정되었습니다.\n\n디자인팀과 협의해 주세요.",
+        "mark": "협의해 주세요"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "모바일 가독성 상식인가요?",
+    "statement": "스마트폰에서는 5줄 이상의 장문 줄글도 줄바꿈 없이 쓰는 게 깔끔하다.",
+    "correct": false,
+    "explanation": "여백 없는 긴 글은 시각적 피로를 유발해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "모바일 최적의 문장 길이는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "10줄 이상 이어 쓰기"
+      },
+      {
+        "id": "opt-2",
+        "text": "1~2문장 단위 줄바꿈"
+      },
+      {
+        "id": "opt-3",
+        "text": "공백 없이 한 문단 묶기"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "1~2문장마다 여백을 줘야 집중도가 유지돼요."
+  },
+  {
+    "type": "select",
+    "question": "가독성을 해치는 구간은?",
+    "segments": [
+      "공지 사항 전달드립니다. ",
+      "내용이 길어 한 줄로 길게 ",
+      "이어 씁니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "줄바꿈 없이 길게 늘어지면 핵심을 놓쳐요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "정보 배치 형식 구분하기",
+    "categories": [
+      {
+        "id": "cat-bullet",
+        "label": "불릿 기호 정리"
+      },
+      {
+        "id": "cat-wall",
+        "label": "줄글 나열형"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "- 일정: 3월 5일",
+        "categoryId": "cat-bullet"
+      },
+      {
+        "id": "item-2",
+        "text": "일정은 3월 5일 진행",
+        "categoryId": "cat-wall"
+      },
+      {
+        "id": "item-3",
+        "text": "- 장소: 4층 회의실",
+        "categoryId": "cat-bullet"
+      },
+      {
+        "id": "item-4",
+        "text": "장소는 4층 회의실임",
+        "categoryId": "cat-wall"
+      }
+    ],
+    "explanation": "항목별 핵심 정보는 기호로 끊어야 읽기 편해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 청킹 기법인가요?",
+    "statement": "일정, 장소, 준비물 등은 불릿 기호(-)를 써서 분리하는 것이 좋다.",
+    "correct": true,
+    "explanation": "기호로 정보를 덩어리 지으면 가독성이 높아져요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 눈에 잘 띄는 정돈은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "항목별 불릿 기호 배치"
+      },
+      {
+        "id": "opt-2",
+        "text": "줄글에 날짜와 시간 혼합"
+      },
+      {
+        "id": "opt-3",
+        "text": "특수문자 무분별 남발"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "불릿 기호는 정보 간 위계를 직관적으로 보여줘요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "모바일 화면에서는 1~2문장마다 ___을 주어야 잘 읽혀요.",
+    "words": ["시각적 여백", "어려운 한자", "복잡한 수식"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "줄바꿈 여백이 생겨야 작은 화면에서도 편해요."
+  },
+  {
+    "type": "compare",
+    "title": "정보 전달력 비교",
+    "analysis": "불릿으로 정리하면 핵심이 1초 만에 보여요.",
+    "versions": [
+      {
+        "label": "혼합형",
+        "text": "회의는 내일 14시 3회의실에서 진행합니다.",
+        "mark": "진행합니다"
+      },
+      {
+        "label": "청킹형",
+        "text": "[회의 안내]\n- 일시: 내일 14시\n- 장소: 3회의실",
+        "mark": "3회의실"
+      }
+    ]
+  },
+  {
+    "type": "error_correct",
+    "question": "답답한 줄글을 고치세요.",
+    "segments": [
+      "내일 회의 일정을 안내합니다. ",
+      "14시까지 모여주시기 바랍니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2"],
+    "correctSegment": "seg-2",
+    "fixes": ["- 일시: 14시", "시간 엄수 요망"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "핵심 정보를 불릿으로 요약해야 놓치지 않아요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "청킹 문장을 조립하세요.",
+    "tiles": [
+      "핵심 정보는 ",
+      "1~2문장마다 ",
+      "줄을 바꿔 ",
+      "여백을 ",
+      "두세요."
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "줄바꿈과 여백으로 시각적 피로를 줄여줘요."
+  }
+]

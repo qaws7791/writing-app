@@ -1,0 +1,167 @@
+[
+  {
+    "type": "reading",
+    "title": "일하는 사람을 돕는 피드백 3요소",
+    "body": "\"뭔가 느낌이 안 와요\", \"좀 더 세련되게 고쳐주세요\" 같은 피드백은 상대방을 길 잃게 만들어요. 문서의 정확한 '위치', 수정이 필요한 구체적 '문제', 개선해야 하는 '논리적 이유' 3가지를 명시해 보세요. 감정 소모 없이 수정 작업이 한 번에 끝납니다."
+  },
+  {
+    "type": "compare",
+    "title": "막연한 감상과 3요소 피드백 대조",
+    "analysis": "느낌 대신 위치와 결함, 이유를 구체적으로 전해요.",
+    "versions": [
+      {
+        "label": "막연한 감상",
+        "mark": "눈에 안 들어옵니다",
+        "text": "보고서 중반부가 전반적으로 눈에 안 들어옵니다."
+      },
+      {
+        "label": "구체적 피드백",
+        "mark": "모바일에서 식별이 어렵습니다",
+        "text": "4쪽 표의 글자 크기가 작아 모바일에서 식별이 어렵습니다."
+      }
+    ]
+  },
+  {
+    "type": "order",
+    "title": "피드백 3요소 전개 순서 정렬",
+    "items": [
+      "수정 대상의 정확한 위치",
+      "발견된 구체적 결함 내용",
+      "개선해야 하는 논리적 이유"
+    ],
+    "itemIds": ["ord-1", "ord-2", "ord-3"],
+    "correct": ["ord-1", "ord-2", "ord-3"],
+    "explanation": "어디서 무엇이 왜 문제인지 순서대로 밝혀야 바로 고쳐요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 피드백 방식인가요?",
+    "statement": "'알아서 센스 있게 수정해 달라'는 표현은 자율성을 높인다.",
+    "correct": false,
+    "explanation": "모호한 지시는 기준이 없어 불필요한 재작업만 반복시켜요."
+  },
+  {
+    "type": "select",
+    "question": "작업자를 혼란스럽게 하는 구간은?",
+    "segments": [
+      "3페이지 요약문에서 ",
+      "전체적인 분위기를 ",
+      "신뢰감 있게 바꿔주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'분위기' 같은 추상어 대신 변경할 단어나 문장을 짚어주세요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "피드백 구성 요소의 역할 매칭",
+    "pairs": [
+      {
+        "left": "5쪽 상단 그래프",
+        "leftId": "l-1",
+        "right": "대상 위치",
+        "rightId": "r-1"
+      },
+      {
+        "left": "범례 텍스트 누락",
+        "leftId": "l-2",
+        "right": "구체적 결함",
+        "rightId": "r-2"
+      },
+      {
+        "left": "축 값 구별 불가",
+        "leftId": "l-3",
+        "right": "논리적 이유",
+        "rightId": "r-3"
+      }
+    ],
+    "explanation": "위치와 결함, 이유가 맞물려야 수정 방향이 뚜렷해져요."
+  },
+  {
+    "type": "categorize",
+    "title": "피드백 표현의 구체성 분류",
+    "categories": [
+      {
+        "id": "cat-vague",
+        "label": "모호한 감상"
+      },
+      {
+        "id": "cat-clear",
+        "label": "구체적 피드백"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "글이 너무 밋밋해요",
+        "categoryId": "cat-vague"
+      },
+      {
+        "id": "item-2",
+        "text": "2단락 수치 근거 보완",
+        "categoryId": "cat-clear"
+      },
+      {
+        "id": "item-3",
+        "text": "전문가답게 써보세요",
+        "categoryId": "cat-vague"
+      },
+      {
+        "id": "item-4",
+        "text": "제목 15자 내로 축소",
+        "categoryId": "cat-clear"
+      }
+    ],
+    "explanation": "구체적 수치나 대상이 들어가야 작업자가 바로 반영할 수 있어요."
+  },
+  {
+    "type": "true_false",
+    "question": "바람직한 피드백인가요?",
+    "statement": "단순 수정 지시보다 '이유'를 함께 설명해야 납득이 쉽다.",
+    "correct": true,
+    "explanation": "변경 이유를 알면 작업자가 맥락을 이해하고 주도적으로 고쳐요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 완성도 높은 피드백은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "전반적으로 싹 고쳐주세요"
+      },
+      {
+        "id": "opt-2",
+        "text": "3쪽 표 행 간격 확대 요망"
+      },
+      {
+        "id": "opt-3",
+        "text": "느낌이 살지 않아 아쉽습니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "정확한 위치와 명확한 요구 사항이 담겨 있어 즉시 수정 가능해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "제안서 7쪽 도표의 ___ 가독성이 떨어지므로, 글자 크기를 12pt로 키워주세요.",
+    "words": ["폰트가 너무 작아", "기분이 별로라", "그냥 마음에 안 들어"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "위치와 결함, 이유를 연결해야 완벽해요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "구체적 피드백 문을 조립하세요.",
+    "tiles": [
+      "2페이지",
+      "결론 부분에",
+      "데이터 출처를",
+      "명시하여",
+      "신뢰도를 높여주세요"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "위치와 수정할 항목, 목적을 명시해 명쾌하게 피드백해요."
+  }
+]

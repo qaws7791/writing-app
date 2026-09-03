@@ -1,0 +1,141 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "조사 생략에 따른 오해 대조",
+    "analysis": "조사를 무리하게 빼면 주체와 대상이 모호해져요.",
+    "versions": [
+      {
+        "label": "조사 생략",
+        "text": "고객사 팀장 미팅 일정 조율",
+        "mark": "팀장 미팅"
+      },
+      {
+        "label": "조사 보존",
+        "text": "고객사 팀장과의 미팅 일정 조율",
+        "mark": "팀장과의 미팅"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "개조식 조사 생략 원칙인가요?",
+    "statement": "글자 수를 줄이려면 모든 조사를 뺀다.",
+    "correct": false,
+    "explanation": "필수 조사를 빼면 누가 누구를 만나는지 왜곡돼요."
+  },
+  {
+    "type": "select",
+    "question": "조사가 빠져 의미가 모호한 곳은?",
+    "segments": ["신규 프로젝트 ", "외주 업체 계약 체결 ", "완료 보고"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'업체와'인지 '업체에'인지 격조사를 밝혀야 명확해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "문맥이 명확한 개조식 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "대표 보고 자료 준비"
+      },
+      {
+        "id": "opt-2",
+        "text": "대표에게 보고할 자료 준비"
+      },
+      {
+        "id": "opt-3",
+        "text": "대표 보고서 작성"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "'에게'를 살려야 보고 대상이 누구인지 분명해져요."
+  },
+  {
+    "type": "match",
+    "title": "누락된 필수 조사 짝맞추기",
+    "pairs": [
+      {
+        "left": "협력업체",
+        "leftId": "l-1",
+        "right": "와의 협의",
+        "rightId": "r-1"
+      },
+      {
+        "left": "임원진",
+        "leftId": "l-2",
+        "right": "에게 보고",
+        "rightId": "r-2"
+      },
+      {
+        "left": "기획안",
+        "leftId": "l-3",
+        "right": "을 검토",
+        "rightId": "r-3"
+      },
+      {
+        "left": "본사",
+        "leftId": "l-4",
+        "right": "로 이관",
+        "rightId": "r-4"
+      }
+    ],
+    "explanation": "격조사를 적절히 살려야 업무 주체와 방향이 살아요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 개조식 문장인가요?",
+    "statement": "개발팀에 수정 요청 사항 전달 완료",
+    "correct": true,
+    "explanation": "'개발팀에'처럼 수신 대상을 분명히 지정해야 해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "타 부서 협조: 마케팅팀___ 홍보 배너 시안 요청",
+    "words": ["에", "의", "를"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "협조 요청을 받는 대상 뒤에는 조사 '에'를 붙여요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "원인과 결과가 명확한 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "서버 장애 조치 지연"
+      },
+      {
+        "id": "opt-2",
+        "text": "단순한 메모 나열"
+      },
+      {
+        "id": "opt-3",
+        "text": "서버 장애로 인한 조치 지연"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "'로 인한' 연결을 살려야 인과 관계가 뚜렷해져요."
+  },
+  {
+    "type": "select",
+    "question": "필수 조사를 추가할 위치는?",
+    "segments": ["보안 감사 결과 ", "지적 사항 조치 계획 ", "제출 건"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'사항에 대한 조치'로 이어야 문맥 왜곡이 없어요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 조사를 바로잡으면?",
+    "segments": ["유관 부서 ", "미팅 결과 정리 ", "공유 건"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["유관 부서와의", "유관 부서를"],
+    "fixIds": ["f-1", "f-2"],
+    "correctFix": "f-1",
+    "explanation": "'와의'를 넣어 함께 미팅한 상대임을 명확히 해요."
+  }
+]

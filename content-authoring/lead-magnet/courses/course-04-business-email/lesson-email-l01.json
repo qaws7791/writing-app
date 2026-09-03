@@ -1,0 +1,134 @@
+[
+  {
+    "type": "reading",
+    "title": "수신함을 여는 3단 제목 공식",
+    "body": "바쁜 직장인은 제목만 보고 읽을지 넘길지 결정해요. 행동 유형을 알리는 '[말머리]', 한눈에 들어오는 '핵심 용건', 그리고 명확한 '마감 일시'를 순서대로 조합하면 수신함 목록에서 즉각 클릭을 이끌어낼 수 있어요."
+  },
+  {
+    "type": "compare",
+    "title": "수신함 목록 제목 가독성 대조",
+    "analysis": "말머리와 마감이 있어야 열람 우선순위가 확 올라가요.",
+    "versions": [
+      {
+        "label": "모호한 제목",
+        "mark": "자료 송부의 건",
+        "text": "안녕하세요 마케팅팀 김민수 대리입니다 자료 송부의 건"
+      },
+      {
+        "label": "3단 제목",
+        "mark": "[검토요청] 예산안 피드백",
+        "text": "[검토요청] 예산안 피드백 (05/20 화 17시)"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "제목 작성 원칙인가요?",
+    "statement": "말머리에 '안녕하세요' 같은 인사를 넣으면 우선순위 파악이 쉬워져요.",
+    "correct": false,
+    "explanation": "말머리에는 [요청], [공지] 등 수신자의 행동 유형을 넣어야 해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "우선순위가 가장 분명한 제목은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "[요청] 기획안(5/12)"
+      },
+      {
+        "id": "opt-2",
+        "text": "김대리입니다 문의드립니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "신제품 관련 회의 건"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "말머리와 용건, 마감이 한눈에 보여 바로 처리할 수 있어요."
+  },
+  {
+    "type": "select",
+    "question": "삭제할 불필요한 문구는?",
+    "segments": ["[요청] ", "안녕하세요 ", "정산서 확인 ", "(4/15 마감)"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "인사말은 제목에서 빼고 본문 첫 줄에 쓰는 것이 깔끔해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "상황별 말머리 태그 연결",
+    "pairs": [
+      {
+        "left": "단순 정보 전달",
+        "leftId": "p-1-l",
+        "right": "[공지]",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "수신자 피드백 필요",
+        "leftId": "p-2-l",
+        "right": "[검토요청]",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "회의나 서명 승인",
+        "leftId": "p-3-l",
+        "right": "[결재요청]",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "당일 즉각 조치",
+        "leftId": "p-4-l",
+        "right": "[긴급]",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "상대의 다음 행동에 맞춰 적절한 말머리 태그를 선택하세요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 제목 규칙인가요?",
+    "statement": "마감 일시는 날짜뿐 아니라 구체적인 시간까지 적는 것이 좋아요.",
+    "correct": true,
+    "explanation": "시간까지 명시해야 상대가 일정을 조율하기 수월해져요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "상대방의 승인이 필요할 때는 제목 앞에 ___ 태그를 붙여요.",
+    "words": ["[결재요청]", "[공지]", "[단순참고]", "[회람]"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "승인 권한자의 빠른 결재를 유도할 때는 [결재요청]을 씁니다."
+  },
+  {
+    "type": "select",
+    "question": "검색성을 해치는 요소는?",
+    "segments": ["[제안] ", "급합니다!! ", "신규 제휴 제안서 ", "(06/10)"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "느낌표나 감정적 표현 대신 표준 말머리와 마감을 적어야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 제목을 바르게 고치세요.",
+    "segments": ["김 대리입니다 ", "지난번 이야기한 건 ", "확인 바랍니다"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["지난번 이야기한 건", "마케팅안 (6/5)"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "지난번 건처럼 모호한 말 대신 구체적 업무명과 날짜를 씁니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "표준 업무 제목을 완성하세요.",
+    "tiles": ["[요청]", "상반기", "실적 보고서", "피드백", "(18시 마감)"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "말머리, 핵심 업무명, 마감 시한 순으로 배치하면 완벽해요."
+  }
+]

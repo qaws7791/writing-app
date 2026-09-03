@@ -1,0 +1,169 @@
+[
+  {
+    "type": "reading",
+    "title": "단정하게 답을 부르는 젠틀 리마인드",
+    "body": "답장이 오지 않을 때 재촉하듯 따지면 반감을 사고, 너무 저자세로 나가면 계속 후순위로 밀려요. 상대방의 상황을 배려하되, 후속 일정이 걸려 있는 객관적 이유와 최종 기한을 정중하게 명시해 보세요. 부담은 덜고 행동은 빨라집니다."
+  },
+  {
+    "type": "compare",
+    "title": "독촉과 젠틀 리마인드 문장 대조",
+    "analysis": "비난 대신 후속 일정의 필요성을 정중히 밝혀요.",
+    "versions": [
+      {
+        "label": "차가운 독촉",
+        "mark": "확인하셨나요",
+        "text": "지난주 메일 확인하셨나요? 오늘까지 꼭 답장 바랍니다."
+      },
+      {
+        "label": "젠틀 리마인드",
+        "mark": "후속 인쇄 일정 진행을 위해",
+        "text": "후속 인쇄 일정 진행을 위해 오늘 17시까지 회신 부탁드립니다."
+      }
+    ]
+  },
+  {
+    "type": "select",
+    "question": "공격적으로 들리는 어색한 구간은?",
+    "segments": [
+      "바쁘시겠지만 ",
+      "왜 아직 답이 없으신지 ",
+      "확인 부탁드립니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "상대방의 지연을 직접 탓하기보다 진행 필요성을 앞세워야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 리마인드 방식인가요?",
+    "statement": "답장이 필요한 구체적 이유와 후속 일정을 함께 밝힌다.",
+    "correct": true,
+    "explanation": "마감의 당위성을 제시하면 상대방도 우선순위를 높여 처리해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 단정하고 명쾌한 리마인드는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "바쁘시면 안 주셔도 돼요"
+      },
+      {
+        "id": "opt-2",
+        "text": "빨리 확인하고 답장 주세요"
+      },
+      {
+        "id": "opt-3",
+        "text": "발주를 위해 확인 바랍니다"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "후속 업무와의 연결고리를 밝혀 자연스럽게 회신을 이끌어내요."
+  },
+  {
+    "type": "categorize",
+    "title": "리마인드 어조 유형 분류",
+    "categories": [
+      {
+        "id": "cat-press",
+        "label": "차가운 압박"
+      },
+      {
+        "id": "cat-gentle",
+        "label": "단정한 젠틀"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "메일 안 읽으셨나요?",
+        "categoryId": "cat-press"
+      },
+      {
+        "id": "item-2",
+        "text": "인쇄 일정을 위한 확인 요청",
+        "categoryId": "cat-gentle"
+      },
+      {
+        "id": "item-3",
+        "text": "답 없으시면 곤란합니다",
+        "categoryId": "cat-press"
+      },
+      {
+        "id": "item-4",
+        "text": "원활한 배포를 위해 재안내",
+        "categoryId": "cat-gentle"
+      }
+    ],
+    "explanation": "압박감을 주기보다 차질 없는 진행을 위한 협조로 프레이밍해요."
+  },
+  {
+    "type": "true_false",
+    "question": "효과적인 리마인드 화법인가요?",
+    "statement": "'언제든 시간 나실 때 편하게 답장 주세요'가 효과적이다.",
+    "correct": false,
+    "explanation": "명확한 마감이 없으면 상대방 업무 리스트에서 계속 밀려요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "첫머리에 적절한 배려 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "바쁘신 중에 번거롭게 해드려"
+      },
+      {
+        "id": "opt-2",
+        "text": "벌써 마감이 다가왔는데도"
+      },
+      {
+        "id": "opt-3",
+        "text": "여러 번 메일을 보냈음에도"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "상대방의 바쁜 상황을 먼저 인정하면 심리적 반감을 줄여줘요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "미팅 준비로 분주하실 줄 압니다만, 차질 없는 배포를 위해 금일 16시까지 ___.",
+    "words": [
+      "확인을 부탁드립니다",
+      "그냥 무시하셔도 됩니다",
+      "독촉하니 얼른 보내세요"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "공손한 태도와 단정한 마감 시각을 결합해야 즉시 회신이 와요."
+  },
+  {
+    "type": "error_correct",
+    "question": "독촉 문장을 젠틀하게 고치세요.",
+    "segments": [
+      "지난주 보낸 기획안, ",
+      "왜 아직 미확인인가요? ",
+      "빠르게 전달 바랍니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["왜 아직 미확인인가요", "확인 여부 여쭙습니다"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "상대를 추궁하는 질문 대신 정중한 확인 요청으로 전환해요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "젠틀 리마인드 문을 조립하세요.",
+    "tiles": [
+      "후속 일정",
+      "진행을 위해",
+      "오늘 17시까지",
+      "회신 주시면",
+      "감사하겠습니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "명확한 마감과 공손한 부탁으로 부담 없이 행동을 유도해요."
+  }
+]

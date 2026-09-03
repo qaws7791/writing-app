@@ -1,0 +1,148 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "줄글 나열과 개조식 번호 대조",
+    "analysis": "요청사항을 번호로 쪼개면 누락 없이 처리해요.",
+    "versions": [
+      {
+        "label": "줄글 나열",
+        "text": "행사 참석 회신과 발표 자료 송부를 모두 부탁드립니다.",
+        "mark": "참석 회신과 발표 자료 송부"
+      },
+      {
+        "label": "개조식",
+        "text": "요청 사항: 1. 참석 회신 2. 발표 자료 송부",
+        "mark": "1. 참석 회신 2. 발표 자료 송부"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "개조식 작성 원칙인가요?",
+    "statement": "요청이 3개 이상이어도 한 문장으로 잇는다.",
+    "correct": false,
+    "explanation": "요청이 여러 개일 때는 번호를 매겨 분리해야 정확해요."
+  },
+  {
+    "type": "select",
+    "question": "독립된 요청 항목으로 쪼갤 부분은?",
+    "segments": [
+      "기획서 수정본 확인과 ",
+      "참석자 명단 회신을 ",
+      "함께 요청드립니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1", "seg-2"],
+    "explanation": "'과/와'로 묶인 다중 요청은 번호 항목으로 분리해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 한눈에 읽히는 개조식은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "줄글로 길게 이은 문장"
+      },
+      {
+        "id": "opt-2",
+        "text": "1. 검토 2. 일정 회신"
+      },
+      {
+        "id": "opt-3",
+        "text": "서술어로만 끝맺은 문단"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "번호 매기기를 쓰면 할 일의 개수와 내용이 명확해요."
+  },
+  {
+    "type": "categorize",
+    "title": "줄글 나열 vs 개조식 분류하기",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "줄글 나열"
+      },
+      {
+        "id": "cat-2",
+        "label": "개조식 정리"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "명단 확인과 일정 회신 요청",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "1. 최종 견적서 검토",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "취합 후 피드백 전달 바람",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "2. 법인카드 영수증 제출",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "항목별로 번호나 기호를 달면 누락 위험이 줄어들어요."
+  },
+  {
+    "type": "true_false",
+    "question": "효과적인 개조식 작성법인가요?",
+    "statement": "각 항목의 끝은 명사형이나 명사로 맺는다.",
+    "correct": true,
+    "explanation": "종결 어미를 간결하게 정리하면 가독성이 높아져요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "요청사항: 1. 계약서 날인 ___ 2. 사본 제출",
+    "words": ["및 회신", "을 꼭 해주시고", "을 처리바람"],
+    "wordIds": ["word-1", "word-2", "word-3"],
+    "answer": ["word-1"],
+    "explanation": "개조식 항목 사이는 군더더기 서술어 없이 맺어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "개조식 글머리로 가장 적절한 것은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "1. 기획안 최종 승인"
+      },
+      {
+        "id": "opt-2",
+        "text": "그런 다음 검토해 주세요"
+      },
+      {
+        "id": "opt-3",
+        "text": "그리고 피드백 바랍니다"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "접속사로 잇지 않고 번호와 명사구로 끊어야 깔끔해요."
+  },
+  {
+    "type": "select",
+    "question": "개조식 블록으로 분리할 부분은?",
+    "segments": ["회의 안건은 ", "예산안 심의와 ", "신규 채용 논의입니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2", "seg-3"],
+    "explanation": "나열된 2개 이상의 핵심 안건을 개조식 항목으로 떼어내요.",
+    "layout": "inline"
+  },
+  {
+    "type": "sentence_build",
+    "question": "개조식 요청 항목을 완성하세요.",
+    "tiles": ["1. ", "참석 명단 ", "회신", " 및 ", "자료 송부"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "번호 매기기와 명사구로 요청사항을 직관화해요."
+  }
+]

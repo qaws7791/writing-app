@@ -1,0 +1,131 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "결론 위치에 따른 가독성 비교",
+    "analysis": "첫머리에 요청을 두면 읽는 즉시 행동을 파악해요.",
+    "versions": [
+      {
+        "label": "미괄식",
+        "text": "회의 결과를 검토하여 기획안 승인을 요청드립니다.",
+        "mark": "기획안 승인을 요청드립니다."
+      },
+      {
+        "label": "두괄식",
+        "text": "기획안 승인을 요청드립니다. 회의 검토 결과입니다.",
+        "mark": "기획안 승인을 요청드립니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "두괄식 작성 원칙인가요?",
+    "statement": "진행 경과를 먼저 적고 끝에 요청을 쓴다.",
+    "correct": false,
+    "explanation": "핵심 결론과 요청을 첫 문장에 써야 바로 이해돼요."
+  },
+  {
+    "type": "select",
+    "question": "첫머리에 둘 핵심 요청은?",
+    "segments": [
+      "배경을 말씀드리면 ",
+      "견적서 승인을 요청합니다 ",
+      "기존 단가가 올랐습니다"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "수신자가 취할 최종 행동을 첫 문장에 배치해야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "두괄식 첫 문장으로 알맞은 것은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "서버 점검 일정을 안내합니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "서버 부하가 심해졌습니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "회의를 마쳤습니다"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "공유 목적과 결론을 첫머리에 밝혀야 즉시 확인해요."
+  },
+  {
+    "type": "order",
+    "title": "두괄식 메일 순서 맞추기",
+    "items": [
+      "예산안 승인을 요청합니다",
+      "기존 예산이 소진되었습니다",
+      "상세 검토를 부탁드립니다",
+      "내일 정오까지 회신 바랍니다"
+    ],
+    "itemIds": ["item-1", "item-2", "item-3", "item-4"],
+    "correct": ["item-1", "item-2", "item-3", "item-4"],
+    "explanation": "요청 결론을 먼저 두고 사유와 마감 기한을 덧붙여요."
+  },
+  {
+    "type": "true_false",
+    "question": "두괄식 구성에 맞는 문장인가요?",
+    "statement": "8월 운영비 청구 건으로 메일드립니다.",
+    "correct": true,
+    "explanation": "메일 목적을 첫 문장에 명확히 밝히면 신속히 대응해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "___ 메일드립니다. 행사 세부 계획안입니다.",
+    "words": ["승인을 요청하고자", "회의가 끝나서", "문제가 있어서"],
+    "wordIds": ["word-1", "word-2", "word-3"],
+    "answer": ["word-1"],
+    "explanation": "원인 장황 서술 대신 메일 발송 목적을 먼저 밝혀요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "상사에게 보낼 첫 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "어제 미팅을 마쳤는데요"
+      },
+      {
+        "id": "opt-2",
+        "text": "자료를 검토해 주세요"
+      },
+      {
+        "id": "opt-3",
+        "text": "자료를 정리하는 중입니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "원하는 행동을 첫 문장에 써야 무엇을 볼지 바로 알아요."
+  },
+  {
+    "type": "select",
+    "question": "덜어내야 할 앞부분 인사말은?",
+    "segments": [
+      "날씨가 무척 덥습니다 ",
+      "요청하신 자료를 송부합니다 ",
+      "업무에 참고 바랍니다"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-1"],
+    "explanation": "형식적 인사말보다 핵심 용건을 바로 전해야 신속해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "두괄식에 맞게 첫 문장을 고치면?",
+    "segments": ["일정이 촉박하여 ", "회의록을 공유해 드립니다."],
+    "segmentIds": ["seg-1", "seg-2"],
+    "correctSegment": "seg-1",
+    "fixes": ["회의 결과를 공유합니다", "일정이 무척 촉박하여"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "상황 설명 대신 핵심 용건과 목적을 첫머리에 둬요."
+  }
+]

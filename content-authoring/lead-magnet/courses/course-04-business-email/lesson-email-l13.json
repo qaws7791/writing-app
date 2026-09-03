@@ -1,0 +1,175 @@
+[
+  {
+    "type": "reading",
+    "title": "검증 가능한 시스템 재발 방지책",
+    "body": "\"앞으로 각별히 주의하겠다\"는 개인의 다짐은 상대방에게 아무런 안도감을 주지 못해요. 재발을 막으려면 사람이 아닌 시스템을 바꿔야 합니다. 발송 전 체크리스트 의무화, 2인 교차 검수 절차처럼 외부에서 관찰 가능한 구체적 프로세스를 약속하세요."
+  },
+  {
+    "type": "compare",
+    "title": "공허한 다짐과 시스템 개선 대조",
+    "analysis": "주의하겠다는 말보다 관찰 가능한 절차를 약속해요.",
+    "versions": [
+      {
+        "label": "공허한 다짐",
+        "mark": "각별히 주의하여",
+        "text": "앞으로는 담당자가 각별히 주의하여 작업하겠습니다."
+      },
+      {
+        "label": "시스템 개선",
+        "mark": "2인 승인 절차를 도입합니다",
+        "text": "배포 전 체크리스트를 신설하고 2인 승인 절차를 도입합니다."
+      }
+    ]
+  },
+  {
+    "type": "match",
+    "title": "주관적 각오의 시스템 전환",
+    "pairs": [
+      {
+        "left": "집중해서 검수하기",
+        "leftId": "l-1",
+        "right": "출고 전 점검표 의무화",
+        "rightId": "r-1"
+      },
+      {
+        "left": "실수를 잊지 않기",
+        "leftId": "l-2",
+        "right": "오류 유형 가이드 배포",
+        "rightId": "r-2"
+      },
+      {
+        "left": "소통 늘리기",
+        "leftId": "l-3",
+        "right": "주간 진행 현황 정기 공유",
+        "rightId": "r-3"
+      }
+    ],
+    "explanation": "사람의 다짐을 누구나 감시할 수 있는 물리적 제도로 바꿔요."
+  },
+  {
+    "type": "true_false",
+    "question": "신뢰를 주는 재발 방지책인가요?",
+    "statement": "발송 전 2인 교차 검수 프로세스를 신설하여 즉시 적용한다.",
+    "correct": true,
+    "explanation": "제3자가 직접 확인할 수 있는 절차여야 실효성이 있어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "공허한 각오에 불과한 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "자동 모니터링 알림 설정"
+      },
+      {
+        "id": "opt-2",
+        "text": "직원들의 정신 교육 강화"
+      },
+      {
+        "id": "opt-3",
+        "text": "출고 검수표 필수 서명제"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "정신 교육 같은 추상적 다짐은 시스템 재발 방지책이 될 수 없어요."
+  },
+  {
+    "type": "select",
+    "question": "검증 불가능한 주관적 표현은?",
+    "segments": [
+      "재발 방지를 위해 ",
+      "전 직원이 심기일전하여 ",
+      "업무에 임하겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "감정적 각오 대신 구체적인 업무 매뉴얼 개편을 약속해야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "재발 방지 대책 유형 분류",
+    "categories": [
+      {
+        "id": "cat-mind",
+        "label": "주관적 다짐"
+      },
+      {
+        "id": "cat-sys",
+        "label": "시스템 개선"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "앞으로 신경 쓰겠습니다",
+        "categoryId": "cat-mind"
+      },
+      {
+        "id": "item-2",
+        "text": "더블 체크 승인선 신설",
+        "categoryId": "cat-sys"
+      },
+      {
+        "id": "item-3",
+        "text": "주의 깊게 살피겠습니다",
+        "categoryId": "cat-mind"
+      },
+      {
+        "id": "item-4",
+        "text": "오류 감지 스크립트 가동",
+        "categoryId": "cat-sys"
+      }
+    ],
+    "explanation": "시스템 개선은 담당자가 바뀌어도 오류를 막아주는 장치예요."
+  },
+  {
+    "type": "true_false",
+    "question": "적절한 재발 방지책인가요?",
+    "statement": "'앞으로 두 번 다시 이런 일이 없도록 하겠다'만으로 충분하다.",
+    "correct": false,
+    "explanation": "구체적인 제도적 통제 장치가 없으면 공허한 립서비스에 그쳐요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "거래처가 안심할 수 있는 대책은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "발송 전 2단계 승인제 도입"
+      },
+      {
+        "id": "opt-2",
+        "text": "담당자 반성문 제출 의무화"
+      },
+      {
+        "id": "opt-3",
+        "text": "사내 주의 경고 방송 실시"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "프로세스 상의 안전장치가 마련되어야 거래처가 신뢰할 수 있어요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "동일 사고를 막기 위해 데이터 업로드 시 ___ 절차를 도입했습니다.",
+    "words": ["자동 스크립트 검증", "담당자의 각별한 각오", "직원 간의 믿음"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "시스템을 통한 자동 검증이 휴먼 에러를 방지하는 근본책이에요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "시스템 재발 방지문을 조립하세요.",
+    "tiles": [
+      "매뉴얼을",
+      "개정하고",
+      "주간 점검 결과를",
+      "투명하게",
+      "공유하겠습니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "문서화된 규정과 정기 공유로 재발 방지 노력을 검증받아요."
+  }
+]

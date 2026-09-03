@@ -1,0 +1,154 @@
+﻿[
+  {
+    "type": "compare",
+    "title": "모호한 마감과 확정 일시 대조",
+    "analysis": "날짜와 시각, 회신 방식을 짚어야 제때 답장이 와요.",
+    "versions": [
+      {
+        "label": "모호한 기한",
+        "text": "가급적 빠른 시일 내에 확인 부탁드립니다.",
+        "mark": "가급적 빠른 시일 내에"
+      },
+      {
+        "label": "확정 일시",
+        "text": "10월 14일(수) 17시까지 답장 부탁드립니다.",
+        "mark": "10월 14일(수) 17시까지"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "효과적인 마감 안내인가요?",
+    "statement": "바쁘시겠지만 시간 되실 때 회신해 주세요.",
+    "correct": false,
+    "explanation": "'시간 되실 때'는 우선순위에서 밀려 답이 늦어져요."
+  },
+  {
+    "type": "select",
+    "question": "모호하여 답장을 늦추는 표현은?",
+    "segments": ["검토 후 ", "가능한 한 조속히 ", "피드백을 부탁드립니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'조속히' 대신 구체적 요일과 시각을 박아야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 명확한 마감 일시 표기는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "금주 중으로 회신 요망"
+      },
+      {
+        "id": "opt-2",
+        "text": "9월 5일(금) 16시까지"
+      },
+      {
+        "id": "opt-3",
+        "text": "다음 주 초까지 부탁"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "연월일과 요일, 시각까지 적어야 착오가 없어요."
+  },
+  {
+    "type": "categorize",
+    "title": "모호한 요청 vs 명확한 요청",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "모호한 요청"
+      },
+      {
+        "id": "cat-2",
+        "label": "명확한 요청"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "편하실 때 확인 요망",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "3일(목) 18시까지 답장",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-3",
+        "text": "추후 확인 부탁드립니다",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-4",
+        "text": "첨부 양식 작성 후 회신",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "일시와 회신 형식이 뚜렷해야 상대가 즉시 행동해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 회신 요청 방식인가요?",
+    "statement": "수정 의견 유무만 본 메일 답장으로 회신",
+    "correct": true,
+    "explanation": "원하는 회신 형식까지 지정하면 답장 부담을 덜어줘요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "의견 수렴: 10월 20일(화) 15시까지 ___ 회신",
+    "words": ["본 메일 답장으로", "여유 생기시면", "시간 나실 때"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "어디로 어떻게 회신할지 경로를 정해줘야 빨라요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "상대 행동을 유도하는 요청은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "승인 여부를 O/X로 회신"
+      },
+      {
+        "id": "opt-2",
+        "text": "언제든 연락해 주세요"
+      },
+      {
+        "id": "opt-3",
+        "text": "생각나실 때 알려주세요"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "선택지를 좁혀 회신 형식을 주면 즉답을 받기 쉬워요."
+  },
+  {
+    "type": "select",
+    "question": "명확한 마감 일시 정보는?",
+    "segments": [
+      "프로젝트 기획안을 ",
+      "내일 오후까지 ",
+      "11월 4일(화) 14시까지 ",
+      "보내주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "상대방과 기준이 엇갈리지 않게 구체 일시를 명시해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "sentence_build",
+    "question": "구체적 마감 요청문을 조립하세요.",
+    "tiles": [
+      "12월 8일(금) ",
+      "16시까지 ",
+      "본 메일 답장으로 ",
+      "회신 바랍니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4"],
+    "correct": ["t-1", "t-2", "t-3", "t-4"],
+    "explanation": "마감 시각과 회신 방식을 결합해 즉시 행동을 유도해요."
+  }
+]

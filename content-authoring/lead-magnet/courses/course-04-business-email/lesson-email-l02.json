@@ -1,0 +1,186 @@
+[
+  {
+    "type": "reading",
+    "title": "수신·참조·숨은참조의 역할",
+    "body": "메일 수신함이 어지러운 이유는 역할 구분이 안 되기 때문이에요. 'To(수신)'는 직접 답장하고 행동할 사람, 'Cc(참조)'는 참고만 할 사람, 'Bcc(숨은참조)'는 개인정보를 보호해야 할 외부 대상에게 지정해요."
+  },
+  {
+    "type": "compare",
+    "title": "실행 주체와 공유 대상 대조",
+    "analysis": "실제 행동할 사람을 To에 두고 관리자는 Cc에 넣어요.",
+    "versions": [
+      {
+        "label": "모두 수신",
+        "mark": "수신: 박 팀장, 김 대리",
+        "text": "수신: 박 팀장, 김 대리 기획안 작성 부탁드립니다"
+      },
+      {
+        "label": "역할 분리",
+        "mark": "수신: 김 대리 / 참조: 박 팀장",
+        "text": "수신: 김 대리 / 참조: 박 팀장 기획안 작성 부탁드립니다"
+      }
+    ]
+  },
+  {
+    "type": "categorize",
+    "title": "수신 영역별 알맞은 대상 분류",
+    "categories": [
+      {
+        "id": "cat-to",
+        "label": "수신 (To)"
+      },
+      {
+        "id": "cat-cc",
+        "label": "참조 (Cc)"
+      },
+      {
+        "id": "cat-bcc",
+        "label": "숨은참조 (Bcc)"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "답장할 실무 담당자",
+        "categoryId": "cat-to"
+      },
+      {
+        "id": "item-2",
+        "text": "맥락 공유할 부서장",
+        "categoryId": "cat-cc"
+      },
+      {
+        "id": "item-3",
+        "text": "대량 공지 외부 고객",
+        "categoryId": "cat-bcc"
+      },
+      {
+        "id": "item-4",
+        "text": "직접 보고받을 결정권자",
+        "categoryId": "cat-to"
+      },
+      {
+        "id": "item-5",
+        "text": "협업 진행 알릴 동료",
+        "categoryId": "cat-cc"
+      },
+      {
+        "id": "item-6",
+        "text": "비공개 입찰 협력사",
+        "categoryId": "cat-bcc"
+      }
+    ],
+    "explanation": "직접 실행자는 To, 정보 공유는 Cc, 비공개는 Bcc에 둡니다."
+  },
+  {
+    "type": "true_false",
+    "question": "참조(Cc)의 역할인가요?",
+    "statement": "참조(Cc)로 지정된 사람도 반드시 메일에 답장해야 해요.",
+    "correct": false,
+    "explanation": "참조자는 상황 공유 목적이므로 원칙적으로 답장 의무가 없어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "숨은참조(Bcc)가 필수인 때는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "사내 주간 업무 공유"
+      },
+      {
+        "id": "opt-2",
+        "text": "다수 고객 단체 공지"
+      },
+      {
+        "id": "opt-3",
+        "text": "사수 피드백 요청"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "고객들의 이메일 주소가 서로에게 노출되는 사고를 막아야 해요."
+  },
+  {
+    "type": "select",
+    "question": "수신 영역이 잘못된 부분은?",
+    "segments": [
+      "[수신] 박 팀장 ",
+      "[참조] 실무자 김 대리 ",
+      "[내용] 자료 취합 바람"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "실제 자료를 취합해 제출할 실무자를 '수신'에 두어야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "메일 수신 필드와 책임 연결",
+    "pairs": [
+      {
+        "left": "직접 실행 및 회신",
+        "leftId": "p-1-l",
+        "right": "수신 (To)",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "업무 맥락 참고",
+        "leftId": "p-2-l",
+        "right": "참조 (Cc)",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "주소 비공개 공유",
+        "leftId": "p-3-l",
+        "right": "숨은참조 (Bcc)",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "수신 필드마다 요구되는 행동 책임의 무게가 전혀 달라요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 메일 발송법인가요?",
+    "statement": "수신자가 여러 명이면 '전체 답장' 시 참조자도 함께 포함돼요.",
+    "correct": true,
+    "explanation": "'전체 답장'은 기존 참조자를 그대로 유지하며 회신해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "외부 협력사 여러 곳에 동일한 견적을 요청할 때는 ___로 발송해요.",
+    "words": ["수신", "숨은참조", "일반참조", "전체답장"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-2"],
+    "explanation": "거래처 간의 이메일 주소 유출을 방지하기 위해 숨은참조를 씁니다."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "참조자를 추가할 때의 예절은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "본문에 참조 추가 알림"
+      },
+      {
+        "id": "opt-b",
+        "text": "중간에 몰래 추가하기"
+      },
+      {
+        "id": "opt-c",
+        "text": "답장에 모든 사람 빼기"
+      }
+    ],
+    "correct": "opt-a",
+    "explanation": "본문 첫머리에 '원활한 진행을 위해 OOO님 참조합니다'를 적어요."
+  },
+  {
+    "type": "error_correct",
+    "question": "잘못 지정된 수신칸을 고치세요.",
+    "segments": ["[실무 처리자: 김 대리] ", "To: 박 부서장 ", "Cc: 김 대리"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["To: 박 부서장", "To: 김 대리"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "행동 주체인 김 대리를 To에 두고 부서장은 Cc에 두어야 맞아요."
+  }
+]

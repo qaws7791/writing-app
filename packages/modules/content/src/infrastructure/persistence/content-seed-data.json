@@ -12384,35 +12384,832 @@
             "title": "열람 우선순위와 검색성을 높이는 `[말머리]+용건+마감` 제목 쓰기",
             "time": "5분",
             "desc": "수신자가 수신함 목록만 보고도 행동 유형과 마감 일정을 즉시 식별할 수 있도록 `[말머리 태그] 핵심 업무명 + 마감 기한` 조합의 표준 제목을 작성할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "수신함을 여는 3단 제목 공식",
+                "body": "바쁜 직장인은 제목만 보고 읽을지 넘길지 결정해요. 행동 유형을 알리는 '[말머리]', 한눈에 들어오는 '핵심 용건', 그리고 명확한 '마감 일시'를 순서대로 조합하면 수신함 목록에서 즉각 클릭을 이끌어낼 수 있어요."
+              },
+              {
+                "type": "compare",
+                "title": "수신함 목록 제목 가독성 대조",
+                "analysis": "말머리와 마감이 있어야 열람 우선순위가 확 올라가요.",
+                "versions": [
+                  {
+                    "label": "모호한 제목",
+                    "mark": "자료 송부의 건",
+                    "text": "안녕하세요 마케팅팀 김민수 대리입니다 자료 송부의 건"
+                  },
+                  {
+                    "label": "3단 제목",
+                    "mark": "[검토요청] 예산안 피드백",
+                    "text": "[검토요청] 예산안 피드백 (05/20 화 17시)"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "제목 작성 원칙인가요?",
+                "statement": "말머리에 '안녕하세요' 같은 인사를 넣으면 우선순위 파악이 쉬워져요.",
+                "correct": false,
+                "explanation": "말머리에는 [요청], [공지] 등 수신자의 행동 유형을 넣어야 해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "우선순위가 가장 분명한 제목은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "[요청] 기획안(5/12)"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "김대리입니다 문의드립니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "신제품 관련 회의 건"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "말머리와 용건, 마감이 한눈에 보여 바로 처리할 수 있어요."
+              },
+              {
+                "type": "select",
+                "question": "삭제할 불필요한 문구는?",
+                "segments": [
+                  "[요청] ",
+                  "안녕하세요 ",
+                  "정산서 확인 ",
+                  "(4/15 마감)"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-2"],
+                "explanation": "인사말은 제목에서 빼고 본문 첫 줄에 쓰는 것이 깔끔해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "match",
+                "title": "상황별 말머리 태그 연결",
+                "pairs": [
+                  {
+                    "left": "단순 정보 전달",
+                    "leftId": "p-1-l",
+                    "right": "[공지]",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "수신자 피드백 필요",
+                    "leftId": "p-2-l",
+                    "right": "[검토요청]",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "회의나 서명 승인",
+                    "leftId": "p-3-l",
+                    "right": "[결재요청]",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "당일 즉각 조치",
+                    "leftId": "p-4-l",
+                    "right": "[긴급]",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "상대의 다음 행동에 맞춰 적절한 말머리 태그를 선택하세요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 제목 규칙인가요?",
+                "statement": "마감 일시는 날짜뿐 아니라 구체적인 시간까지 적는 것이 좋아요.",
+                "correct": true,
+                "explanation": "시간까지 명시해야 상대가 일정을 조율하기 수월해져요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "상대방의 승인이 필요할 때는 제목 앞에 ___ 태그를 붙여요.",
+                "words": ["[결재요청]", "[공지]", "[단순참고]", "[회람]"],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-1"],
+                "explanation": "승인 권한자의 빠른 결재를 유도할 때는 [결재요청]을 씁니다."
+              },
+              {
+                "type": "select",
+                "question": "검색성을 해치는 요소는?",
+                "segments": [
+                  "[제안] ",
+                  "급합니다!! ",
+                  "신규 제휴 제안서 ",
+                  "(06/10)"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-2"],
+                "explanation": "느낌표나 감정적 표현 대신 표준 말머리와 마감을 적어야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "error_correct",
+                "question": "모호한 제목을 바르게 고치세요.",
+                "segments": [
+                  "김 대리입니다 ",
+                  "지난번 이야기한 건 ",
+                  "확인 바랍니다"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["지난번 이야기한 건", "마케팅안 (6/5)"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "지난번 건처럼 모호한 말 대신 구체적 업무명과 날짜를 씁니다."
+              },
+              {
+                "type": "sentence_build",
+                "question": "표준 업무 제목을 완성하세요.",
+                "tiles": [
+                  "[요청]",
+                  "상반기",
+                  "실적 보고서",
+                  "피드백",
+                  "(18시 마감)"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "말머리, 핵심 업무명, 마감 시한 순으로 배치하면 완벽해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l02",
             "title": "수신(To)·참조(Cc)·숨은참조(Bcc)의 실행 책임과 정보 공유 범위 구분하기",
             "time": "5분",
             "desc": "메일 수신자의 혼선을 방지하기 위해 직접 행동 주체(To), 단순 정보 공유자(Cc), 비밀 유지 및 대량 발송 대상(Bcc)을 정확히 분리하여 지정할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "수신·참조·숨은참조의 역할",
+                "body": "메일 수신함이 어지러운 이유는 역할 구분이 안 되기 때문이에요. 'To(수신)'는 직접 답장하고 행동할 사람, 'Cc(참조)'는 참고만 할 사람, 'Bcc(숨은참조)'는 개인정보를 보호해야 할 외부 대상에게 지정해요."
+              },
+              {
+                "type": "compare",
+                "title": "실행 주체와 공유 대상 대조",
+                "analysis": "실제 행동할 사람을 To에 두고 관리자는 Cc에 넣어요.",
+                "versions": [
+                  {
+                    "label": "모두 수신",
+                    "mark": "수신: 박 팀장, 김 대리",
+                    "text": "수신: 박 팀장, 김 대리 기획안 작성 부탁드립니다"
+                  },
+                  {
+                    "label": "역할 분리",
+                    "mark": "수신: 김 대리 / 참조: 박 팀장",
+                    "text": "수신: 김 대리 / 참조: 박 팀장 기획안 작성 부탁드립니다"
+                  }
+                ]
+              },
+              {
+                "type": "categorize",
+                "title": "수신 영역별 알맞은 대상 분류",
+                "categories": [
+                  {
+                    "id": "cat-to",
+                    "label": "수신 (To)"
+                  },
+                  {
+                    "id": "cat-cc",
+                    "label": "참조 (Cc)"
+                  },
+                  {
+                    "id": "cat-bcc",
+                    "label": "숨은참조 (Bcc)"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "답장할 실무 담당자",
+                    "categoryId": "cat-to"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "맥락 공유할 부서장",
+                    "categoryId": "cat-cc"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "대량 공지 외부 고객",
+                    "categoryId": "cat-bcc"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "직접 보고받을 결정권자",
+                    "categoryId": "cat-to"
+                  },
+                  {
+                    "id": "item-5",
+                    "text": "협업 진행 알릴 동료",
+                    "categoryId": "cat-cc"
+                  },
+                  {
+                    "id": "item-6",
+                    "text": "비공개 입찰 협력사",
+                    "categoryId": "cat-bcc"
+                  }
+                ],
+                "explanation": "직접 실행자는 To, 정보 공유는 Cc, 비공개는 Bcc에 둡니다."
+              },
+              {
+                "type": "true_false",
+                "question": "참조(Cc)의 역할인가요?",
+                "statement": "참조(Cc)로 지정된 사람도 반드시 메일에 답장해야 해요.",
+                "correct": false,
+                "explanation": "참조자는 상황 공유 목적이므로 원칙적으로 답장 의무가 없어요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "숨은참조(Bcc)가 필수인 때는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "사내 주간 업무 공유"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "다수 고객 단체 공지"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "사수 피드백 요청"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "고객들의 이메일 주소가 서로에게 노출되는 사고를 막아야 해요."
+              },
+              {
+                "type": "select",
+                "question": "수신 영역이 잘못된 부분은?",
+                "segments": [
+                  "[수신] 박 팀장 ",
+                  "[참조] 실무자 김 대리 ",
+                  "[내용] 자료 취합 바람"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "실제 자료를 취합해 제출할 실무자를 '수신'에 두어야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "match",
+                "title": "메일 수신 필드와 책임 연결",
+                "pairs": [
+                  {
+                    "left": "직접 실행 및 회신",
+                    "leftId": "p-1-l",
+                    "right": "수신 (To)",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "업무 맥락 참고",
+                    "leftId": "p-2-l",
+                    "right": "참조 (Cc)",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "주소 비공개 공유",
+                    "leftId": "p-3-l",
+                    "right": "숨은참조 (Bcc)",
+                    "rightId": "p-3-r"
+                  }
+                ],
+                "explanation": "수신 필드마다 요구되는 행동 책임의 무게가 전혀 달라요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 메일 발송법인가요?",
+                "statement": "수신자가 여러 명이면 '전체 답장' 시 참조자도 함께 포함돼요.",
+                "correct": true,
+                "explanation": "'전체 답장'은 기존 참조자를 그대로 유지하며 회신해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "외부 협력사 여러 곳에 동일한 견적을 요청할 때는 ___로 발송해요.",
+                "words": ["수신", "숨은참조", "일반참조", "전체답장"],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-2"],
+                "explanation": "거래처 간의 이메일 주소 유출을 방지하기 위해 숨은참조를 씁니다."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "참조자를 추가할 때의 예절은?",
+                "options": [
+                  {
+                    "id": "opt-a",
+                    "text": "본문에 참조 추가 알림"
+                  },
+                  {
+                    "id": "opt-b",
+                    "text": "중간에 몰래 추가하기"
+                  },
+                  {
+                    "id": "opt-c",
+                    "text": "답장에 모든 사람 빼기"
+                  }
+                ],
+                "correct": "opt-a",
+                "explanation": "본문 첫머리에 '원활한 진행을 위해 OOO님 참조합니다'를 적어요."
+              },
+              {
+                "type": "error_correct",
+                "question": "잘못 지정된 수신칸을 고치세요.",
+                "segments": [
+                  "[실무 처리자: 김 대리] ",
+                  "To: 박 부서장 ",
+                  "Cc: 김 대리"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["To: 박 부서장", "To: 김 대리"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "행동 주체인 김 대리를 To에 두고 부서장은 Cc에 두어야 맞아요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l03",
             "title": "직급·소속·상황에 맞는 격식 있는 공적 호칭과 직명 표기하기",
             "time": "5분",
             "desc": "사적인 존칭 중복을 배제하고, `성명+직함` 및 단체·기관 지칭 관형사(`귀사`, `우리 부`)의 올바른 띄어쓰기 규범을 적용할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "격식을 갖추는 비즈니스 호칭",
+                "body": "공식 메일에서는 사적인 친분보다 격식 있는 호칭이 기본이에요. '홍길동 팀장님'처럼 '성명+직함+님' 순서로 쓰고, 직함 뒤에 '님'을 덧붙이지 않은 '팀장 홍길동님'은 피해요. 상대 회사는 붙여 쓴 '귀사'로 예우해요."
+              },
+              {
+                "type": "compare",
+                "title": "직함과 존칭 표기 순서 대조",
+                "analysis": "'성명+직함+님' 순서가 공적 예절에 가장 알맞아요.",
+                "versions": [
+                  {
+                    "label": "직함 앞배치",
+                    "mark": "팀장 홍길동님",
+                    "text": "수신: 기획팀 팀장 홍길동님 안녕하십니까."
+                  },
+                  {
+                    "label": "성명 앞배치",
+                    "mark": "홍길동 팀장님",
+                    "text": "수신: 기획팀 홍길동 팀장님 안녕하십니까."
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 띄어쓰기인가요?",
+                "statement": "'귀사(상대 회사)'는 한 단어이므로 띄어 쓰지 않고 붙여 써요.",
+                "correct": true,
+                "explanation": "'귀사'는 고유한 하나의 명사이므로 '귀 사'로 띄어 쓰지 않아요."
+              },
+              {
+                "type": "select",
+                "question": "어색하게 쓰인 호칭은?",
+                "segments": [
+                  "안녕하세요, ",
+                  "인사팀 ",
+                  "과장 김철수님 ",
+                  "확인 바랍니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-3"],
+                "explanation": "'과장 김철수님'보다 '김철수 과장님'으로 표기하는 게 정중해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "상대 기업을 높여 부르는 말은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "귀 부서"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "귀사"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "당사"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "상대 기업은 '귀사', 우리 회사를 낮춰 부를 때는 '당사'를 써요."
+              },
+              {
+                "type": "match",
+                "title": "상황별 올바른 호칭 연결",
+                "pairs": [
+                  {
+                    "left": "상대 회사 지칭",
+                    "leftId": "p-1-l",
+                    "right": "귀사",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "우리 회사 지칭",
+                    "leftId": "p-2-l",
+                    "right": "당사 / 저희 회사",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "상대 기관 지칭",
+                    "leftId": "p-3-l",
+                    "right": "귀원 / 귀처",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "우리 부서 지칭",
+                    "leftId": "p-4-l",
+                    "right": "저희 부서",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "상대를 높이는 '귀-'와 자신을 낮추는 '당-/저희'를 구분해요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 존칭 규칙인가요?",
+                "statement": "외부 거래처에 보낼 때 '사장님실'처럼 부서나 건물에도 '님'을 붙인다.",
+                "correct": false,
+                "explanation": "'님'은 인격체에만 붙이므로 사장실, 대표실로 써야 바릅니다."
+              },
+              {
+                "type": "fill_blank",
+                "template": "거래처 공문 첫머리에 '___의 무궁한 발전을 기원합니다'라고 써요.",
+                "words": ["당사", "귀사", "본사", "우리사"],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-2"],
+                "explanation": "상대 회사를 정중히 높여 부르는 표준 한자어는 '귀사'입니다."
+              },
+              {
+                "type": "select",
+                "question": "띄어쓰기가 잘못된 부분은?",
+                "segments": [
+                  "이번 프로젝트는 ",
+                  "귀 사와 ",
+                  "협력하게 되어 ",
+                  "기쁩니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-2"],
+                "explanation": "'귀사'는 한 단어이므로 공백 없이 붙여 써야 맞습니다.",
+                "layout": "inline"
+              },
+              {
+                "type": "error_correct",
+                "question": "과도한 존칭을 바르게 고치세요.",
+                "segments": [
+                  "회의 결과는 ",
+                  "대표이사님실로 ",
+                  "직접 보고하겠습니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["대표이사님실로", "대표이사실로"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "장소나 조직 명칭에는 '님'을 붙이지 않고 '대표이사실'로 씁니다."
+              },
+              {
+                "type": "sentence_build",
+                "question": "격식 있는 첫인사를 완성하세요.",
+                "tiles": [
+                  "안녕하십니까",
+                  "개발팀",
+                  "이영희",
+                  "팀장님",
+                  "반갑습니다"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "'소속 + 성명 + 직함 + 님' 순서로 정중하게 호칭을 표기해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l04",
             "title": "날씨·안부 사족을 덜어내고 1문장으로 용건에 진입하는 도입부 쓰기",
             "time": "5분",
             "desc": "3~4줄에 걸친 형식적 날씨·계절 인사를 과감히 생략하고, 발신자 소속과 메일의 목적을 명시하는 1문장 도입부로 수신자의 인지 비용을 줄일 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "3초 만에 용건으로 들어가는 법",
+                "body": "\"환절기 감기 조심하세요\", \"화창한 봄날입니다\" 같은 사족은 수신자의 시간을 뺏어요. 비즈니스 이메일은 첫 1~2문장에서 발신자의 소속과 이 메일을 쓴 '목적'을 단도직입적으로 밝혀야 수신자의 피로를 줄입니다."
+              },
+              {
+                "type": "compare",
+                "title": "사족 도입부와 1문장 도입부 대조",
+                "analysis": "날씨 인사 대신 메일 목적을 첫 줄에 바로 제시해요.",
+                "versions": [
+                  {
+                    "label": "사족형 도입",
+                    "mark": "따스한 봄바람이 붑니다",
+                    "text": "따스한 봄바람이 붑니다 기획안 검토 요청드립니다"
+                  },
+                  {
+                    "label": "직결형 도입",
+                    "mark": "광고 집행 건으로 연락드렸습니다",
+                    "text": "마케팅팀 김 대리입니다 광고 집행 건으로 연락드렸습니다"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "비즈니스 도입부 원칙인가요?",
+                "statement": "외부 거래처 메일이라도 첫인사 뒤에 바로 본론 목적을 적는 게 좋아요.",
+                "correct": true,
+                "explanation": "불필요한 날씨 인사보다 빠른 용건 전달이 비즈니스 매너예요."
+              },
+              {
+                "type": "select",
+                "question": "과감히 삭제할 사족 문장은?",
+                "segments": [
+                  "안녕하십니까. ",
+                  "아침저녁 일교차가 큰 환절기입니다. ",
+                  "신규 입점 건으로 문의드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "의례적인 환절기 인사를 빼면 메일의 목적이 훨씬 선명해져요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 명쾌한 첫 문장은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "추위에 건강 유의 바랍니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "서버 점검 일정 안내드립니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "올해도 절반이 지났네요"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "메일을 보낸 이유를 한 문장으로 명시해야 용건이 즉시 파악돼요."
+              },
+              {
+                "type": "match",
+                "title": "늘어진 미사여구와 실무 표현 매핑",
+                "pairs": [
+                  {
+                    "left": "아침저녁 쌀쌀한 날씨",
+                    "leftId": "p-1-l",
+                    "right": "과감히 삭제",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "보낸 사람의 회사·이름",
+                    "leftId": "p-2-l",
+                    "right": "소속 명시",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "메일을 보내게 된 이유",
+                    "leftId": "p-3-l",
+                    "right": "목적 직결",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "답변 기한과 기대 행동",
+                    "leftId": "p-4-l",
+                    "right": "핵심 요청",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "의례적 미사여구를 덜어낼수록 업무의 생산성이 높아집니다."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 메일 작성법인가요?",
+                "statement": "용건을 숨기고 안부 인사를 길게 써야 정중하고 예의 바르게 느껴진다.",
+                "correct": false,
+                "explanation": "바쁜 비즈니스 환경에서는 신속한 목적 전달이 최고의 배려예요."
+              },
+              {
+                "type": "select",
+                "question": "불필요한 겉치레 문장은?",
+                "segments": [
+                  "콘텐츠팀 이수진입니다. ",
+                  "풍요로운 결실의 계절입니다. ",
+                  "원고 검토를 부탁드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "계절 인사는 스크롤만 늘리므로 삭제하고 바로 본론을 씁니다.",
+                "layout": "inline"
+              },
+              {
+                "type": "fill_blank",
+                "template": "간단한 인사 후 '___ 건으로 연락드렸습니다'처럼 목적을 1문장으로 써요.",
+                "words": ["안부", "날씨", "용건", "사담"],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-3"],
+                "explanation": "메일의 목적(용건)을 서두에 밝히면 상대방의 집중도가 높아져요."
+              },
+              {
+                "type": "error_correct",
+                "question": "늘어진 서두를 간결하게 고치세요.",
+                "segments": [
+                  "안녕하세요 김 과장님. ",
+                  "완연한 봄날입니다. ",
+                  "자료 공유드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["완연한 봄날입니다.", "결산 자료 송부 건으로"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "날씨 묘사 대신 메일을 보낸 구체적 목적을 서두에 배치해요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "직결형 도입부를 완성하세요.",
+                "tiles": [
+                  "안녕하십니까",
+                  "운영팀",
+                  "박지훈입니다",
+                  "정산 내역",
+                  "공유드립니다"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "'인사 + 소속 + 목적'의 3박자로 첫 문장을 완성하세요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l05",
             "title": "상대의 지식 수준에 맞춰 사내 은어와 전문 약어 해설하기",
             "time": "5분",
             "desc": "'지식의 저주'를 방지하기 위해 타 부서나 외부 거래처가 이해하기 어려운 내부 프로젝트명·사내 약어를 일반어로 전환하거나 1줄 정의를 병기할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "전문 약어와 사내 은어 번역하기",
+                "body": "내가 매일 쓰는 약어도 외부 파트너에게는 암호문처럼 느껴져요. '지식의 저주'에 빠지지 않으려면, 외부 메일에서는 사내 은어를 쉬운 우리말로 바꾸거나 괄호 안에 친절한 1줄 설명을 덧붙여야 오해와 재질문을 막을 수 있어요."
+              },
+              {
+                "type": "compare",
+                "title": "은어 남발과 친절한 설명 대조",
+                "analysis": "외부 거래처에는 약어 뒤에 쉬운 설명을 병기해요.",
+                "versions": [
+                  {
+                    "label": "약어 남발",
+                    "mark": "이번 스프린트 때 얼라인 맞춰요",
+                    "text": "협력사 담당자님 이번 스프린트 때 얼라인 맞춰요"
+                  },
+                  {
+                    "label": "용어 풀이",
+                    "mark": "개발 주기 미팅에서 의견을 조율해요",
+                    "text": "협력사 담당자님 개발 주기 미팅에서 의견을 조율해요"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "용어 사용 원칙인가요?",
+                "statement": "우리 팀에서만 쓰는 프로젝트 암호명을 거래처 메일에 그대로 써도 된다.",
+                "correct": false,
+                "explanation": "외부 파트너가 이해할 수 있는 공식 명칭으로 바꾸어 써야 해요."
+              },
+              {
+                "type": "select",
+                "question": "외부인이 이해하기 힘든 은어는?",
+                "segments": [
+                  "다음 주까지 ",
+                  "기획안 디벨롭해서 ",
+                  "대표님 결재받고 ",
+                  "전달해 드릴게요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-2"],
+                "explanation": "'디벨롭' 대신 '보완/발전' 같은 명확한 한국어를 권장해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "약어를 병기하는 바른 방법은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "핵심지표(KPI)로 풀기"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "KPI만 단독으로 적기"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "약어 뜻 퀴즈 내기"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "약어를 처음 쓸 때는 한글 풀이와 함께 괄호로 병기해야 친절해요."
+              },
+              {
+                "type": "match",
+                "title": "비즈니스 은어의 바른 한국어 전환",
+                "pairs": [
+                  {
+                    "left": "얼라인(align)하다",
+                    "leftId": "p-1-l",
+                    "right": "방향을 맞추다",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "디벨롭(develop)",
+                    "leftId": "p-2-l",
+                    "right": "구체화/보완하다",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "핑(ping) 찍다",
+                    "leftId": "p-3-l",
+                    "right": "가볍게 확인하다",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "어사인(assign)하다",
+                    "leftId": "p-4-l",
+                    "right": "담당을 배정하다",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "외래어나 은어 대신 뜻이 명확한 우리말을 쓰면 소통이 빨라져요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 약어 소통법인가요?",
+                "statement": "전문 약어를 처음 소개할 때는 공식 명칭과 정의를 함께 병기한다.",
+                "correct": true,
+                "explanation": "수신자가 인터넷 검색을 하지 않도록 배려하는 것이 전문성이에요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "외부 거래처와 소통할 때는 사내 은어 대신 ___ 우리말 표현을 써요.",
+                "words": [
+                  "우리 팀만의",
+                  "누구나 아는",
+                  "복잡하고 어려운",
+                  "외래어 섞인"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-2"],
+                "explanation": "수신자의 입장에서 직관적으로 이해할 수 있는 어휘를 골라야 해요."
+              },
+              {
+                "type": "select",
+                "question": "쉬운 말로 바꿀 부분은?",
+                "segments": [
+                  "요청하신 일정은 ",
+                  "내부적으로 캐파가 부족해 ",
+                  "조율이 필요합니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "'캐파(Capa)' 대신 '작업 여력'이나 '처리 용량'으로 써보세요.",
+                "layout": "inline"
+              },
+              {
+                "type": "error_correct",
+                "question": "외계어 은어를 바르게 고치세요.",
+                "segments": [
+                  "해당 사안은 ",
+                  "사수와 싱크 맞추고 ",
+                  "다시 연락드리겠습니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["사수와 싱크 맞추고", "사수와 현황을 공유하고"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "'싱크 맞추다' 대신 '현황을 공유하다/의견을 맞추다'로 씁니다."
+              },
+              {
+                "type": "sentence_build",
+                "question": "친절한 약어 문장을 완성하세요.",
+                "tiles": ["핵심", "성과 지표인", "KPI를", "공유해", "드립니다"],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "전문 약어 앞뒤에 풀이말을 붙여주면 수신자가 단번에 이해해요."
+              }
+            ]
           }
         ]
       },
@@ -12425,35 +13222,777 @@
             "title": "첫 문단에 결론과 핵심 요청(CTA)을 선제 배치하는 두괄식 쓰기",
             "time": "5분",
             "desc": "일의 진행 순서대로 서술하던 습관을 깨고, 수신자가 취해야 할 최종 행동과 핵심 이유를 첫머리에 배치할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "결론 위치에 따른 가독성 비교",
+                "analysis": "첫머리에 요청을 두면 읽는 즉시 행동을 파악해요.",
+                "versions": [
+                  {
+                    "label": "미괄식",
+                    "text": "회의 결과를 검토하여 기획안 승인을 요청드립니다.",
+                    "mark": "기획안 승인을 요청드립니다."
+                  },
+                  {
+                    "label": "두괄식",
+                    "text": "기획안 승인을 요청드립니다. 회의 검토 결과입니다.",
+                    "mark": "기획안 승인을 요청드립니다."
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "두괄식 작성 원칙인가요?",
+                "statement": "진행 경과를 먼저 적고 끝에 요청을 쓴다.",
+                "correct": false,
+                "explanation": "핵심 결론과 요청을 첫 문장에 써야 바로 이해돼요."
+              },
+              {
+                "type": "select",
+                "question": "첫머리에 둘 핵심 요청은?",
+                "segments": [
+                  "배경을 말씀드리면 ",
+                  "견적서 승인을 요청합니다 ",
+                  "기존 단가가 올랐습니다"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "수신자가 취할 최종 행동을 첫 문장에 배치해야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "두괄식 첫 문장으로 알맞은 것은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "서버 점검 일정을 안내합니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "서버 부하가 심해졌습니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "회의를 마쳤습니다"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "공유 목적과 결론을 첫머리에 밝혀야 즉시 확인해요."
+              },
+              {
+                "type": "order",
+                "title": "두괄식 메일 순서 맞추기",
+                "items": [
+                  "예산안 승인을 요청합니다",
+                  "기존 예산이 소진되었습니다",
+                  "상세 검토를 부탁드립니다",
+                  "내일 정오까지 회신 바랍니다"
+                ],
+                "itemIds": ["item-1", "item-2", "item-3", "item-4"],
+                "correct": ["item-1", "item-2", "item-3", "item-4"],
+                "explanation": "요청 결론을 먼저 두고 사유와 마감 기한을 덧붙여요."
+              },
+              {
+                "type": "true_false",
+                "question": "두괄식 구성에 맞는 문장인가요?",
+                "statement": "8월 운영비 청구 건으로 메일드립니다.",
+                "correct": true,
+                "explanation": "메일 목적을 첫 문장에 명확히 밝히면 신속히 대응해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "___ 메일드립니다. 행사 세부 계획안입니다.",
+                "words": [
+                  "승인을 요청하고자",
+                  "회의가 끝나서",
+                  "문제가 있어서"
+                ],
+                "wordIds": ["word-1", "word-2", "word-3"],
+                "answer": ["word-1"],
+                "explanation": "원인 장황 서술 대신 메일 발송 목적을 먼저 밝혀요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "상사에게 보낼 첫 문장은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "어제 미팅을 마쳤는데요"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "자료를 검토해 주세요"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "자료를 정리하는 중입니다"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "원하는 행동을 첫 문장에 써야 무엇을 볼지 바로 알아요."
+              },
+              {
+                "type": "select",
+                "question": "덜어내야 할 앞부분 인사말은?",
+                "segments": [
+                  "날씨가 무척 덥습니다 ",
+                  "요청하신 자료를 송부합니다 ",
+                  "업무에 참고 바랍니다"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-1"],
+                "explanation": "형식적 인사말보다 핵심 용건을 바로 전해야 신속해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "error_correct",
+                "question": "두괄식에 맞게 첫 문장을 고치면?",
+                "segments": ["일정이 촉박하여 ", "회의록을 공유해 드립니다."],
+                "segmentIds": ["seg-1", "seg-2"],
+                "correctSegment": "seg-1",
+                "fixes": ["회의 결과를 공유합니다", "일정이 무척 촉박하여"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-1",
+                "explanation": "상황 설명 대신 핵심 용건과 목적을 첫머리에 둬요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l07",
             "title": "줄글 속 요청사항을 번호 매긴 개조식 블록으로 시각화하기",
             "time": "5분",
             "desc": "긴 문장 속에 숨어 있는 2개 이상의 요청사항을 `1., 2., 3.` 번호 매기기 및 글머리 기호(개조식)로 독립 분리하여 가독성을 극대화할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "줄글 나열과 개조식 번호 대조",
+                "analysis": "요청사항을 번호로 쪼개면 누락 없이 처리해요.",
+                "versions": [
+                  {
+                    "label": "줄글 나열",
+                    "text": "행사 참석 회신과 발표 자료 송부를 모두 부탁드립니다.",
+                    "mark": "참석 회신과 발표 자료 송부"
+                  },
+                  {
+                    "label": "개조식",
+                    "text": "요청 사항: 1. 참석 회신 2. 발표 자료 송부",
+                    "mark": "1. 참석 회신 2. 발표 자료 송부"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "개조식 작성 원칙인가요?",
+                "statement": "요청이 3개 이상이어도 한 문장으로 잇는다.",
+                "correct": false,
+                "explanation": "요청이 여러 개일 때는 번호를 매겨 분리해야 정확해요."
+              },
+              {
+                "type": "select",
+                "question": "독립된 요청 항목으로 쪼갤 부분은?",
+                "segments": [
+                  "기획서 수정본 확인과 ",
+                  "참석자 명단 회신을 ",
+                  "함께 요청드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-1", "seg-2"],
+                "explanation": "'과/와'로 묶인 다중 요청은 번호 항목으로 분리해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 한눈에 읽히는 개조식은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "줄글로 길게 이은 문장"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "1. 검토 2. 일정 회신"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "서술어로만 끝맺은 문단"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "번호 매기기를 쓰면 할 일의 개수와 내용이 명확해요."
+              },
+              {
+                "type": "categorize",
+                "title": "줄글 나열 vs 개조식 분류하기",
+                "categories": [
+                  {
+                    "id": "cat-1",
+                    "label": "줄글 나열"
+                  },
+                  {
+                    "id": "cat-2",
+                    "label": "개조식 정리"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "명단 확인과 일정 회신 요청",
+                    "categoryId": "cat-1"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "1. 최종 견적서 검토",
+                    "categoryId": "cat-2"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "취합 후 피드백 전달 바람",
+                    "categoryId": "cat-1"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "2. 법인카드 영수증 제출",
+                    "categoryId": "cat-2"
+                  }
+                ],
+                "explanation": "항목별로 번호나 기호를 달면 누락 위험이 줄어들어요."
+              },
+              {
+                "type": "true_false",
+                "question": "효과적인 개조식 작성법인가요?",
+                "statement": "각 항목의 끝은 명사형이나 명사로 맺는다.",
+                "correct": true,
+                "explanation": "종결 어미를 간결하게 정리하면 가독성이 높아져요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "요청사항: 1. 계약서 날인 ___ 2. 사본 제출",
+                "words": ["및 회신", "을 꼭 해주시고", "을 처리바람"],
+                "wordIds": ["word-1", "word-2", "word-3"],
+                "answer": ["word-1"],
+                "explanation": "개조식 항목 사이는 군더더기 서술어 없이 맺어요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "개조식 글머리로 가장 적절한 것은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "1. 기획안 최종 승인"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "그런 다음 검토해 주세요"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "그리고 피드백 바랍니다"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "접속사로 잇지 않고 번호와 명사구로 끊어야 깔끔해요."
+              },
+              {
+                "type": "select",
+                "question": "개조식 블록으로 분리할 부분은?",
+                "segments": [
+                  "회의 안건은 ",
+                  "예산안 심의와 ",
+                  "신규 채용 논의입니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2", "seg-3"],
+                "explanation": "나열된 2개 이상의 핵심 안건을 개조식 항목으로 떼어내요.",
+                "layout": "inline"
+              },
+              {
+                "type": "sentence_build",
+                "question": "개조식 요청 항목을 완성하세요.",
+                "tiles": ["1. ", "참석 명단 ", "회신", " 및 ", "자료 송부"],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "번호 매기기와 명사구로 요청사항을 직관화해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l08",
             "title": "개조식 작성 시 필수 조사와 연결어미를 살려 문맥 왜곡 막기",
             "time": "5분",
             "desc": "조사를 과도하게 생략하여 비문이 되거나 다의적 해석이 생기지 않도록, 핵심 격조사('을/를', '에/에게')와 연결어미를 유지하여 인과 관계를 보존할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "조사 생략에 따른 오해 대조",
+                "analysis": "조사를 무리하게 빼면 주체와 대상이 모호해져요.",
+                "versions": [
+                  {
+                    "label": "조사 생략",
+                    "text": "고객사 팀장 미팅 일정 조율",
+                    "mark": "팀장 미팅"
+                  },
+                  {
+                    "label": "조사 보존",
+                    "text": "고객사 팀장과의 미팅 일정 조율",
+                    "mark": "팀장과의 미팅"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "개조식 조사 생략 원칙인가요?",
+                "statement": "글자 수를 줄이려면 모든 조사를 뺀다.",
+                "correct": false,
+                "explanation": "필수 조사를 빼면 누가 누구를 만나는지 왜곡돼요."
+              },
+              {
+                "type": "select",
+                "question": "조사가 빠져 의미가 모호한 곳은?",
+                "segments": [
+                  "신규 프로젝트 ",
+                  "외주 업체 계약 체결 ",
+                  "완료 보고"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "'업체와'인지 '업체에'인지 격조사를 밝혀야 명확해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "문맥이 명확한 개조식 표현은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "대표 보고 자료 준비"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "대표에게 보고할 자료 준비"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "대표 보고서 작성"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "'에게'를 살려야 보고 대상이 누구인지 분명해져요."
+              },
+              {
+                "type": "match",
+                "title": "누락된 필수 조사 짝맞추기",
+                "pairs": [
+                  {
+                    "left": "협력업체",
+                    "leftId": "l-1",
+                    "right": "와의 협의",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "임원진",
+                    "leftId": "l-2",
+                    "right": "에게 보고",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "기획안",
+                    "leftId": "l-3",
+                    "right": "을 검토",
+                    "rightId": "r-3"
+                  },
+                  {
+                    "left": "본사",
+                    "leftId": "l-4",
+                    "right": "로 이관",
+                    "rightId": "r-4"
+                  }
+                ],
+                "explanation": "격조사를 적절히 살려야 업무 주체와 방향이 살아요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 개조식 문장인가요?",
+                "statement": "개발팀에 수정 요청 사항 전달 완료",
+                "correct": true,
+                "explanation": "'개발팀에'처럼 수신 대상을 분명히 지정해야 해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "타 부서 협조: 마케팅팀___ 홍보 배너 시안 요청",
+                "words": ["에", "의", "를"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "협조 요청을 받는 대상 뒤에는 조사 '에'를 붙여요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "원인과 결과가 명확한 표현은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "서버 장애 조치 지연"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "단순한 메모 나열"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "서버 장애로 인한 조치 지연"
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "'로 인한' 연결을 살려야 인과 관계가 뚜렷해져요."
+              },
+              {
+                "type": "select",
+                "question": "필수 조사를 추가할 위치는?",
+                "segments": [
+                  "보안 감사 결과 ",
+                  "지적 사항 조치 계획 ",
+                  "제출 건"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "'사항에 대한 조치'로 이어야 문맥 왜곡이 없어요.",
+                "layout": "inline"
+              },
+              {
+                "type": "error_correct",
+                "question": "모호한 조사를 바로잡으면?",
+                "segments": ["유관 부서 ", "미팅 결과 정리 ", "공유 건"],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-1",
+                "fixes": ["유관 부서와의", "유관 부서를"],
+                "fixIds": ["f-1", "f-2"],
+                "correctFix": "f-1",
+                "explanation": "'와의'를 넣어 함께 미팅한 상대임을 명확히 해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l09",
             "title": "\"가급적 빨리\"를 대체하는 구체적 마감 일시와 회신 형식 명시하기",
             "time": "5분",
             "desc": "'조속히', '추후 확인' 등 모호한 기한 대신 `연월일(요일) 시각`과 `원하는 응답 형식(승인/수정의견/양식작성)`을 단정적으로 지정할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "모호한 마감과 확정 일시 대조",
+                "analysis": "날짜와 시각, 회신 방식을 짚어야 제때 답장이 와요.",
+                "versions": [
+                  {
+                    "label": "모호한 기한",
+                    "text": "가급적 빠른 시일 내에 확인 부탁드립니다.",
+                    "mark": "가급적 빠른 시일 내에"
+                  },
+                  {
+                    "label": "확정 일시",
+                    "text": "10월 14일(수) 17시까지 답장 부탁드립니다.",
+                    "mark": "10월 14일(수) 17시까지"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "효과적인 마감 안내인가요?",
+                "statement": "바쁘시겠지만 시간 되실 때 회신해 주세요.",
+                "correct": false,
+                "explanation": "'시간 되실 때'는 우선순위에서 밀려 답이 늦어져요."
+              },
+              {
+                "type": "select",
+                "question": "모호하여 답장을 늦추는 표현은?",
+                "segments": [
+                  "검토 후 ",
+                  "가능한 한 조속히 ",
+                  "피드백을 부탁드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "'조속히' 대신 구체적 요일과 시각을 박아야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 명확한 마감 일시 표기는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "금주 중으로 회신 요망"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "9월 5일(금) 16시까지"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "다음 주 초까지 부탁"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "연월일과 요일, 시각까지 적어야 착오가 없어요."
+              },
+              {
+                "type": "categorize",
+                "title": "모호한 요청 vs 명확한 요청",
+                "categories": [
+                  {
+                    "id": "cat-1",
+                    "label": "모호한 요청"
+                  },
+                  {
+                    "id": "cat-2",
+                    "label": "명확한 요청"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "편하실 때 확인 요망",
+                    "categoryId": "cat-1"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "3일(목) 18시까지 답장",
+                    "categoryId": "cat-2"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "추후 확인 부탁드립니다",
+                    "categoryId": "cat-1"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "첨부 양식 작성 후 회신",
+                    "categoryId": "cat-2"
+                  }
+                ],
+                "explanation": "일시와 회신 형식이 뚜렷해야 상대가 즉시 행동해요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 회신 요청 방식인가요?",
+                "statement": "수정 의견 유무만 본 메일 답장으로 회신",
+                "correct": true,
+                "explanation": "원하는 회신 형식까지 지정하면 답장 부담을 덜어줘요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "의견 수렴: 10월 20일(화) 15시까지 ___ 회신",
+                "words": ["본 메일 답장으로", "여유 생기시면", "시간 나실 때"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "어디로 어떻게 회신할지 경로를 정해줘야 빨라요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "상대 행동을 유도하는 요청은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "승인 여부를 O/X로 회신"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "언제든 연락해 주세요"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "생각나실 때 알려주세요"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "선택지를 좁혀 회신 형식을 주면 즉답을 받기 쉬워요."
+              },
+              {
+                "type": "select",
+                "question": "명확한 마감 일시 정보는?",
+                "segments": [
+                  "프로젝트 기획안을 ",
+                  "내일 오후까지 ",
+                  "11월 4일(화) 14시까지 ",
+                  "보내주세요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-3"],
+                "explanation": "상대방과 기준이 엇갈리지 않게 구체 일시를 명시해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "sentence_build",
+                "question": "구체적 마감 요청문을 조립하세요.",
+                "tiles": [
+                  "12월 8일(금) ",
+                  "16시까지 ",
+                  "본 메일 답장으로 ",
+                  "회신 바랍니다"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4"],
+                "correct": ["t-1", "t-2", "t-3", "t-4"],
+                "explanation": "마감 시각과 회신 방식을 결합해 즉시 행동을 유도해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l10",
             "title": "첨부파일의 파일명·검토 범위(쪽수)를 본문에 매핑하고 장문 분리하기",
             "time": "5분",
             "desc": "수십 장의 데이터를 본문에 붙여넣지 않고 3줄 요약문으로 대체하며, 첨부파일의 명칭·검토 대상(쪽수/라인)을 본문에 명시할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "본문 과적과 첨부 분리 대조",
+                "analysis": "핵심 요약만 본문에 두고 세부는 첨부로 넘겨요.",
+                "versions": [
+                  {
+                    "label": "본문 과적",
+                    "text": "매출 표 100줄을 본문에 모두 붙여넣었습니다.",
+                    "mark": "매출 표 100줄을 본문에"
+                  },
+                  {
+                    "label": "첨부 매핑",
+                    "text": "매출 요약은 본문에 두고 세부는 첨부 3쪽을 참조하세요.",
+                    "mark": "세부는 첨부 3쪽을 참조하세요."
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "첨부파일 안내 원칙인가요?",
+                "statement": "첨부파일만 올리고 본문에는 설명을 뺀다.",
+                "correct": false,
+                "explanation": "본문에 파일명과 핵심 요약 3줄을 적어야 열어봐요."
+              },
+              {
+                "type": "select",
+                "question": "첨부로 분리해야 할 세부 내용은?",
+                "segments": [
+                  "3분기 매출 15% 성장 ",
+                  "핵심 원인 요약 ",
+                  "월별 500개 품목 상세표"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-3"],
+                "explanation": "긴 상세 데이터 표는 첨부 문서로 분리해야 깔끔해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 친절한 첨부파일 안내는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "첨부파일 확인 바랍니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "파일을 올렸으니 보세요"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "결과보고서 4쪽 요약 참고"
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "파일의 특정 쪽수나 범위를 지정하면 확인 시간이 줄어요."
+              },
+              {
+                "type": "match",
+                "title": "본문 요약과 첨부파일 매핑",
+                "pairs": [
+                  {
+                    "left": "핵심 결론",
+                    "leftId": "l-1",
+                    "right": "본문 3줄 요약",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "상세 견적서",
+                    "leftId": "l-2",
+                    "right": "첨부 1번 엑셀",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "회의 녹취록",
+                    "leftId": "l-3",
+                    "right": "첨부 2번 문서",
+                    "rightId": "r-3"
+                  },
+                  {
+                    "left": "디자인 시안",
+                    "leftId": "l-4",
+                    "right": "첨부 3번 PDF",
+                    "rightId": "r-4"
+                  }
+                ],
+                "explanation": "본문에는 결론을 담고 세부 근거는 첨부로 연결해요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 파일명 표기인가요?",
+                "statement": "첨부파일명: 241015_기획안_v1.pdf",
+                "correct": true,
+                "explanation": "버전과 날짜가 적힌 공식 파일명을 본문에 명시해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "세부 근거: [첨부 1] 운영계획서.pdf ___ 참조",
+                "words": ["제5쪽 요약표", "아무 곳이나", "적당한 부분"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "구체적 쪽수나 표 번호를 짚어줘야 즉시 검토해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "모바일에서 읽기 편한 구성은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "3줄 요약 후 첨부 안내"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "수십 쪽 보고서 붙여넣기"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "설명 없이 파일만 첨부"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "모바일 화면에서는 3줄 핵심 요약이 가장 잘 읽혀요."
+              },
+              {
+                "type": "select",
+                "question": "본문에 남겨둘 핵심 요약은?",
+                "segments": [
+                  "전체 거래처 원장 목록 ",
+                  "신규 제휴 3건 성사 요약 ",
+                  "원장 세부 거래 내역"
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "결론과 성과 요약은 본문에 남겨 첫눈에 보이게 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "error_correct",
+                "question": "모호한 첨부 안내를 고치면?",
+                "segments": [
+                  "상세 내역은 ",
+                  "첨부파일을 ",
+                  "적당히 참고 바랍니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-3",
+                "fixes": ["첨부 2쪽 확인 요망", "알아서 확인 요망"],
+                "fixIds": ["f-1", "f-2"],
+                "correctFix": "f-1",
+                "explanation": "정확한 확인 범위를 지정해야 업무 누락을 막아요."
+              }
+            ]
           }
         ]
       },
@@ -12466,35 +14005,879 @@
             "title": "기분 상하지 않게 대안을 제시하는 3단계 완곡 거절 메일 쓰기",
             "time": "5분",
             "desc": "단칼에 거절하여 관계를 해치지 않도록 `감사·공감 ➜ 불가 사유 명시(원칙/일정) ➜ 대안·후속 기회 제시`의 3단계 완충 구조로 거절문을 작성할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "관계를 지키는 3단계 완곡 거절법",
+                "body": "거절할 때 \"어렵습니다\"만 단칼에 쓰면 관계가 얼어붙어요. 먼저 제안에 감사를 표하고, 일정이나 규정 등 불가 사유를 객관적으로 밝힌 뒤, 대안이나 다음 기회를 제시해 보세요. 상대방의 체면을 살리며 신뢰를 지킬 수 있어요."
+              },
+              {
+                "type": "compare",
+                "title": "단도직입 거절과 완곡 거절 대조",
+                "analysis": "단칼에 자르기보다 사유와 대안을 함께 전해요.",
+                "versions": [
+                  {
+                    "label": "단칼 거절",
+                    "mark": "불가능합니다",
+                    "text": "요청하신 일정 단축은 현재 불가능합니다."
+                  },
+                  {
+                    "label": "완곡 거절",
+                    "mark": "다음 주 조정은 가능",
+                    "text": "제안 감사드리며 기존 일정상 어려우나 다음 주 조정은 가능합니다."
+                  }
+                ]
+              },
+              {
+                "type": "order",
+                "title": "3단계 완곡 거절 구조 배열",
+                "items": [
+                  "제안 및 요청에 대한 감사",
+                  "일정 및 리소스 한계 안내",
+                  "실현 가능한 대안 제시"
+                ],
+                "itemIds": ["ord-1", "ord-2", "ord-3"],
+                "correct": ["ord-1", "ord-2", "ord-3"],
+                "explanation": "감사로 시작해 사유를 밝히고 대안을 덧붙여 마무리해요."
+              },
+              {
+                "type": "true_false",
+                "question": "바람직한 거절 사유인가요?",
+                "statement": "개인적 바쁨 대신 회사 일정과 리소스 한계를 근거로 든다.",
+                "correct": true,
+                "explanation": "주관적 핑계 대신 객관적 업무 기준을 밝혀야 납득돼요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "첫 문장으로 가장 적절한 표현은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "그건 좀 곤란합니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "좋은 제안 주셔서 감사합니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "일정이 너무 촉박합니다"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "제안 자체에 감사를 먼저 표해 대화의 온도를 유지해요."
+              },
+              {
+                "type": "select",
+                "question": "상대방을 탓하는 어색한 구간은?",
+                "segments": [
+                  "문의 주신 건은 ",
+                  "귀사의 준비가 늦어져 ",
+                  "이번 주 진행이 어렵습니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "상대 과실을 탓하기보다 현재 진행 일정을 근거로 삼아요.",
+                "layout": "inline"
+              },
+              {
+                "type": "categorize",
+                "title": "거절 메일 표현 유형 분류",
+                "categories": [
+                  {
+                    "id": "cat-cold",
+                    "label": "단칼 거절"
+                  },
+                  {
+                    "id": "cat-warm",
+                    "label": "완충 거절"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "기준에 안 맞습니다",
+                    "categoryId": "cat-cold"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "다음 분기에 재검토합니다",
+                    "categoryId": "cat-warm"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "무리한 요청입니다",
+                    "categoryId": "cat-cold"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "차주 수요일에 가능합니다",
+                    "categoryId": "cat-warm"
+                  }
+                ],
+                "explanation": "감정적 단절을 막고 실현 가능한 대안을 열어두는 게 좋아요."
+              },
+              {
+                "type": "true_false",
+                "question": "거절 메일 작성 원칙인가요?",
+                "statement": "거절할 때는 대안 없이 안 된다고만 끝맺는 것이 깔끔하다.",
+                "correct": false,
+                "explanation": "대안이나 다음 기회를 열어두어야 업무 관계가 이어져요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "신뢰를 지키는 최선의 대안 제시는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "대신 분량 축소는 가능합니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "알아서 해결해 보세요"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "조건 없이 무조건 안 됩니다"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "완전히 거절하기보다 부분적으로 수용 가능한 대안을 열어요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "제안에 감사드리며, 현재 다른 프로젝트로 ___ 2차 일정에 참여하겠습니다.",
+                "words": ["참여가 어려워", "참여가 싫어서", "하기 귀찮아"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "현재 리소스 한계를 정중히 전하고 다음 기회를 기약해요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "완곡 거절 문장을 완성하세요.",
+                "tiles": [
+                  "이번에는",
+                  "아쉽게도",
+                  "어려우나",
+                  "다음 기회에",
+                  "함께하겠습니다"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "아쉬움과 후속 협업 가능성을 함께 담아 신뢰를 유지해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l12",
             "title": "감정적 변명을 빼고 `사건-영향-책임-조치`로 신뢰를 되찾는 4단계 사과문 쓰기",
             "time": "5분",
             "desc": "\"유감스럽게 생각한다\"는 책임 회피성 표현을 배제하고, 객관적 사건 경위, 구체적 피해 규모, 과실 인정, 보상 조치를 분리 서술할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "신뢰를 되찾는 4단계 사과문",
+                "body": "실수했을 때 변명을 늘어놓거나 \"유감입니다\"로 뭉뚱그리면 오히려 분노를 사요. 발생한 사건의 팩트, 상대가 입은 피해와 영향, 명확한 과실 인정, 즉각적인 수습 조치까지 4단계로 분리해 적으세요. 책임지는 태도가 신뢰를 다시 세웁니다."
+              },
+              {
+                "type": "compare",
+                "title": "책임 회피와 명확한 사과 대조",
+                "analysis": "유감이라는 말 대신 책임을 인정하고 조치해요.",
+                "versions": [
+                  {
+                    "label": "회피 사과",
+                    "mark": "유감스럽게 생각합니다",
+                    "text": "불편을 드려 유감스럽게 생각합니다."
+                  },
+                  {
+                    "label": "책임 사과",
+                    "mark": "저희 과실로 납기가 늦어졌으며",
+                    "text": "저희 과실로 납기가 늦어졌으며 오늘 즉시 퀵 배송하겠습니다."
+                  }
+                ]
+              },
+              {
+                "type": "order",
+                "title": "4단계 사과문 전개 순서 정렬",
+                "items": [
+                  "발생한 사건의 객관적 경위",
+                  "상대방이 겪은 피해와 영향",
+                  "당사의 명확한 과실 인정",
+                  "피해 복구와 즉각 보상 조치"
+                ],
+                "itemIds": ["ord-1", "ord-2", "ord-3", "ord-4"],
+                "correct": ["ord-1", "ord-2", "ord-3", "ord-4"],
+                "explanation": "사건 파악부터 영향, 과실 인정, 조치 순으로 적어야 명쾌해요."
+              },
+              {
+                "type": "select",
+                "question": "책임을 회피하는 어색한 구간은?",
+                "segments": [
+                  "서버 점검 지연으로 ",
+                  "오해가 있으셨다면 ",
+                  "유감스럽게 생각합니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "조건부 사과('오해하셨다면')는 반발을 부르므로 책임을 직시해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 비즈니스 사과문인가요?",
+                "statement": "'본의 아니게 누를 끼쳤다'는 표현은 책임감을 보여준다.",
+                "correct": false,
+                "explanation": "'본의 아니게'는 고의가 아니었다는 변명이므로 피해야 해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "상대방 피해를 밝히는 바른 문장은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "일정에 큰 차질을 드렸습니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "큰 문제는 아니라고 봅니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "저희도 사정이 있었습니다"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "상대방이 겪은 업무상 차질을 있는 그대로 인정해야 해요."
+              },
+              {
+                "type": "categorize",
+                "title": "사과문 표현의 성격 분류",
+                "categories": [
+                  {
+                    "id": "cat-excuse",
+                    "label": "방어적 변명"
+                  },
+                  {
+                    "id": "cat-resp",
+                    "label": "명확한 책임"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "어쩔 수 없는 사정",
+                    "categoryId": "cat-excuse"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "전적인 저희 과실입니다",
+                    "categoryId": "cat-resp"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "오해 없으시기 바랍니다",
+                    "categoryId": "cat-excuse"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "피해액을 전액 보상합니다",
+                    "categoryId": "cat-resp"
+                  }
+                ],
+                "explanation": "변명을 빼고 과실 인정과 보상안에 집중해야 신뢰를 얻어요."
+              },
+              {
+                "type": "true_false",
+                "question": "바람직한 과실 인정인가요?",
+                "statement": "변명 없이 '저희 팀의 검수 누락 과실입니다'라고 밝힌다.",
+                "correct": true,
+                "explanation": "주어를 명확히 밝히며 과실을 인정해야 진정성이 전달돼요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "신뢰를 회복하는 즉각 조치 표현은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "나중에 다시 확인하겠습니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "깊이 반성하고 있습니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "오늘 14시까지 재발송합니다"
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "막연한 반성보다 구체적인 시각과 해결 행동을 제시해야 해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "배송 누락으로 업무에 차질을 드려 죄송하며, 금일 15시까지 ___ 조치하겠습니다.",
+                "words": [
+                  "긴급 퀵으로 배송",
+                  "천천히 일반 배송",
+                  "시간 날 때 배송"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "발생한 피해를 수습하는 즉각적이고 구체적인 조치를 밝혀요."
+              },
+              {
+                "type": "error_correct",
+                "question": "회피성 사과 표현을 고치세요.",
+                "segments": [
+                  "이번 누락 건에 대해 ",
+                  "심심한 유감을 표하며, ",
+                  "빠르게 조치하겠습니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["유감을 표하며", "고개 숙여 사과드리며"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "제3자 시점의 '유감' 대신 진심 어린 사과를 명시해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l13",
             "title": "개인의 각오가 아닌 관찰 가능한 시스템 개선으로 재발 방지책 쓰기",
             "time": "5분",
             "desc": "\"앞으로 주의하겠다\"는 공허한 다짐 대신, 체크리스트 신설, 다자 승인 단계, 상시 모니터링 등 외부에서 검증 가능한 시스템적 재발 방지책을 제시할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "검증 가능한 시스템 재발 방지책",
+                "body": "\"앞으로 각별히 주의하겠다\"는 개인의 다짐은 상대방에게 아무런 안도감을 주지 못해요. 재발을 막으려면 사람이 아닌 시스템을 바꿔야 합니다. 발송 전 체크리스트 의무화, 2인 교차 검수 절차처럼 외부에서 관찰 가능한 구체적 프로세스를 약속하세요."
+              },
+              {
+                "type": "compare",
+                "title": "공허한 다짐과 시스템 개선 대조",
+                "analysis": "주의하겠다는 말보다 관찰 가능한 절차를 약속해요.",
+                "versions": [
+                  {
+                    "label": "공허한 다짐",
+                    "mark": "각별히 주의하여",
+                    "text": "앞으로는 담당자가 각별히 주의하여 작업하겠습니다."
+                  },
+                  {
+                    "label": "시스템 개선",
+                    "mark": "2인 승인 절차를 도입합니다",
+                    "text": "배포 전 체크리스트를 신설하고 2인 승인 절차를 도입합니다."
+                  }
+                ]
+              },
+              {
+                "type": "match",
+                "title": "주관적 각오의 시스템 전환",
+                "pairs": [
+                  {
+                    "left": "집중해서 검수하기",
+                    "leftId": "l-1",
+                    "right": "출고 전 점검표 의무화",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "실수를 잊지 않기",
+                    "leftId": "l-2",
+                    "right": "오류 유형 가이드 배포",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "소통 늘리기",
+                    "leftId": "l-3",
+                    "right": "주간 진행 현황 정기 공유",
+                    "rightId": "r-3"
+                  }
+                ],
+                "explanation": "사람의 다짐을 누구나 감시할 수 있는 물리적 제도로 바꿔요."
+              },
+              {
+                "type": "true_false",
+                "question": "신뢰를 주는 재발 방지책인가요?",
+                "statement": "발송 전 2인 교차 검수 프로세스를 신설하여 즉시 적용한다.",
+                "correct": true,
+                "explanation": "제3자가 직접 확인할 수 있는 절차여야 실효성이 있어요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "공허한 각오에 불과한 문장은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "자동 모니터링 알림 설정"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "직원들의 정신 교육 강화"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "출고 검수표 필수 서명제"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "정신 교육 같은 추상적 다짐은 시스템 재발 방지책이 될 수 없어요."
+              },
+              {
+                "type": "select",
+                "question": "검증 불가능한 주관적 표현은?",
+                "segments": [
+                  "재발 방지를 위해 ",
+                  "전 직원이 심기일전하여 ",
+                  "업무에 임하겠습니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "감정적 각오 대신 구체적인 업무 매뉴얼 개편을 약속해야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "categorize",
+                "title": "재발 방지 대책 유형 분류",
+                "categories": [
+                  {
+                    "id": "cat-mind",
+                    "label": "주관적 다짐"
+                  },
+                  {
+                    "id": "cat-sys",
+                    "label": "시스템 개선"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "앞으로 신경 쓰겠습니다",
+                    "categoryId": "cat-mind"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "더블 체크 승인선 신설",
+                    "categoryId": "cat-sys"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "주의 깊게 살피겠습니다",
+                    "categoryId": "cat-mind"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "오류 감지 스크립트 가동",
+                    "categoryId": "cat-sys"
+                  }
+                ],
+                "explanation": "시스템 개선은 담당자가 바뀌어도 오류를 막아주는 장치예요."
+              },
+              {
+                "type": "true_false",
+                "question": "적절한 재발 방지책인가요?",
+                "statement": "'앞으로 두 번 다시 이런 일이 없도록 하겠다'만으로 충분하다.",
+                "correct": false,
+                "explanation": "구체적인 제도적 통제 장치가 없으면 공허한 립서비스에 그쳐요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "거래처가 안심할 수 있는 대책은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "발송 전 2단계 승인제 도입"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "담당자 반성문 제출 의무화"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "사내 주의 경고 방송 실시"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "프로세스 상의 안전장치가 마련되어야 거래처가 신뢰할 수 있어요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "동일 사고를 막기 위해 데이터 업로드 시 ___ 절차를 도입했습니다.",
+                "words": [
+                  "자동 스크립트 검증",
+                  "담당자의 각별한 각오",
+                  "직원 간의 믿음"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "시스템을 통한 자동 검증이 휴먼 에러를 방지하는 근본책이에요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "시스템 재발 방지문을 조립하세요.",
+                "tiles": [
+                  "매뉴얼을",
+                  "개정하고",
+                  "주간 점검 결과를",
+                  "투명하게",
+                  "공유하겠습니다"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "문서화된 규정과 정기 공유로 재발 방지 노력을 검증받아요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l14",
             "title": "재촉하는 티 내지 않고 공손하지만 단정하게 회신을 부르는 리마인드 쓰기",
             "time": "5분",
             "desc": "상대방을 비난하지 않으면서도 업무의 후속 일정과 마감 기한의 중요성을 상기시켜 즉각적인 답장을 유도하는 젠틀 리마인드 메시지를 작성할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "단정하게 답을 부르는 젠틀 리마인드",
+                "body": "답장이 오지 않을 때 재촉하듯 따지면 반감을 사고, 너무 저자세로 나가면 계속 후순위로 밀려요. 상대방의 상황을 배려하되, 후속 일정이 걸려 있는 객관적 이유와 최종 기한을 정중하게 명시해 보세요. 부담은 덜고 행동은 빨라집니다."
+              },
+              {
+                "type": "compare",
+                "title": "독촉과 젠틀 리마인드 문장 대조",
+                "analysis": "비난 대신 후속 일정의 필요성을 정중히 밝혀요.",
+                "versions": [
+                  {
+                    "label": "차가운 독촉",
+                    "mark": "확인하셨나요",
+                    "text": "지난주 메일 확인하셨나요? 오늘까지 꼭 답장 바랍니다."
+                  },
+                  {
+                    "label": "젠틀 리마인드",
+                    "mark": "후속 인쇄 일정 진행을 위해",
+                    "text": "후속 인쇄 일정 진행을 위해 오늘 17시까지 회신 부탁드립니다."
+                  }
+                ]
+              },
+              {
+                "type": "select",
+                "question": "공격적으로 들리는 어색한 구간은?",
+                "segments": [
+                  "바쁘시겠지만 ",
+                  "왜 아직 답이 없으신지 ",
+                  "확인 부탁드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "상대방의 지연을 직접 탓하기보다 진행 필요성을 앞세워야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 리마인드 방식인가요?",
+                "statement": "답장이 필요한 구체적 이유와 후속 일정을 함께 밝힌다.",
+                "correct": true,
+                "explanation": "마감의 당위성을 제시하면 상대방도 우선순위를 높여 처리해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 단정하고 명쾌한 리마인드는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "바쁘시면 안 주셔도 돼요"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "빨리 확인하고 답장 주세요"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "발주를 위해 확인 바랍니다"
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "후속 업무와의 연결고리를 밝혀 자연스럽게 회신을 이끌어내요."
+              },
+              {
+                "type": "categorize",
+                "title": "리마인드 어조 유형 분류",
+                "categories": [
+                  {
+                    "id": "cat-press",
+                    "label": "차가운 압박"
+                  },
+                  {
+                    "id": "cat-gentle",
+                    "label": "단정한 젠틀"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "메일 안 읽으셨나요?",
+                    "categoryId": "cat-press"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "인쇄 일정을 위한 확인 요청",
+                    "categoryId": "cat-gentle"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "답 없으시면 곤란합니다",
+                    "categoryId": "cat-press"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "원활한 배포를 위해 재안내",
+                    "categoryId": "cat-gentle"
+                  }
+                ],
+                "explanation": "압박감을 주기보다 차질 없는 진행을 위한 협조로 프레이밍해요."
+              },
+              {
+                "type": "true_false",
+                "question": "효과적인 리마인드 화법인가요?",
+                "statement": "'언제든 시간 나실 때 편하게 답장 주세요'가 효과적이다.",
+                "correct": false,
+                "explanation": "명확한 마감이 없으면 상대방 업무 리스트에서 계속 밀려요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "첫머리에 적절한 배려 표현은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "바쁘신 중에 번거롭게 해드려"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "벌써 마감이 다가왔는데도"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "여러 번 메일을 보냈음에도"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "상대방의 바쁜 상황을 먼저 인정하면 심리적 반감을 줄여줘요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "미팅 준비로 분주하실 줄 압니다만, 차질 없는 배포를 위해 금일 16시까지 ___.",
+                "words": [
+                  "확인을 부탁드립니다",
+                  "그냥 무시하셔도 됩니다",
+                  "독촉하니 얼른 보내세요"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "공손한 태도와 단정한 마감 시각을 결합해야 즉시 회신이 와요."
+              },
+              {
+                "type": "error_correct",
+                "question": "독촉 문장을 젠틀하게 고치세요.",
+                "segments": [
+                  "지난주 보낸 기획안, ",
+                  "왜 아직 미확인인가요? ",
+                  "빠르게 전달 바랍니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["왜 아직 미확인인가요", "확인 여부 여쭙습니다"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-2",
+                "explanation": "상대를 추궁하는 질문 대신 정중한 확인 요청으로 전환해요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "젠틀 리마인드 문을 조립하세요.",
+                "tiles": [
+                  "후속 일정",
+                  "진행을 위해",
+                  "오늘 17시까지",
+                  "회신 주시면",
+                  "감사하겠습니다"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "명확한 마감과 공손한 부탁으로 부담 없이 행동을 유도해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l15",
             "title": "막연한 감상을 배제하고 `위치·문제·이유`를 명시하는 구체적 피드백 작성하기",
             "time": "5분",
             "desc": "\"글이 좀 어색해요\" 같은 주관적 감상을 버리고, 문서의 `정확한 위치`, 발견된 `구체적 결함`, 개선해야 하는 `논리적 이유`를 3요소로 명시할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "일하는 사람을 돕는 피드백 3요소",
+                "body": "\"뭔가 느낌이 안 와요\", \"좀 더 세련되게 고쳐주세요\" 같은 피드백은 상대방을 길 잃게 만들어요. 문서의 정확한 '위치', 수정이 필요한 구체적 '문제', 개선해야 하는 '논리적 이유' 3가지를 명시해 보세요. 감정 소모 없이 수정 작업이 한 번에 끝납니다."
+              },
+              {
+                "type": "compare",
+                "title": "막연한 감상과 3요소 피드백 대조",
+                "analysis": "느낌 대신 위치와 결함, 이유를 구체적으로 전해요.",
+                "versions": [
+                  {
+                    "label": "막연한 감상",
+                    "mark": "눈에 안 들어옵니다",
+                    "text": "보고서 중반부가 전반적으로 눈에 안 들어옵니다."
+                  },
+                  {
+                    "label": "구체적 피드백",
+                    "mark": "모바일에서 식별이 어렵습니다",
+                    "text": "4쪽 표의 글자 크기가 작아 모바일에서 식별이 어렵습니다."
+                  }
+                ]
+              },
+              {
+                "type": "order",
+                "title": "피드백 3요소 전개 순서 정렬",
+                "items": [
+                  "수정 대상의 정확한 위치",
+                  "발견된 구체적 결함 내용",
+                  "개선해야 하는 논리적 이유"
+                ],
+                "itemIds": ["ord-1", "ord-2", "ord-3"],
+                "correct": ["ord-1", "ord-2", "ord-3"],
+                "explanation": "어디서 무엇이 왜 문제인지 순서대로 밝혀야 바로 고쳐요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 피드백 방식인가요?",
+                "statement": "'알아서 센스 있게 수정해 달라'는 표현은 자율성을 높인다.",
+                "correct": false,
+                "explanation": "모호한 지시는 기준이 없어 불필요한 재작업만 반복시켜요."
+              },
+              {
+                "type": "select",
+                "question": "작업자를 혼란스럽게 하는 구간은?",
+                "segments": [
+                  "3페이지 요약문에서 ",
+                  "전체적인 분위기를 ",
+                  "신뢰감 있게 바꿔주세요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "'분위기' 같은 추상어 대신 변경할 단어나 문장을 짚어주세요.",
+                "layout": "inline"
+              },
+              {
+                "type": "match",
+                "title": "피드백 구성 요소의 역할 매칭",
+                "pairs": [
+                  {
+                    "left": "5쪽 상단 그래프",
+                    "leftId": "l-1",
+                    "right": "대상 위치",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "범례 텍스트 누락",
+                    "leftId": "l-2",
+                    "right": "구체적 결함",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "축 값 구별 불가",
+                    "leftId": "l-3",
+                    "right": "논리적 이유",
+                    "rightId": "r-3"
+                  }
+                ],
+                "explanation": "위치와 결함, 이유가 맞물려야 수정 방향이 뚜렷해져요."
+              },
+              {
+                "type": "categorize",
+                "title": "피드백 표현의 구체성 분류",
+                "categories": [
+                  {
+                    "id": "cat-vague",
+                    "label": "모호한 감상"
+                  },
+                  {
+                    "id": "cat-clear",
+                    "label": "구체적 피드백"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "글이 너무 밋밋해요",
+                    "categoryId": "cat-vague"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "2단락 수치 근거 보완",
+                    "categoryId": "cat-clear"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "전문가답게 써보세요",
+                    "categoryId": "cat-vague"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "제목 15자 내로 축소",
+                    "categoryId": "cat-clear"
+                  }
+                ],
+                "explanation": "구체적 수치나 대상이 들어가야 작업자가 바로 반영할 수 있어요."
+              },
+              {
+                "type": "true_false",
+                "question": "바람직한 피드백인가요?",
+                "statement": "단순 수정 지시보다 '이유'를 함께 설명해야 납득이 쉽다.",
+                "correct": true,
+                "explanation": "변경 이유를 알면 작업자가 맥락을 이해하고 주도적으로 고쳐요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 완성도 높은 피드백은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "전반적으로 싹 고쳐주세요"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "3쪽 표 행 간격 확대 요망"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "느낌이 살지 않아 아쉽습니다"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "정확한 위치와 명확한 요구 사항이 담겨 있어 즉시 수정 가능해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "제안서 7쪽 도표의 ___ 가독성이 떨어지므로, 글자 크기를 12pt로 키워주세요.",
+                "words": [
+                  "폰트가 너무 작아",
+                  "기분이 별로라",
+                  "그냥 마음에 안 들어"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "위치와 결함, 이유를 연결해야 완벽해요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "구체적 피드백 문을 조립하세요.",
+                "tiles": [
+                  "2페이지",
+                  "결론 부분에",
+                  "데이터 출처를",
+                  "명시하여",
+                  "신뢰도를 높여주세요"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "위치와 수정할 항목, 목적을 명시해 명쾌하게 피드백해요."
+              }
+            ]
           }
         ]
       },
@@ -12507,28 +14890,670 @@
             "title": "\"계세요?\" 호출을 없애고 `상황-요청-이유-마감`을 한 번에 보내는 4단계 메신저 쓰기",
             "time": "5분",
             "desc": "상대방의 집중을 깨뜨리는 단문 연타('끊어치기')를 멈추고, `상황 ➜ 요청 ➜ 이유 ➜ 마감` 4단계를 완결된 단일 메시지 블록으로 전송할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "메신저 호출 방식 비교",
+                "analysis": "용건 없이 부르면 상대의 집중이 끊겨요.",
+                "versions": [
+                  {
+                    "label": "끊어치기",
+                    "text": "팀장님 지금 계신가요?",
+                    "mark": "계신가요?"
+                  },
+                  {
+                    "label": "완결형",
+                    "text": "기획서 확인 부탁드립니다.",
+                    "mark": "확인 부탁드립니다"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "업무 메신저 예절인가요?",
+                "statement": "'계세요?'만 먼저 보내면 상대가 용건을 몰라 불안해합니다.",
+                "correct": true,
+                "explanation": "용건 없는 호출은 상대의 업무 흐름을 끊게 돼요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 먼저 알릴 내용은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "현재 진행 상황"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "퇴근 후 일정"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "주말 모임 계획"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "메시지 첫머리에 현재 상황을 써야 맥락이 통해요."
+              },
+              {
+                "type": "select",
+                "question": "끊어치기 지뢰 말풍선은?",
+                "segments": [
+                  "혹시 지금 ",
+                  "시간 되세요?",
+                  " 드릴 말씀이 있어요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "용건 없이 시간 여부만 물으면 답장하기 곤란해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "order",
+                "title": "완결형 메시지 4단계 순서",
+                "items": [
+                  "1. 현재 상황",
+                  "2. 핵심 요청",
+                  "3. 배경 이유",
+                  "4. 마감 기한"
+                ],
+                "itemIds": ["ord-1", "ord-2", "ord-3", "ord-4"],
+                "correct": ["ord-1", "ord-2", "ord-3", "ord-4"],
+                "explanation": "상황·요청·이유·마감 순으로 써야 즉시 처리돼요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 메신저 작성법인가요?",
+                "statement": "마감 시한은 상대가 알아서 판단하도록 비워두는 것이 좋다.",
+                "correct": false,
+                "explanation": "구체적 마감 일시를 적어야 일정 충돌을 막아요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "명확한 마감 기한 표기는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "최대한 빠르게"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "여유 생기실 때"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "오늘 17시까지"
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "구체적인 시각을 적어야 업무 우선순위가 잡혀요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "메신저에는 요청과 함께 구체적인 ___을 적어야 업무가 진행돼요.",
+                "words": ["마감 시한", "식사 메뉴", "개인 감정"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "마감 시한을 명시해야 상대가 일정을 조율해요."
+              },
+              {
+                "type": "compare",
+                "title": "요청 메시지 완성도 비교",
+                "analysis": "이유와 기한을 넣어야 한 번에 끝나요.",
+                "versions": [
+                  {
+                    "label": "모호형",
+                    "text": "시안 검토 좀 해줘요.",
+                    "mark": "검토 좀 해줘요"
+                  },
+                  {
+                    "label": "완결형",
+                    "text": "내일 배포라 15시까지 검토해 주세요.",
+                    "mark": "15시까지 검토해 주세요"
+                  }
+                ]
+              },
+              {
+                "type": "error_correct",
+                "question": "모호한 요청을 고치세요.",
+                "segments": ["자료 보냈으니 ", "빠른 확인 바랍니다."],
+                "segmentIds": ["seg-1", "seg-2"],
+                "correctSegment": "seg-2",
+                "fixes": ["17시까지 검토 요망", "시간 날 때 확인"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-1",
+                "explanation": "명확한 마감 시각과 행동을 적어야 답장이 빨라요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "완결형 메시지를 조립하세요.",
+                "tiles": [
+                  "기획안을 ",
+                  "보냈으니 ",
+                  "17시까지 ",
+                  "확인해 ",
+                  "주세요."
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "상황과 마감 시각, 요청을 한 문장으로 끝내요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l17",
             "title": "부탁과 지시를 구분하고 책임 주체를 명확히 하는 문장 쓰기",
             "time": "5분",
             "desc": "\"검토가 필요합니다\" 같은 모호한 피동문을 지양하고, 수신자가 직접 수행해야 할 행위와 판단 권한을 존중하는 능동적 동사로 서술할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "책임 주체 표현 비교",
+                "analysis": "누가 할 일인지 능동형으로 밝혀야 명확해요.",
+                "versions": [
+                  {
+                    "label": "피동형",
+                    "text": "일정의 재조정이 요구됩니다.",
+                    "mark": "요구됩니다"
+                  },
+                  {
+                    "label": "능동형",
+                    "text": "기획팀이 일정을 재조정해 주세요.",
+                    "mark": "재조정해 주세요"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 업무 지시문인가요?",
+                "statement": "'검토 바랍니다'보다 '디자인팀에서 시안을 검토해 주세요'가 명확하다.",
+                "correct": true,
+                "explanation": "주체와 행동을 직접 밝혀야 책임 소재가 분명해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "책임 주체가 드러난 문장은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "처리가 필요합니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "재검토가 요망됩니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "운영팀이 반영해 주세요"
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "행동할 주체와 요청 동작을 함께 써야 정확해요."
+              },
+              {
+                "type": "select",
+                "question": "모호한 피동 표현 구간은?",
+                "segments": [
+                  "오류 해결을 위해 ",
+                  "서버 재부팅이 ",
+                  "요구됩니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-3"],
+                "explanation": "'요구됩니다' 대신 '재부팅해 주세요'로 써요.",
+                "layout": "inline"
+              },
+              {
+                "type": "categorize",
+                "title": "부탁과 지시의 어조 분류",
+                "categories": [
+                  {
+                    "id": "cat-req",
+                    "label": "정중한 협조 부탁"
+                  },
+                  {
+                    "id": "cat-dir",
+                    "label": "명확한 업무 지시"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "일정 확인 부탁드립니다",
+                    "categoryId": "cat-req"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "15시까지 반영하세요",
+                    "categoryId": "cat-dir"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "검토 부탁드리겠습니다",
+                    "categoryId": "cat-req"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "금일 내 제출하십시오",
+                    "categoryId": "cat-dir"
+                  }
+                ],
+                "explanation": "상대 권한과 관계에 맞게 어조를 선택해야 해요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 문장 작성법인가요?",
+                "statement": "부탁할 때는 지시하듯 명령형 종결어미를 쓰는 것이 효과적이다.",
+                "correct": false,
+                "explanation": "협조 요청 시에는 권유·부탁 어조를 써야 해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "피동을 능동으로 바꾼 것은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "개발팀이 수정해 주세요"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "수정이 진행되어야 합니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "수정이 요구되는 상황입니다"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "주어와 능동형 서술어가 호응해야 뜻이 통해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "업무 지시나 부탁을 할 때는 주체와 ___ 동사를 밝혀 써야 해요.",
+                "words": ["능동적", "수동적", "방관적"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "능동 동사를 써야 누가 무엇을 할지 분명해져요."
+              },
+              {
+                "type": "compare",
+                "title": "명사화와 서술어 비교",
+                "analysis": "명사 나열보다 서술어로 풀어야 읽기 편해요.",
+                "versions": [
+                  {
+                    "label": "명사형",
+                    "text": "해당 건에 대한 조속한 확인 바람.",
+                    "mark": "확인 바람"
+                  },
+                  {
+                    "label": "풀어쓰기",
+                    "text": "해당 안건을 빠르게 확인해 주세요.",
+                    "mark": "확인해 주세요"
+                  }
+                ]
+              },
+              {
+                "type": "error_correct",
+                "question": "모호한 피동문을 고치세요.",
+                "segments": ["배포 일정의 ", "연기가 고려됩니다."],
+                "segmentIds": ["seg-1", "seg-2"],
+                "correctSegment": "seg-2",
+                "fixes": ["일정 연기 검토 중", "연기 결정 통보"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-1",
+                "explanation": "책임 주체의 판단을 능동 서술어로 밝혀 써요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "능동적 요청문을 조립하세요.",
+                "tiles": [
+                  "마케팅팀이 ",
+                  "초안을 ",
+                  "직접 검토해 ",
+                  "주시기 ",
+                  "바랍니다."
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "담당 부서와 요청 행동을 분명하게 연결해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l18",
             "title": "갈등 소지가 큰 민감 사안을 텍스트로 끝내지 않고 대화로 전환하기",
             "time": "5분",
             "desc": "책임 공방이나 감정적 대립이 우려되는 상황에서 텍스트로 감정을 키우지 않고, 핵심 쟁점 요약 후 10분 유선/대면 미팅을 제안하는 전환 메시지를 작성할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "민감 사안 대응 방식 비교",
+                "analysis": "텍스트 맞대응보다 대화 제안이 오해를 줄여요.",
+                "versions": [
+                  {
+                    "label": "감정대립",
+                    "text": "저희 쪽 과실이 아닌 것으로 보입니다.",
+                    "mark": "과실이 아닌 것"
+                  },
+                  {
+                    "label": "대화전환",
+                    "text": "정확한 확인을 위해 10분간 통화 가능할까요?",
+                    "mark": "통화 가능할까요?"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 채널 선택인가요?",
+                "statement": "해석이 엇갈려 감정이 상할 때는 메신저로 계속 반박하는 게 좋다.",
+                "correct": false,
+                "explanation": "텍스트는 뉘앙스가 왜곡되므로 통화나 대면이 좋아요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 적절한 대응 메시지는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "기획 오류 맞대응"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "10분 통화 가능할까요?"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "추가 논의 거부"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "짧은 통화를 제안해 쟁점을 빠르게 좁혀요."
+              },
+              {
+                "type": "select",
+                "question": "감정을 자극하는 표현 구간은?",
+                "segments": [
+                  "말씀하신 내용은 ",
+                  "상식적으로 이해가 ",
+                  "되지 않습니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "상대의 감정을 자극하는 공격적 표현은 빼야 해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "order",
+                "title": "대화 전환 메시지 3단계",
+                "items": [
+                  "1. 사실 관계 확인",
+                  "2. 핵심 쟁점 요약",
+                  "3. 10분 대화 제안"
+                ],
+                "itemIds": ["ord-1", "ord-2", "ord-3"],
+                "correct": ["ord-1", "ord-2", "ord-3"],
+                "explanation": "쟁점을 정리한 뒤 짧은 대화를 제안해요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 미팅 제안인가요?",
+                "statement": "통화를 요청할 때는 미리 대화할 안건과 예상 소요 시간을 밝힌다.",
+                "correct": true,
+                "explanation": "안건과 시간을 명시해야 상대가 부담을 덜어요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "부담 없는 대화 제안 방식은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "10분 소요 시간 안내"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "무기한 회의 소집"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "당장 즉시 통화 요구"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "소요 시간을 한정해야 즉시 응하기 편해요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "의견이 팽팽할 때는 쟁점을 정리한 뒤 ___ 통화를 제안해 보세요.",
+                "words": ["10분간의", "하루 종일", "감정적인"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "짧은 시간으로 제한해야 부담 없이 대화해요."
+              },
+              {
+                "type": "compare",
+                "title": "회의 제안 문장 완성도",
+                "analysis": "시간을 명시하면 즉각 수락할 확률이 높아요.",
+                "versions": [
+                  {
+                    "label": "부담형",
+                    "text": "시간 괜찮으실 때 회의 좀 하시죠.",
+                    "mark": "회의 좀 하시죠"
+                  },
+                  {
+                    "label": "한정형",
+                    "text": "일정 관련해서 10분만 통화 괜찮으실까요?",
+                    "mark": "10분만 통화 괜찮으실까요?"
+                  }
+                ]
+              },
+              {
+                "type": "error_correct",
+                "question": "공격적인 문장을 고치세요.",
+                "segments": ["전달해 주신 수치가 ", "전혀 맞지 않습니다."],
+                "segmentIds": ["seg-1", "seg-2"],
+                "correctSegment": "seg-2",
+                "fixes": ["10분 통화 요청", "재작성 통보"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-1",
+                "explanation": "비난 대신 확인을 위한 대화로 유도해요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "전환 메시지를 완성하세요.",
+                "tiles": [
+                  "혼선을 줄이고자 ",
+                  "10분간 ",
+                  "유선으로 ",
+                  "말씀 나누실 수 ",
+                  "있을까요?"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "목적과 소요 시간을 밝혀 정중히 제안해요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l19",
             "title": "모바일 가독성을 높이는 줄바꿈과 정보 덩어리(청킹) 배치하기",
             "time": "5분",
             "desc": "스마트폰 화면에서 텍스트가 빽빽한 벽처럼 보이지 않도록, 1~2문장 단위의 줄바꿈과 불릿 기호를 활용해 시각적 여백을 설계할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "compare",
+                "title": "메신저 가독성 레이아웃 비교",
+                "analysis": "문장 사이에 여백을 두어야 한눈에 읽혀요.",
+                "versions": [
+                  {
+                    "label": "줄글벽",
+                    "text": "신규 프로젝트 일정이 확정되었으니 디자인팀과 협의해 주세요.",
+                    "mark": "협의해 주세요"
+                  },
+                  {
+                    "label": "청킹배치",
+                    "text": "프로젝트 일정이 확정되었습니다.\n\n디자인팀과 협의해 주세요.",
+                    "mark": "협의해 주세요"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "모바일 가독성 상식인가요?",
+                "statement": "스마트폰에서는 5줄 이상의 장문 줄글도 줄바꿈 없이 쓰는 게 깔끔하다.",
+                "correct": false,
+                "explanation": "여백 없는 긴 글은 시각적 피로를 유발해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "모바일 최적의 문장 길이는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "10줄 이상 이어 쓰기"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "1~2문장 단위 줄바꿈"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "공백 없이 한 문단 묶기"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "1~2문장마다 여백을 줘야 집중도가 유지돼요."
+              },
+              {
+                "type": "select",
+                "question": "가독성을 해치는 구간은?",
+                "segments": [
+                  "공지 사항 전달드립니다. ",
+                  "내용이 길어 한 줄로 길게 ",
+                  "이어 씁니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "줄바꿈 없이 길게 늘어지면 핵심을 놓쳐요.",
+                "layout": "inline"
+              },
+              {
+                "type": "categorize",
+                "title": "정보 배치 형식 구분하기",
+                "categories": [
+                  {
+                    "id": "cat-bullet",
+                    "label": "불릿 기호 정리"
+                  },
+                  {
+                    "id": "cat-wall",
+                    "label": "줄글 나열형"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "- 일정: 3월 5일",
+                    "categoryId": "cat-bullet"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "일정은 3월 5일 진행",
+                    "categoryId": "cat-wall"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "- 장소: 4층 회의실",
+                    "categoryId": "cat-bullet"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "장소는 4층 회의실임",
+                    "categoryId": "cat-wall"
+                  }
+                ],
+                "explanation": "항목별 핵심 정보는 기호로 끊어야 읽기 편해요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 청킹 기법인가요?",
+                "statement": "일정, 장소, 준비물 등은 불릿 기호(-)를 써서 분리하는 것이 좋다.",
+                "correct": true,
+                "explanation": "기호로 정보를 덩어리 지으면 가독성이 높아져요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "가장 눈에 잘 띄는 정돈은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "항목별 불릿 기호 배치"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "줄글에 날짜와 시간 혼합"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "특수문자 무분별 남발"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "불릿 기호는 정보 간 위계를 직관적으로 보여줘요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "모바일 화면에서는 1~2문장마다 ___을 주어야 잘 읽혀요.",
+                "words": ["시각적 여백", "어려운 한자", "복잡한 수식"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-1"],
+                "explanation": "줄바꿈 여백이 생겨야 작은 화면에서도 편해요."
+              },
+              {
+                "type": "compare",
+                "title": "정보 전달력 비교",
+                "analysis": "불릿으로 정리하면 핵심이 1초 만에 보여요.",
+                "versions": [
+                  {
+                    "label": "혼합형",
+                    "text": "회의는 내일 14시 3회의실에서 진행합니다.",
+                    "mark": "진행합니다"
+                  },
+                  {
+                    "label": "청킹형",
+                    "text": "[회의 안내]\n- 일시: 내일 14시\n- 장소: 3회의실",
+                    "mark": "3회의실"
+                  }
+                ]
+              },
+              {
+                "type": "error_correct",
+                "question": "답답한 줄글을 고치세요.",
+                "segments": [
+                  "내일 회의 일정을 안내합니다. ",
+                  "14시까지 모여주시기 바랍니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2"],
+                "correctSegment": "seg-2",
+                "fixes": ["- 일시: 14시", "시간 엄수 요망"],
+                "fixIds": ["fix-1", "fix-2"],
+                "correctFix": "fix-1",
+                "explanation": "핵심 정보를 불릿으로 요약해야 놓치지 않아요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "청킹 문장을 조립하세요.",
+                "tiles": [
+                  "핵심 정보는 ",
+                  "1~2문장마다 ",
+                  "줄을 바꿔 ",
+                  "여백을 ",
+                  "두세요."
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "줄바꿈과 여백으로 시각적 피로를 줄여줘요."
+              }
+            ]
           }
         ]
       },
@@ -12541,28 +15566,639 @@
             "title": "'통보', '~요망' 등 권위적 행정투와 일본어투를 존중과 협력의 문장으로 바꾸기",
             "time": "5분",
             "desc": "관공서나 거래처를 향한 고압적 표현('통보하다', '송부 요망')을 상호 존중과 협력의 능동형 문장('안내해 드립니다', '보내주시기 바랍니다')으로 순화할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "권위적 행정투 순화 원칙",
+                "body": "상대방에게 협조를 구할 때 '통보하다', '송부 요망'처럼 고압적인 어투를 쓰면 반감을 사기 쉽습니다. 상호 존중하는 파트너십을 위해 '안내해 드립니다', '보내주시기 바랍니다'처럼 청유형 문장으로 부드럽게 바꿔보세요."
+              },
+              {
+                "type": "compare",
+                "title": "요청 어조 대조",
+                "analysis": "명령형 '요망'보다 정중한 청유형 '바랍니다'가 협조를 이끌어요.",
+                "versions": [
+                  {
+                    "label": "권위적 표현",
+                    "mark": "송부 요망",
+                    "text": "검토 후 수정본 송부 요망"
+                  },
+                  {
+                    "label": "존중 표현",
+                    "mark": "보내주시기 바랍니다",
+                    "text": "검토 후 수정본을 보내주시기 바랍니다"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "표현의 적절성 판정",
+                "statement": "외부 파트너사에 일정 변경을 전할 때 '통보합니다'가 가장 정중하다.",
+                "correct": false,
+                "explanation": "'통보'는 일방적인 통지 느낌을 주므로 '안내해 드립니다'로 씁니다."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "정중한 마감 안내 문장은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "금일 중 회신 요망"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "오늘 중 회신 부탁드립니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "금일 통보 바람"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "한자어 '금일/요망'보다 '오늘/부탁드립니다'가 친절하고 정중해요."
+              },
+              {
+                "type": "select",
+                "question": "어색하게 권위적인 구간은?",
+                "segments": [
+                  "첨부된 양식을 확인하시고 ",
+                  "기일 내 제출 요망하며 ",
+                  "문의는 메일로 주세요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "명령조인 '제출 요망'은 '제출해 주시기 바랍니다'로 순화해요.",
+                "layout": "inline"
+              },
+              {
+                "type": "match",
+                "title": "권위적 행정투 순화 연결",
+                "pairs": [
+                  {
+                    "left": "송부 요망",
+                    "leftId": "p-1-l",
+                    "right": "보내주시기 바랍니다",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "통보함",
+                    "leftId": "p-2-l",
+                    "right": "안내해 드립니다",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "재고 바람",
+                    "leftId": "p-3-l",
+                    "right": "다시 검토해 주세요",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "사료됨",
+                    "leftId": "p-4-l",
+                    "right": "생각합니다",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "관료적 행정 표현을 쉬운 우리말과 정중한 높임말로 바꿔보세요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "변경된 회의실 위치를 아래와 같이 ___.",
+                "words": [
+                  "안내해 드립니다",
+                  "통보합니다",
+                  "지시합니다",
+                  "하달합니다"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-1"],
+                "explanation": "동료와 파트너에게 일정을 전할 때는 '안내해 드립니다'가 좋아요."
+              },
+              {
+                "type": "true_false",
+                "question": "올바른 서신 문장인가요?",
+                "statement": "'개정 전문 송부 요망'보다 '개정 전문을 보내주시기 바랍니다'가 낫다.",
+                "correct": true,
+                "explanation": "명령조 명사형 종결을 정중한 청유문으로 바꾸면 신뢰가 높아져요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "협조 공문에 어울리는 표현은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "검토를 부탁드립니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "조속히 회신 요망"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "확인 후 즉시 통보 바람"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "독촉성 한자 명령 표현을 지양하고 존중의 청유형을 씁니다."
+              },
+              {
+                "type": "sentence_build",
+                "question": "정중한 요청문으로 조립하세요.",
+                "tiles": [
+                  "수정된",
+                  "계약서",
+                  "초안을",
+                  "오늘까지",
+                  "보내주시기",
+                  "바랍니다."
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+                "explanation": "'송부 요망' 대신 '보내주시기 바랍니다'로 쓰면 훨씬 정중합니다."
+              },
+              {
+                "type": "error_correct",
+                "question": "권위적 표현을 바르게 고치세요.",
+                "segments": [
+                  "첨부된 기획안을 보시고 ",
+                  "수정 의견을 조속히 통보 요망하며 ",
+                  "협조해 주셔서 감사합니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["통보 요망하며", "알려주시기 바라며"],
+                "fixIds": ["f-1", "f-2"],
+                "correctFix": "f-2",
+                "explanation": "일방적 명령투 '통보 요망'을 '알려주시기 바라며'로 고쳐보세요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l21",
             "title": "공문서 서식 규범에 맞는 정확한 `붙임` 표시와 `끝.` 마침표 표기하기",
             "time": "5분",
             "desc": "관행적으로 쓰이던 `붙임:` 쌍점 오류를 교정하고, 2타 띄어쓰기 및 문서 종료 지점의 `끝.` 마침표 표기 규범을 완벽히 적용할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "공문서 붙임과 끝 마침표 규범",
+                "body": "공문서에서 첨부물을 표기할 때는 '붙임:'처럼 쌍점을 찍지 않고 두 칸 띄어 씁니다. 또한 문서가 끝나는 지점에는 두 칸을 띄운 뒤 마침표를 포함해 반드시 '끝.'으로 표기해야 규범에 맞습니다."
+              },
+              {
+                "type": "compare",
+                "title": "첨부물 표시 서식 대조",
+                "analysis": "쌍점 없이 '붙임' 뒤 두 칸을 띄우고 첨부물 이름을 씁니다.",
+                "versions": [
+                  {
+                    "label": "오류 표기",
+                    "mark": "붙임 :",
+                    "text": "붙임 : 1. 운영계획서 1부."
+                  },
+                  {
+                    "label": "바른 규범",
+                    "mark": "붙임  1.",
+                    "text": "붙임  1. 운영계획서 1부."
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "공문서 서식 규정 확인",
+                "statement": "공문서 본문이 끝날 때 마지막 글자 바로 뒤에 '끝'을 붙여 쓴다.",
+                "correct": false,
+                "explanation": "본문 끝에서 두 칸(1자) 띄우고 마침표를 붙여 '끝.'으로 씁니다."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "문서 종료 표기로 바른 것은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "추진합니다.  끝."
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "추진합니다. 끝"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "추진합니다.(끝)"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "마지막 문장 마침표 뒤 두 칸 띄우고 '끝.'을 써야 바른 표기예요."
+              },
+              {
+                "type": "select",
+                "question": "규범에 어긋난 서식 구간은?",
+                "segments": [
+                  "보고서를 제출합니다. ",
+                  "붙임: ",
+                  "1. 결과보고서 1부.  끝."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "첨부물 표시에는 '붙임:'의 쌍점을 쓰지 않고 두 칸 띄어 씁니다."
+              },
+              {
+                "type": "compare",
+                "title": "문서 끝 마침표 대조",
+                "analysis": "종료 표시 '끝' 뒤에는 마침표(.)가 반드시 들어가야 합니다.",
+                "versions": [
+                  {
+                    "label": "마침표 누락",
+                    "mark": "1부.  끝",
+                    "text": "붙임  1. 행사계획서 1부.  끝"
+                  },
+                  {
+                    "label": "바른 표기",
+                    "mark": "1부.  끝.",
+                    "text": "붙임  1. 행사계획서 1부.  끝."
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "붙임 서식 규범 판정",
+                "statement": "'붙임' 뒤에는 쌍점(:)을 쓰지 않고 공백을 두는 것이 행정 규범이다.",
+                "correct": true,
+                "explanation": "행정업무운영편람에 따라 '붙임' 다음에는 쌍점 없이 띄어 씁니다."
+              },
+              {
+                "type": "fill_blank",
+                "template": "붙임  1. 최종 결과보고서 1부.  ___",
+                "words": ["끝.", "끝", "이상.", "완료."],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-1"],
+                "explanation": "공문서의 마지막 첨부물 끝에는 두 칸 띄우고 '끝.'을 표기해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "붙임 목록의 올바른 표기는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "붙임: 회의록 1부."
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "붙임- 회의록 1부."
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "붙임  1. 회의록 1부."
+                  }
+                ],
+                "correct": "opt-3",
+                "explanation": "특수문자 없이 '붙임' 뒤 두 칸 띄운 후 번호와 명칭을 씁니다."
+              },
+              {
+                "type": "sentence_build",
+                "question": "바른 첨부 서식을 조립하세요.",
+                "tiles": ["붙임", "1.", "사업계획서", "1부.", "끝."],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "쌍점 없이 '붙임'으로 시작해 첨부 명칭 후 '끝.'으로 맺습니다."
+              },
+              {
+                "type": "error_correct",
+                "question": "공문서 표기 오류를 고치세요.",
+                "segments": [
+                  "검토 의견을 회신합니다. ",
+                  "붙임: ",
+                  "1. 심사표 1부.  끝."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["붙임: ", "붙임  "],
+                "fixIds": ["f-1", "f-2"],
+                "correctFix": "f-2",
+                "explanation": "관행적인 '붙임:' 쌍점을 삭제하고 두 칸 띄어쓰기로 수정합니다."
+              }
+            ]
           },
           {
             "id": "lesson-email-l22",
             "title": "수신자의 예상 질문 5가지를 선제 차단하는 자립형 맥락 완비 검토하기",
             "time": "5분",
             "desc": "메일 발송 후 되돌아올 질문 5가지를 미리 자문하고 본문에서 선제 해결할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "되물음 차단 5대 선제 정보",
+                "body": "업무 메일을 보낸 뒤 수신자에게서 되묻는 전화나 슬랙이 온다면 맥락이 빠진 탓입니다. 수신자의 5대 질문인 행동, 마감일, 제출처, 참고자료, 문의처를 본문에 미리 담으면 핑퐁 없는 소통이 완성됩니다."
+              },
+              {
+                "type": "compare",
+                "title": "정보 완비도 서신 대조",
+                "analysis": "마감 시점과 제출 방식이 빠지면 불필요한 되물음이 발생해요.",
+                "versions": [
+                  {
+                    "label": "모호한 요청",
+                    "mark": "확인 부탁드립니다.",
+                    "text": "기획서 초안 보냅니다. 확인 부탁드립니다."
+                  },
+                  {
+                    "label": "선제적 완비",
+                    "mark": "내일 15시까지 슬랙으로",
+                    "text": "초안입니다. 내일 15시까지 슬랙으로 피드백 부탁드립니다."
+                  }
+                ]
+              },
+              {
+                "type": "match",
+                "title": "수신자 의문과 선제 정보 매칭",
+                "pairs": [
+                  {
+                    "left": "제가 뭘 해야 하죠?",
+                    "leftId": "p-1-l",
+                    "right": "구체적 요청 행동 명시",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "언제까지 보내나요?",
+                    "leftId": "p-2-l",
+                    "right": "마감 날짜와 시각 명시",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "어디로 제출하죠?",
+                    "leftId": "p-3-l",
+                    "right": "제출 채널과 양식 명시",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "모를 땐 어디 묻죠?",
+                    "leftId": "p-4-l",
+                    "right": "담당자 직통 번호 기재",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "수신자가 궁금해할 4가지 핵심 질문에 미리 답을 적어둡니다."
+              },
+              {
+                "type": "true_false",
+                "question": "자립형 메일 점검",
+                "statement": "'가능한 한 빨리 검토해 주세요'라고 쓰면 신속한 회신을 받는다.",
+                "correct": false,
+                "explanation": "'가능한 빨리'는 기준이 모호하므로 '3일(목) 17시'처럼 못박아요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "되물음을 막는 마감 표기는?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "최대한 빠르게 회신"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "10월 5일(금) 15시까지"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "차주 중으로 회신 요망"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "요일과 시간까지 명확히 적어야 수신자가 일정을 조율하기 쉬워요."
+              },
+              {
+                "type": "select",
+                "question": "되물음을 부르는 모호한 구간은?",
+                "segments": [
+                  "수정본을 작성했으니 ",
+                  "적당한 때에 검토하시고 ",
+                  "메일로 피드백 주세요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-2"],
+                "explanation": "'적당한 때'는 기한이 없으므로 구체적 마감 일시를 적어야 해요."
+              },
+              {
+                "type": "true_false",
+                "question": "문의처 기재의 효과 판정",
+                "statement": "메일 말미에 담당자 내선 번호를 적으면 불필요한 메일 핑퐁이 줄어든다.",
+                "correct": true,
+                "explanation": "문의 창구를 명시하면 수신자가 의문이 생겼을 때 즉시 해결합니다."
+              },
+              {
+                "type": "fill_blank",
+                "template": "피드백은 8일(화) 18시까지 ___ 공유 폴더에 업로드해 주세요.",
+                "words": ["첨부된 링크의", "알아서", "적당한", "기존의"],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-1"],
+                "explanation": "제출 경로 링크를 본문에 직접 제공해야 헤매지 않고 제출해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "자립형 메일의 핵심 구성은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "요청 행동과 마감 시점 명시"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "친근한 안부 인사 3단락"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "첨부파일 설명 생략"
+                  }
+                ],
+                "correct": "opt-1",
+                "explanation": "수신자의 다음 행동과 마감, 경로를 명확히 해야 자립형 메일입니다."
+              },
+              {
+                "type": "sentence_build",
+                "question": "자립형 요청문으로 조립하세요.",
+                "tiles": [
+                  "피드백은",
+                  "내일",
+                  "오후 3시까지",
+                  "댓글로",
+                  "남겨주시기",
+                  "바랍니다."
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+                "explanation": "기한(오후 3시)과 방법(댓글)을 함께 적으면 추가 질문이 없습니다."
+              },
+              {
+                "type": "error_correct",
+                "question": "되물음을 차단하도록 고치세요.",
+                "segments": [
+                  "설문 조사를 진행하니 ",
+                  "편하신 때에 ",
+                  "참여 부탁드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["편하신 때에 ", "내일 17시까지 "],
+                "fixIds": ["f-1", "f-2"],
+                "correctFix": "f-2",
+                "explanation": "모호한 '편하신 때'를 명확한 마감 일시로 고쳐야 실행력이 생겨요."
+              }
+            ]
           },
           {
             "id": "lesson-email-l23",
             "title": "발송 직전 5대 핵심 점검표(제목·도입·개조식·마감·첨부)로 최종 퇴고하기",
             "time": "5분",
             "desc": "작성된 비즈니스 서신을 `제목 목적 명시 ➜ 첫 문장 CTA ➜ 요청사항 번호 분리 ➜ 구체적 마감 ➜ 첨부 연계`의 5대 체크리스트로 자가 점검하여 완성본을 도출할 수 있다.",
-            "steps": []
+            "steps": [
+              {
+                "type": "reading",
+                "title": "발송 직전 5대 체크리스트",
+                "body": "메일 전송 버튼을 누르기 전 5가지만 확인하세요. [목적] 말머리 제목, 첫 문장 CTA, 번호 매긴 개조식 요청, 요일과 시간 있는 마감, 본문과 맞춘 첨부파일입니다. 이 5단계만 거치면 실수가 사라집니다."
+              },
+              {
+                "type": "order",
+                "title": "발송 전 5대 점검 순서",
+                "items": [
+                  "제목의 목적 말머리",
+                  "첫 문장의 핵심 요청",
+                  "개조식 요청 분리",
+                  "구체적 마감 일시",
+                  "첨부파일 유무 연계"
+                ],
+                "itemIds": ["ord-1", "ord-2", "ord-3", "ord-4", "ord-5"],
+                "correct": ["ord-1", "ord-2", "ord-3", "ord-4", "ord-5"],
+                "explanation": "제목에서 본문 개조식, 마감과 첨부 확인 순으로 점검을 마칩니다."
+              },
+              {
+                "type": "compare",
+                "title": "줄글 나열 vs 개조식 분리 대조",
+                "analysis": "요청사항을 번호로 쪼개 개조식으로 쓰면 가독성이 대폭 올라가요.",
+                "versions": [
+                  {
+                    "label": "줄글 나열",
+                    "mark": "서류를 보내주시고 의견도 주세요",
+                    "text": "관련 서류를 보내주시고 의견도 주세요."
+                  },
+                  {
+                    "label": "개조식 분리",
+                    "mark": "1. 서류 제출 2. 의견 회신",
+                    "text": "요청사항: 1. 서류 제출 2. 의견 회신"
+                  }
+                ]
+              },
+              {
+                "type": "true_false",
+                "question": "체크리스트 제목 점검",
+                "statement": "메일 제목에 '[요청]' 등 목적 말머리를 달아야 한다.",
+                "correct": true,
+                "explanation": "말머리로 목적을 밝히면 수신자가 우선순위를 즉시 파악해요."
+              },
+              {
+                "type": "multiple_choice",
+                "question": "첫 문장으로 가장 효과적인 것은?",
+                "options": [
+                  {
+                    "id": "opt-1",
+                    "text": "날씨가 많이 쌀쌀합니다"
+                  },
+                  {
+                    "id": "opt-2",
+                    "text": "기획안 승인을 요청드립니다"
+                  },
+                  {
+                    "id": "opt-3",
+                    "text": "오랜만에 메일 드립니다"
+                  }
+                ],
+                "correct": "opt-2",
+                "explanation": "첫 문장에 핵심 목적(CTA)을 밝혀야 바쁜 수신자가 집중합니다."
+              },
+              {
+                "type": "select",
+                "question": "마감 시점이 누락된 문장은?",
+                "segments": [
+                  "[요청] 예산안 승인 건 ",
+                  "예산안 승인을 요청합니다. ",
+                  "빠른 검토 부탁드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correct": ["seg-3"],
+                "explanation": "'빠른 검토' 대신 '12일(금) 15시까지'처럼 기한을 못박아야 해요."
+              },
+              {
+                "type": "match",
+                "title": "5대 점검표와 작성 기준 연결",
+                "pairs": [
+                  {
+                    "left": "제목 점검",
+                    "leftId": "p-1-l",
+                    "right": "목적 말머리 표기",
+                    "rightId": "p-1-r"
+                  },
+                  {
+                    "left": "도입 점검",
+                    "leftId": "p-2-l",
+                    "right": "첫 문장 핵심 요청",
+                    "rightId": "p-2-r"
+                  },
+                  {
+                    "left": "본문 점검",
+                    "leftId": "p-3-l",
+                    "right": "개조식 번호 분리",
+                    "rightId": "p-3-r"
+                  },
+                  {
+                    "left": "마감 점검",
+                    "leftId": "p-4-l",
+                    "right": "요일과 시각 명시",
+                    "rightId": "p-4-r"
+                  }
+                ],
+                "explanation": "5대 기준을 머릿속에 두고 퇴고하면 결점 없는 메일이 됩니다."
+              },
+              {
+                "type": "true_false",
+                "question": "첨부 점검 항목 판정",
+                "statement": "본문에 '첨부파일 참조'라고만 적으면 파일 누락 여부 확인이 쉽다.",
+                "correct": false,
+                "explanation": "'붙임 1. 기획안 1부'처럼 파일명을 명시해야 누락을 막아요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "제목: [___] 3분기 마케팅 예산 승인 요청의 건",
+                "words": ["승인요청", "친목도모", "참고자료", "단순안내"],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-1"],
+                "explanation": "메일의 성격에 맞는 명확한 목적 말머리를 달아 퇴고를 완성해요."
+              },
+              {
+                "type": "sentence_build",
+                "question": "5대 기준에 맞게 조립하세요.",
+                "tiles": [
+                  "[요청]",
+                  "신규",
+                  "프로젝트",
+                  "예산안",
+                  "승인의",
+                  "건"
+                ],
+                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
+                "explanation": "말머리와 핵심 안건을 조합해 한눈에 읽히는 제목을 만듭니다."
+              },
+              {
+                "type": "error_correct",
+                "question": "완성도 높은 제목으로 고치세요.",
+                "segments": [
+                  "안녕하세요. ",
+                  "문의 전달드립니다. ",
+                  "확인 부탁드립니다."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "correctSegment": "seg-2",
+                "fixes": ["문의 전달의 건", "[문의] 결제 오류 건"],
+                "fixIds": ["f-1", "f-2"],
+                "correctFix": "f-2",
+                "explanation": "모호한 문장 대신 대괄호 말머리와 핵심 안건을 명시해 퇴고합니다."
+              }
+            ]
           }
         ]
       }

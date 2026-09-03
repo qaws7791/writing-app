@@ -1,0 +1,140 @@
+[
+  {
+    "type": "compare",
+    "title": "민감 사안 대응 방식 비교",
+    "analysis": "텍스트 맞대응보다 대화 제안이 오해를 줄여요.",
+    "versions": [
+      {
+        "label": "감정대립",
+        "text": "저희 쪽 과실이 아닌 것으로 보입니다.",
+        "mark": "과실이 아닌 것"
+      },
+      {
+        "label": "대화전환",
+        "text": "정확한 확인을 위해 10분간 통화 가능할까요?",
+        "mark": "통화 가능할까요?"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 채널 선택인가요?",
+    "statement": "해석이 엇갈려 감정이 상할 때는 메신저로 계속 반박하는 게 좋다.",
+    "correct": false,
+    "explanation": "텍스트는 뉘앙스가 왜곡되므로 통화나 대면이 좋아요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 적절한 대응 메시지는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "기획 오류 맞대응"
+      },
+      {
+        "id": "opt-2",
+        "text": "10분 통화 가능할까요?"
+      },
+      {
+        "id": "opt-3",
+        "text": "추가 논의 거부"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "짧은 통화를 제안해 쟁점을 빠르게 좁혀요."
+  },
+  {
+    "type": "select",
+    "question": "감정을 자극하는 표현 구간은?",
+    "segments": ["말씀하신 내용은 ", "상식적으로 이해가 ", "되지 않습니다."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "상대의 감정을 자극하는 공격적 표현은 빼야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "order",
+    "title": "대화 전환 메시지 3단계",
+    "items": ["1. 사실 관계 확인", "2. 핵심 쟁점 요약", "3. 10분 대화 제안"],
+    "itemIds": ["ord-1", "ord-2", "ord-3"],
+    "correct": ["ord-1", "ord-2", "ord-3"],
+    "explanation": "쟁점을 정리한 뒤 짧은 대화를 제안해요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 미팅 제안인가요?",
+    "statement": "통화를 요청할 때는 미리 대화할 안건과 예상 소요 시간을 밝힌다.",
+    "correct": true,
+    "explanation": "안건과 시간을 명시해야 상대가 부담을 덜어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "부담 없는 대화 제안 방식은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "10분 소요 시간 안내"
+      },
+      {
+        "id": "opt-2",
+        "text": "무기한 회의 소집"
+      },
+      {
+        "id": "opt-3",
+        "text": "당장 즉시 통화 요구"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "소요 시간을 한정해야 즉시 응하기 편해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "의견이 팽팽할 때는 쟁점을 정리한 뒤 ___ 통화를 제안해 보세요.",
+    "words": ["10분간의", "하루 종일", "감정적인"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "짧은 시간으로 제한해야 부담 없이 대화해요."
+  },
+  {
+    "type": "compare",
+    "title": "회의 제안 문장 완성도",
+    "analysis": "시간을 명시하면 즉각 수락할 확률이 높아요.",
+    "versions": [
+      {
+        "label": "부담형",
+        "text": "시간 괜찮으실 때 회의 좀 하시죠.",
+        "mark": "회의 좀 하시죠"
+      },
+      {
+        "label": "한정형",
+        "text": "일정 관련해서 10분만 통화 괜찮으실까요?",
+        "mark": "10분만 통화 괜찮으실까요?"
+      }
+    ]
+  },
+  {
+    "type": "error_correct",
+    "question": "공격적인 문장을 고치세요.",
+    "segments": ["전달해 주신 수치가 ", "전혀 맞지 않습니다."],
+    "segmentIds": ["seg-1", "seg-2"],
+    "correctSegment": "seg-2",
+    "fixes": ["10분 통화 요청", "재작성 통보"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "비난 대신 확인을 위한 대화로 유도해요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "전환 메시지를 완성하세요.",
+    "tiles": [
+      "혼선을 줄이고자 ",
+      "10분간 ",
+      "유선으로 ",
+      "말씀 나누실 수 ",
+      "있을까요?"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "목적과 소요 시간을 밝혀 정중히 제안해요."
+  }
+]
