@@ -1,0 +1,164 @@
+﻿[
+  {
+    "type": "reading",
+    "title": "기획서 골격 세우기",
+    "body": "기획서는 과거를 정리하는 문서가 아니라 앞으로 실행할 행동을 제안하는 문서예요. '인지도 제고'처럼 모호한 희망 대신 숫자로 검증 가능한 목표를 못 박고, 추진 전략과 최종 승인 요청까지 한 줄기로 엮어야 상사가 즉시 승인해요."
+  },
+  {
+    "type": "compare",
+    "title": "기획서 목표 서술 대조",
+    "analysis": "숫자와 기한을 밝혀야 실행력을 즉시 평가할 수 있어요.",
+    "versions": [
+      {
+        "label": "모호한 서술",
+        "mark": "인지도를 대폭 개선",
+        "text": "하반기 브랜드 인지도를 대폭 개선하겠습니다."
+      },
+      {
+        "label": "명확한 KPI",
+        "mark": "전년 대비 15% 개선",
+        "text": "3분기 브랜드 인지도를 전년 대비 15% 개선하겠습니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "기획서 목표 작성 원칙은?",
+    "statement": "목표는 정성적 열정보다 검증 가능한 숫자로 제시해야 해요.",
+    "correct": true,
+    "explanation": "관찰 가능한 수치가 있어야 달성 여부를 객관적으로 측정해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 적절한 기획서 목표는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "고객 만족도 최우선 확보"
+      },
+      {
+        "id": "opt-2",
+        "text": "3분기 재방문율 20% 달성"
+      },
+      {
+        "id": "opt-3",
+        "text": "업무 효율 대폭 향상"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "기한과 기준 수치가 명시되어 실행과 평가가 쉬워져요."
+  },
+  {
+    "type": "categorize",
+    "title": "기획서 핵심 요소 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "추진 전략"
+      },
+      {
+        "id": "cat-2",
+        "label": "의사결정 요청"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "신규 제휴처 5곳 확보",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "인플루언서 협업 집행",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "하반기 예산 2천만 원 승인",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "기획안 금주 최종 결재",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "구체적 실행 방법과 상사에게 바라는 승인 사항을 구분해요."
+  },
+  {
+    "type": "true_false",
+    "question": "의사결정 요청 작성법은?",
+    "statement": "의사결정 요청에는 '검토 바람'처럼 포괄적으로 적는 것이 좋아요.",
+    "correct": false,
+    "explanation": "예산 승인이나 일정 확정 등 필요한 조치를 못 박아야 해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "기획서 서두에는 추진 방향과 기대 ___를 담은 한 줄 헤드라인을 씁니다.",
+    "words": ["효과", "의견", "소회", "추억"],
+    "wordIds": ["w1", "w2", "w3", "w4"],
+    "answer": ["w1"],
+    "explanation": "추진 시 얻게 되는 구체적 가치를 첫머리에 밝히면 명쾌해요."
+  },
+  {
+    "type": "order",
+    "title": "기획서 4단 골격 정렬",
+    "items": [
+      "추진 배경 및 문제점",
+      "관찰 가능한 KPI 목표",
+      "핵심 실행 전략",
+      "예산 승인 및 일정 요청"
+    ],
+    "itemIds": ["ord-1", "ord-2", "ord-3", "ord-4"],
+    "correct": ["ord-1", "ord-2", "ord-3", "ord-4"],
+    "explanation": "배경에서 시작해 측정 목표와 실행책, 최종 요청으로 끝맺어요."
+  },
+  {
+    "type": "select",
+    "question": "기획서에서 고쳐야 할 구간은?",
+    "segments": [
+      "3분기 내 ",
+      "서비스 인지도를 대폭 높여 ",
+      "가입자를 15% 늘리겠습니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'대폭 높여'는 모호하므로 구체적 지표나 액션으로 바꿔야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 명쾌한 기획서 제목은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "[기획] 회원 20% 증대"
+      },
+      {
+        "id": "opt-2",
+        "text": "모바일 앱 활성화 기획"
+      },
+      {
+        "id": "opt-3",
+        "text": "앱 개선 아이디어 보고"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "목표 수치와 제안 성격이 한눈에 보여 의사결정이 빨라져요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 목표를 고쳐 보세요.",
+    "segments": [
+      "하반기에 ",
+      "매출을 최대한 끌어올려 ",
+      "목표액을 달성하겠습니다."
+    ],
+    "segmentIds": ["ec-s1", "ec-s2", "ec-s3"],
+    "correctSegment": "ec-s2",
+    "fixes": ["매출 20%를 달성하여", "마케팅을 열심히 하여"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "'최대한' 대신 측정 가능한 숫자를 넣어야 실행력이 생겨요."
+  }
+]

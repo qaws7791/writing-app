@@ -1,0 +1,152 @@
+[
+  {
+    "type": "reading",
+    "title": "오해를 막는 개조식 필수 조사",
+    "body": "개조식이라고 해서 조사를 무조건 지우면 심각한 오해가 생겨요. '협력사 단가 인상'은 협력사가 인상한 것인지 우리가 올려준 것인지 불분명하죠. 주체, 대상, 인과관계를 결정짓는 '은/는/이/가/에/를' 같은 핵심 조사는 반드시 남겨두어야 안전해요."
+  },
+  {
+    "type": "compare",
+    "title": "조사 생략에 따른 의미 왜곡 비교",
+    "analysis": "필수 조사를 살려야 행위 주체가 명확해져요.",
+    "versions": [
+      {
+        "label": "조사 누락",
+        "mark": "협력사 계약 해지 건:",
+        "text": "ㅇ 협력사 계약 해지 건: 위약금 검토 후 통보 예정"
+      },
+      {
+        "label": "조사 복원",
+        "mark": "협력사의 계약 해지 요구:",
+        "text": "ㅇ 협력사의 계약 해지 요구: 위약금 검토 후 통보 예정"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "개조식 조사 생략 원칙인가요?",
+    "statement": "개조식 문장에서는 모든 조사를 남김없이 삭제한다.",
+    "correct": false,
+    "explanation": "주체와 대상을 가르는 핵심 조사는 반드시 살려야 해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "반드시 남겨야 할 필수 조사는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "주체와 객체를 가르는 조사"
+      },
+      {
+        "id": "opt-2",
+        "text": "문맥과 무관한 모든 조사"
+      },
+      {
+        "id": "opt-3",
+        "text": "문장 끝에 붙는 감탄사"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "누가 누구에게 했는지 밝혀야 오독을 차단할 수 있어요."
+  },
+  {
+    "type": "select",
+    "question": "조사가 빠져 모호한 구간은?",
+    "segments": [
+      "ㅇ 3분기 실적 점검: ",
+      "경쟁사 점유율 잠식, ",
+      "대응책 마련 착수"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "'경쟁사가 잠식했는지' 주격 조사가 빠져 모호해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "연결 어미 보존 규칙인가요?",
+    "statement": "선후 관계나 인과가 중요할 땐 연결 어미를 살려 적어요.",
+    "correct": true,
+    "explanation": "단어만 나열하면 앞뒤 인과 관계가 왜곡될 수 있어요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "주체와 객체의 혼선을 막으려면 문맥상 ___ 조사를 복원해요.",
+    "words": ["필수적인", "장식적인", "감정적인", "사소한"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "핵심 조사가 있어야 주체와 목적어가 뒤바뀌지 않아요."
+  },
+  {
+    "type": "match",
+    "title": "왜곡 문장과 조사 복원 매칭",
+    "pairs": [
+      {
+        "left": "고객사 환불 요청",
+        "leftId": "p1-l",
+        "right": "고객사의 요청 복원",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "서버 장애 복구",
+        "leftId": "p2-l",
+        "right": "서버의 장애 복원",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "신규 정책 안내",
+        "leftId": "p3-l",
+        "right": "신규 정책을 안내",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "문맥에 맞는 적절한 격조사를 채워 넣으세요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 명확한 개조식 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "신임 대표 취임식 준비"
+      },
+      {
+        "id": "opt-2",
+        "text": "신임 대표에 취임 축하"
+      },
+      {
+        "id": "opt-3",
+        "text": "신임 대표의 취임 준비"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "관형격 조사 '의'로 주체 관계를 깔끔히 살렸어요."
+  },
+  {
+    "type": "order",
+    "title": "인과 관계를 살린 순서 배열",
+    "items": [
+      "□ 원자재 가격 급등에 따라",
+      "ㅇ 제품 공급가 5% 인상 불가피",
+      "ㅇ 유통망 사전 협의 완료",
+      "- 10월 1일 출고분부터 적용"
+    ],
+    "itemIds": ["i-1", "i-2", "i-3", "i-4"],
+    "correct": ["i-1", "i-2", "i-3", "i-4"],
+    "explanation": "원인과 배경에서 결과 및 실행 일정 순으로 정렬해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 조사를 바로잡으세요.",
+    "segments": [
+      "ㅇ 거래처 클레임 건: ",
+      "품질 불량 납품 확인, ",
+      "손해 배상 청구 예정"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["불량 납품 확인", "불량품의 납품 확인"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "누가 무엇을 납품했는지 조사를 살려야 명확해져요."
+  }
+]

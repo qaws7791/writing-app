@@ -1,0 +1,152 @@
+[
+  {
+    "type": "reading",
+    "title": "줄글을 개조식으로 쪼개는 기술",
+    "body": "상사는 줄글을 감상할 시간이 없어요. 배경과 현황, 조치사항이 한 문장에 엉켜 있으면 요점을 찾다 지치고 말죠. 한 항목에 한 가지 사실이나 판단만 담아 똑똑 끊어내 보세요. 스크롤 없이도 핵심이 3초 만에 꽂혀요."
+  },
+  {
+    "type": "compare",
+    "title": "줄글과 개조식 행 분리 비교",
+    "analysis": "하나의 행에 한 정보만 넣어야 판단이 빨라져요.",
+    "versions": [
+      {
+        "label": "서술 줄글",
+        "mark": "프로모션을 점검했고",
+        "text": "매출 부진 원인을 파악하고자 프로모션을 점검했고 유입률이 떨어져 다음 주 타깃 쿠폰을 발행할 예정입니다."
+      },
+      {
+        "label": "개조식 분리",
+        "mark": "유입 확대를 위해",
+        "text": "ㅇ (조치) 유입 확대를 위해 타깃 쿠폰 발행 예정 (다음 주)"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "1행 1판단 원칙인가요?",
+    "statement": "한 항목에 배경과 조치사항을 모두 담아 길게 쓴다.",
+    "correct": false,
+    "explanation": "한 행에는 하나의 사실이나 판단만 담아야 즉시 파악돼요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "긴 문장을 끊는 기준은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "글자 수 100자 기준"
+      },
+      {
+        "id": "opt-2",
+        "text": "주어와 조사마다 분절"
+      },
+      {
+        "id": "opt-3",
+        "text": "배경·현황·조치 단위"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "정보 성격별로 쪼개야 상사가 상황을 쉽게 분류해요."
+  },
+  {
+    "type": "select",
+    "question": "독립 조치 항목 구간은?",
+    "segments": [
+      "서버 부하 오류 발생 ",
+      "원인 분석 완료 ",
+      "긴급 패치 배포 예정"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "후속 행동인 패치 조치는 별도 행으로 분리해야 눈에 띄어요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "개조식 작성 팁인가요?",
+    "statement": "접속사 대신 줄바꿈으로 생각의 단위를 끊어 보여줘요.",
+    "correct": true,
+    "explanation": "접속사로 잇지 말고 줄을 바꾸어야 시선이 바로 꽂혀요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "개조식은 한 행에 ___ 정보만 담아야 가독성이 높아져요.",
+    "words": ["단 하나의", "세 가지의", "가능한 많은", "복합적인"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "한 행 1판단 원칙을 지켜야 의사결정 속도가 빨라져요."
+  },
+  {
+    "type": "match",
+    "title": "정보 성격과 개조식 매칭",
+    "pairs": [
+      {
+        "left": "전년비 20% 감소",
+        "leftId": "p1-l",
+        "right": "현황 및 수치",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "서버 용량 한계",
+        "leftId": "p2-l",
+        "right": "원인 분석",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "클라우드 증설",
+        "leftId": "p3-l",
+        "right": "향후 조치",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "성격이 다른 정보는 별도 행과 레이블로 분리해 적으세요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "올바른 개조식 분리는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "ㅇ 결제 오류 3건 접수"
+      },
+      {
+        "id": "opt-2",
+        "text": "ㅇ 오류 나서 조치 중임"
+      },
+      {
+        "id": "opt-3",
+        "text": "ㅇ 오류 발생 및 복구 완료"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "현황 사실만 구체적 수치로 단독 표기해야 파악이 쉬워요."
+  },
+  {
+    "type": "order",
+    "title": "줄글을 개조식 순서로 정렬",
+    "items": [
+      "□ 2분기 보안 점검 결과",
+      "ㅇ 계정 관리 취약점 발견",
+      "ㅇ 긴급 패치 적용 완료",
+      "- 미사용 계정 50개 삭제"
+    ],
+    "itemIds": ["i-1", "i-2", "i-3", "i-4"],
+    "correct": ["i-1", "i-2", "i-3", "i-4"],
+    "explanation": "종합 결과에서 발견 현황, 조치와 세부 수치 순으로 배열해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "뭉뚱그린 줄글을 고치세요.",
+    "segments": [
+      "□ 신규 제휴 추진 ",
+      "파트너 미팅 진행 및 조율 중임 ",
+      "(4월 체결)"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["미팅 후 조율 중", "ㅇ 파트너 조건 협의"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "접속사 줄글 대신 기호와 핵심 판단으로 명확히 끊어 쓰세요."
+  }
+]

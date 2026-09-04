@@ -1,0 +1,166 @@
+[
+  {
+    "type": "reading",
+    "title": "기대 효과를 숫자로 증명하는 법",
+    "body": "'업무 효율 극대화', '고객 만족 제고' 같은 상투어는 신뢰를 떨어뜨려요. 확실한 기획서는 '현재 기준선(Before)'과 '도입 후 목표치(After)'를 대비하여 수치로 보여줍니다. 절감 시간, 비용, 오류 감소율처럼 눈에 보이는 변화를 제시해 보세요."
+  },
+  {
+    "type": "compare",
+    "title": "기대 효과 작성 방식 대조",
+    "analysis": "추상적 구호보다 전후 대비 수치가 설득돼요.",
+    "versions": [
+      {
+        "label": "상투적 구호",
+        "mark": "업무 효율성을 대폭 제고함",
+        "text": "본 시스템 도입으로 사내 업무 효율성을 대폭 제고함"
+      },
+      {
+        "label": "측정치 제시",
+        "mark": "40시간→8시간, 80% 절감",
+        "text": "월 정산 시간 단축(40시간→8시간, 80% 절감)"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "기대 효과 작성 원칙인가요?",
+    "statement": "주관적 형용사 대신 측정 가능한 정량 지표를 써야 해요.",
+    "correct": true,
+    "explanation": "기준선과 목표 수치가 있어야 사후 검증이 가능해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 구체적인 기대 효과는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "조직 내 시너지 극대화"
+      },
+      {
+        "id": "opt-2",
+        "text": "고객 감동 실현 기대"
+      },
+      {
+        "id": "opt-3",
+        "text": "검수 시간 15분 단축"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "단위와 기준선이 있는 정량 지표가 신뢰를 줍니다."
+  },
+  {
+    "type": "select",
+    "question": "상투적 표현에 해당하는 것은?",
+    "segments": [
+      "매출 20% 증가 ",
+      "업무 효율 극대화 ",
+      "납기 3일 단축 ",
+      "시너지 창출"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2", "seg-4"],
+    "explanation": "효율 극대화와 시너지는 측정 불가능한 상투어예요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "기대 효과 유형 분류하기",
+    "categories": [
+      {
+        "id": "c-1",
+        "label": "정량적 효과"
+      },
+      {
+        "id": "c-2",
+        "label": "정성적 효과"
+      }
+    ],
+    "items": [
+      {
+        "id": "it-1",
+        "text": "연간 비용 3천만원 절감",
+        "categoryId": "c-1"
+      },
+      {
+        "id": "it-2",
+        "text": "부서 간 협업 피로도 감소",
+        "categoryId": "c-2"
+      },
+      {
+        "id": "it-3",
+        "text": "오발주율 0.2%로 감소",
+        "categoryId": "c-1"
+      },
+      {
+        "id": "it-4",
+        "text": "브랜드 신뢰 이미지 제고",
+        "categoryId": "c-2"
+      }
+    ],
+    "explanation": "정량 효과를 앞세우고 정성 효과로 보완해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "기대 효과는 이전 상태인 '___'과 목표치를 함께 적어야 해요.",
+    "words": ["과거 기준선", "개인 직관", "사내 분위기"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "현재 기준선이 있어야 개선 폭을 객관적으로 입증해요."
+  },
+  {
+    "type": "true_false",
+    "question": "정성적 효과 기술 원칙인가요?",
+    "statement": "정성적 효과는 측정할 수 없으므로 무조건 삭제해야 해요.",
+    "correct": false,
+    "explanation": "관찰 가능한 행동 변화나 설문 지표로 보완할 수 있어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "보고서에 적합한 효과 표기는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "재고회전율 2회→3.5회"
+      },
+      {
+        "id": "opt-2",
+        "text": "전사 역량의 획기적 제고"
+      },
+      {
+        "id": "opt-3",
+        "text": "탁월한 고객 경험 선사"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "기준 수치와 목표 수치를 병기해야 검증이 가능해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "상투적 문구를 정량화해 고치세요.",
+    "segments": [
+      "자동화 툴을 도입하여 ",
+      "야근을 대폭 줄이고 ",
+      "업무 만족도를 높임"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["야근을 대폭 줄이고", "월 야근 10시간 단축"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "추상적 표현 대신 구체적인 단축 시간 수치를 적어요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "기대 효과 문장을 완성하세요.",
+    "tiles": [
+      "오류율을",
+      "3%에서",
+      "0.5%로 낮춰",
+      "연간 5천만원을",
+      "절감합니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "전후 대비 수치와 최종 절감액을 결합하면 완벽해요."
+  }
+]

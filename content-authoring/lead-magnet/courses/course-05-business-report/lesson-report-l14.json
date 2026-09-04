@@ -1,0 +1,150 @@
+[
+  {
+    "type": "reading",
+    "title": "숫자에 맥락을 입히는 3대 기준",
+    "body": "보고서에 '매출 5억 원 달성'이라고만 적으면 상사는 잘한 건지 망한 건지 알 수 없어요. 비교할 '기간(전년 동기 대비)', 기준 모수 대비 '비율(목표 대비 120%)', 정확한 '단위'를 함께 적어야 비로소 숫자가 의사결정 데이터가 돼요."
+  },
+  {
+    "type": "compare",
+    "title": "절대 수치와 맥락 수치 대조",
+    "analysis": "비교 기준과 비율이 있어야 성패가 보여요.",
+    "versions": [
+      {
+        "label": "단순 수치",
+        "mark": "가입자 1만 명 유치",
+        "text": "이번 마케팅 캠페인으로 가입자 1만 명 유치에 성공함."
+      },
+      {
+        "label": "맥락 수치",
+        "mark": "전월비 25% 늘어난 1만 명",
+        "text": "신규 가입자는 전월비 25% 늘어난 1만 명(목표 110%)임."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "데이터 표기 원칙인가요?",
+    "statement": "절대 수치만 크게 적을수록 상사가 성과를 더 직관적으로 파악해요.",
+    "correct": false,
+    "explanation": "기준선(분모)이 없으면 숫자의 성패와 크기를 가늠할 수 없어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "판단하기 쉬운 수치 표기는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "다운로드 3만 건 돌파"
+      },
+      {
+        "id": "opt-2",
+        "text": "전년비 15% 늘어 50억"
+      },
+      {
+        "id": "opt-3",
+        "text": "방문자 수 대폭 증가함"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "비교 기간(전년비), 증감률(15%), 절대액(50억)이 모두 담겼어요."
+  },
+  {
+    "type": "select",
+    "question": "객관적 판단을 방해하는 말은?",
+    "segments": [
+      "3분기 영업이익은 ",
+      "전년비 8% 오른 ",
+      "30억 원으로 ",
+      "엄청난 대박 실적임"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-4"],
+    "explanation": "'엄청난 대박' 같은 감정 표현 대신 기준 수치만 남겨요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "수치 표기 필수 요소 매칭",
+    "pairs": [
+      {
+        "left": "전년 동기 대비",
+        "leftId": "p-1-l",
+        "right": "비교 기간",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "목표 대비 120%",
+        "leftId": "p-2-l",
+        "right": "달성 비율",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "백만 원 / 건",
+        "leftId": "p-3-l",
+        "right": "측정 단위",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "전체 1만 명 중",
+        "leftId": "p-4-l",
+        "right": "기준 모수",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "기간, 비율, 단위, 모수가 갖춰져야 완전한 데이터가 돼요."
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 수치 표기인가요?",
+    "statement": "표나 차트의 상단이나 축에는 금액 단위를 명확히 표기해야 해요.",
+    "correct": true,
+    "explanation": "단위가 누락되면 수치 해석에 치명적인 혼선이 발생해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "비교 기준선이 빠진 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "신규 전환율 3.5% 달성"
+      },
+      {
+        "id": "opt-2",
+        "text": "전월비 2%p 오른 4%"
+      },
+      {
+        "id": "opt-3",
+        "text": "목표 5% 대비 90% 달성"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "3.5%만으로는 목표치나 이전 성과 대비 우열을 알 수 없어요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "수치 보고에는 절대값뿐 아니라 비교 ___과 기준 ___를 병기해야 해요.",
+    "words": ["기간", "비율", "감상", "추측"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1", "w-2"],
+    "explanation": "비교 기간과 달성 비율이 있어야 성과의 맥락이 드러나요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "맥락 갖춘 수치문을 만드세요.",
+    "tiles": ["상반기 매출은", "전년비 20%", "성장한", "150억 원을", "기록함"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "기간, 비교 증감률, 절대 수치 순으로 기술하면 완벽해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "기준선 없는 수치를 고치세요.",
+    "segments": ["고객 이탈률이 ", "이번 달 4%를 기록하여 ", "주의 요망됨"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["이번 달 4% 기록하여", "전월비 1.5%p 늘어"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "전월 대비 증감치를 표기해야 심각도를 객관적으로 판단해요."
+  }
+]

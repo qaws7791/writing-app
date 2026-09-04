@@ -1,0 +1,149 @@
+[
+  {
+    "type": "reading",
+    "title": "선택지를 주는 다중 대안 설계",
+    "body": "상사에게 '이 방법밖에 없습니다'라고 단일안을 내밀면 즉각 반문이 돌아와요. 2~3가지 실행 대안(A안/B안)을 세우고, '비용', '도입 기간', '리스크'라는 동일한 잣대로 비교해 보세요. 보고자가 추천하는 안이 왜 최적인지 상사가 스스로 판단하게 됩니다."
+  },
+  {
+    "type": "compare",
+    "title": "해결방안 제시 방식 대조",
+    "analysis": "단일안보다 기준별 복수 대안 비교가 좋아요.",
+    "versions": [
+      {
+        "label": "단일안 주장",
+        "mark": "솔루션을 도입하는 것만이 유일한",
+        "text": "외부 솔루션을 도입하는 것만이 유일한 해결책임"
+      },
+      {
+        "label": "대안 대조",
+        "mark": "자체 구축 대비 SaaS 도입이",
+        "text": "자체 구축 대비 SaaS 도입이 초기 비용 낮고 빠른 편임"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "해결방안 작성 원칙인가요?",
+    "statement": "기안자가 지지하는 단 하나의 안만 적는 것이 효율적이에요.",
+    "correct": false,
+    "explanation": "비교 대안이 없으면 검토가 불충분하다는 인상을 줘요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "균형 잡힌 대안 제시는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "무조건 1안 승인 요청"
+      },
+      {
+        "id": "opt-2",
+        "text": "대안별 비용·일정 비교"
+      },
+      {
+        "id": "opt-3",
+        "text": "상사 판단에 전적 위임"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "복수 대안을 객관적 지표로 비교해야 합리적이에요."
+  },
+  {
+    "type": "match",
+    "title": "대안 평가 기준 연결",
+    "pairs": [
+      {
+        "left": "경제성",
+        "leftId": "p-1-l",
+        "right": "초기 도입 비용",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "실행 속도",
+        "leftId": "p-2-l",
+        "right": "개발 배포 기간",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "확장성",
+        "leftId": "p-3-l",
+        "right": "추후 연동 편의",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "평가 기준은 비용, 일정, 확장성 등으로 설계해요."
+  },
+  {
+    "type": "select",
+    "question": "객관적 평가 기준은?",
+    "segments": ["도입 비용 ", "담당자의 직감 ", "개발 기간 ", "개인 선호도"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-1", "seg-3"],
+    "explanation": "비용과 기간처럼 측정 가능한 기준이어야 신뢰를 줘요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "대안을 비교할 때는 장점과 함께 각 안의 '___'도 밝혀야 해요.",
+    "words": ["잠재 리스크", "담당자 근속", "회식 일정"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "한계와 위험을 솔직히 밝혀야 대안의 신뢰도가 올라가요."
+  },
+  {
+    "type": "true_false",
+    "question": "대안 비교표 작성 원칙인가요?",
+    "statement": "여러 대안을 제시하더라도 기안자의 추천안을 명시해야 해요.",
+    "correct": true,
+    "explanation": "대안 나열에 그치지 않고 최종 추천 의견을 밝혀야 해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "대안 분석 시 피할 태도는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "대안별 한계점 누락"
+      },
+      {
+        "id": "opt-2",
+        "text": "구축 일정 구체화"
+      },
+      {
+        "id": "opt-3",
+        "text": "유지보수 비용 산출"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "원하는 안을 밀기 위해 리스크를 숨기면 신뢰를 잃어요."
+  },
+  {
+    "type": "error_correct",
+    "question": "편파적 해결책 서술을 고치세요.",
+    "segments": [
+      "외주 개발은 무의미하며 ",
+      "자체 구축이 유일한 정답임 ",
+      "즉시 추진 요망"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": ["외주 개발은 무의미하며", "비용과 기간 측면에서"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "감정적 배제 대신 기준별 비교로 대안의 우위를 밝혀요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "대안 추천 문장을 완성하세요.",
+    "tiles": [
+      "비용과",
+      "일정을 고려할 때",
+      "SaaS 도입이",
+      "가장 합리적인",
+      "대안입니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "평가 기준에 근거해 추천안을 제시하면 설득력이 생겨요."
+  }
+]

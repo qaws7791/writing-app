@@ -1,0 +1,139 @@
+[
+  {
+    "type": "reading",
+    "title": "제목만으로 의도를 알리는 공식",
+    "body": "'신규 사업 관련 건'처럼 모호한 제목은 상사의 클릭을 망설이게 해요. 제목은 파일명 자체로 결재 우선순위를 결정짓는 간판입니다. '주제 + 핵심 방향이나 결론 + 문서 성격'의 3요소를 결합하여 문서의 목적이 1초 만에 드러나게 설계해 보세요."
+  },
+  {
+    "type": "compare",
+    "title": "보고서 제목 가독성 비교",
+    "analysis": "핵심 방향과 문서 성격이 있어야 결재 목적이 선명해져요.",
+    "versions": [
+      {
+        "label": "모호한 제목",
+        "mark": "도입 관련 건에 대한",
+        "text": "신규 마케팅 툴 도입 관련 건에 대한 내부 검토 보고서"
+      },
+      {
+        "label": "3요소 제목",
+        "mark": "B안 도입 승인 기획서",
+        "text": "업무 생산성 향상을 위한 협업툴 B안 도입 승인 기획서"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 제목 설계인가요?",
+    "statement": "제목 끝에 '~에 관한 건'을 붙여 호기심을 끄는 것이 좋아요.",
+    "correct": false,
+    "explanation": "'~의 건'은 용건을 숨겨 상사가 보고서 성격을 파악하기 힘들어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "결재 목적이 선명한 제목은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "데이터 분석 관련 보고"
+      },
+      {
+        "id": "opt-2",
+        "text": "서버 비용 20% 절감안"
+      },
+      {
+        "id": "opt-3",
+        "text": "마케팅팀 현안 검토건"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "구체적 목표와 수치, 문서 성격이 결합되어 용건이 한눈에 보여요."
+  },
+  {
+    "type": "match",
+    "title": "제목 3요소 구성 매칭",
+    "pairs": [
+      {
+        "left": "서버 비용 절감",
+        "leftId": "p-1-l",
+        "right": "주제 및 목표",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "클라우드 전환",
+        "leftId": "p-2-l",
+        "right": "핵심 방향과 결론",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "최종 승인 기획서",
+        "leftId": "p-3-l",
+        "right": "문서 성격",
+        "rightId": "p-3-r"
+      }
+    ],
+    "explanation": "주제, 실행 방향, 문서 성격이 모여 완전한 제목이 돼요."
+  },
+  {
+    "type": "select",
+    "question": "삭제할 모호한 어구는?",
+    "segments": ["신규 앱 출시를 통한 ", "매출 증대 방안 ", "관련 검토의 건"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'관련 검토의 건' 같은 군더더기 대신 명확한 문서명을 붙여요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "제목 명명 원칙인가요?",
+    "statement": "제목 끝에 '보고서', '기획안', '제안서' 등 성격을 명시해야 해요.",
+    "correct": true,
+    "explanation": "문서 성격을 밝혀야 상사가 의사결정 수위를 즉시 가늠해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "수정이 가장 시급한 제목은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "온보딩 개선 기획안"
+      },
+      {
+        "id": "opt-2",
+        "text": "보안 취약점 패치 보고서"
+      },
+      {
+        "id": "opt-3",
+        "text": "하반기 운영 관련 건"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "'관련 건'은 무엇을 하겠다는 것인지 목적과 결론이 전혀 없어요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "좋은 제목은 주제와 문서 성격, 그리고 핵심 ___이 담겨야 해요.",
+    "words": ["방향과 결론", "개인소회", "작성일시", "부서명칭"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "핵심 방향이나 결론이 제목에 들어가야 읽기 전에 판단이 서요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 제목을 고치세요.",
+    "segments": ["고객 이탈 대응을 위한 ", "환불 절차 개편 ", "관련 사항의 건"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": ["관련 사항의 건", "실행 계획 보고서"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'관련 사항의 건'을 '실행 계획 보고서'로 바꿔 목적을 세웁니다."
+  },
+  {
+    "type": "sentence_build",
+    "question": "완성형 제목을 만드세요.",
+    "tiles": ["고객 이탈", "방지를 위한", "온보딩", "개선안", "승인 요청서"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "목표, 대상, 개선안, 승인 요청 순으로 조립하면 완벽해요."
+  }
+]

@@ -1,0 +1,165 @@
+﻿[
+  {
+    "type": "reading",
+    "title": "6단계 역순 검수법",
+    "body": "보고서를 쓸 때 흔히 맞춤법이나 띄어쓰기부터 고치기 쉽지만, 이는 큰 실수예요. 팩트나 수치가 틀리면 문서 전체를 다시 써야 하거든요. 사실, 수치, 논리 같은 거시적 뼈대부터 확인하고 맞춤법은 맨 마지막에 점검하는 역순 검수가 필수예요."
+  },
+  {
+    "type": "compare",
+    "title": "검수 우선순위 대조",
+    "analysis": "표기보다 치명적인 데이터 정합성을 먼저 확인해요.",
+    "versions": [
+      {
+        "label": "표기 우선",
+        "mark": "오탈자와 띄어쓰기부터 고치느라",
+        "text": "오탈자와 띄어쓰기부터 고치느라 예산 합계 오차를 놓침."
+      },
+      {
+        "label": "사실 우선",
+        "mark": "매출 수치와 계약 일자 검증 후",
+        "text": "매출 수치와 계약 일자 검증 후 마지막에 오탈자를 점검함."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "문서 검수 순서 원칙은?",
+    "statement": "글을 완성한 직후 가장 먼저 맞춤법과 폰트 크기부터 교정해야 해요.",
+    "correct": false,
+    "explanation": "사실과 수치 오류가 더 치명적이므로 거시 검수부터 시작해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 먼저 검수할 항목은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "핵심 데이터 및 사실 관계"
+      },
+      {
+        "id": "opt-2",
+        "text": "문장의 맞춤법과 띄어쓰기"
+      },
+      {
+        "id": "opt-3",
+        "text": "줄 간격 및 글자 크기"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "사실과 숫자가 틀리면 다른 수정 사항이 모두 무의미해져요."
+  },
+  {
+    "type": "categorize",
+    "title": "검수 단계별 대상 분류",
+    "categories": [
+      {
+        "id": "cat-1",
+        "label": "거시 검수"
+      },
+      {
+        "id": "cat-2",
+        "label": "미시 검수"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "계약 금액 및 산출 근거",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-2",
+        "text": "주장과 근거의 인과관계",
+        "categoryId": "cat-1"
+      },
+      {
+        "id": "item-3",
+        "text": "피동형 및 번역투 문장",
+        "categoryId": "cat-2"
+      },
+      {
+        "id": "item-4",
+        "text": "외래어 및 오탈자 표기",
+        "categoryId": "cat-2"
+      }
+    ],
+    "explanation": "팩트와 논리를 먼저 다듬은 뒤 표현과 표기를 정제해요."
+  },
+  {
+    "type": "order",
+    "title": "검수 우선순위 정렬",
+    "items": [
+      "1단계 사실과 데이터 검증",
+      "2단계 주장과 논리 점검",
+      "3단계 두괄식 위계 구조화",
+      "4단계 문장 표현 윤문",
+      "5단계 맞춤법과 표기 교정"
+    ],
+    "itemIds": ["ord-1", "ord-2", "ord-3", "ord-4", "ord-5"],
+    "correct": ["ord-1", "ord-2", "ord-3", "ord-4", "ord-5"],
+    "explanation": "사실에서 시작해 논리, 구조, 표현, 맞춤법 순으로 좁혀가요."
+  },
+  {
+    "type": "true_false",
+    "question": "수치 데이터 검수 원칙은?",
+    "statement": "합계와 백분율은 원본 표와 계산기를 통해 직접 재검증해야 해요.",
+    "correct": true,
+    "explanation": "수치 오류는 신뢰도를 단번에 무너뜨리므로 교차 검증해요."
+  },
+  {
+    "type": "select",
+    "question": "가장 먼저 바로잡을 구간은?",
+    "segments": [
+      "세미나 참가자는 ",
+      "80명 참석(달성률 90%), ",
+      "원활히 종료되었읍니다."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "수치 계산 왜곡을 단순 오탈자보다 먼저 바로잡아야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "문서 검수는 미시적인 표기보다 치명적인 ___ 검증이 선행되어야 해요.",
+    "words": ["사실", "감정", "취향", "문체"],
+    "wordIds": ["w1", "w2", "w3", "w4"],
+    "answer": ["w1"],
+    "explanation": "사실 관계가 정확해야 문서의 전체 신뢰성이 보장돼요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "논리 단계에서 점검할 점은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "폰트 크기가 일정한가"
+      },
+      {
+        "id": "opt-2",
+        "text": "근거가 결론을 뒷받침하나"
+      },
+      {
+        "id": "opt-3",
+        "text": "띄어쓰기가 규범에 맞나"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "주장과 근거 사이의 인과관계와 타당성을 확인해야 해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "치명적 오류를 고쳐 보세요.",
+    "segments": [
+      "총 예산 1,000만 원 중 ",
+      "소진율 40%로 500만 원 ",
+      "사업을 완료했습니다."
+    ],
+    "segmentIds": ["ec-s1", "ec-s2", "ec-s3"],
+    "correctSegment": "ec-s2",
+    "fixes": ["50%인 500만 원", "대략 500만 원"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "1,000만 원 중 500만 원은 50%이므로 수치 왜곡을 고쳐요."
+  }
+]

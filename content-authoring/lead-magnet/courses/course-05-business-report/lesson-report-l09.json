@@ -1,0 +1,148 @@
+[
+  {
+    "type": "reading",
+    "title": "불완전 명사 종결을 완결어로",
+    "body": "보고서 말미의 '~요망', '~바람', '~여부'는 성의 없어 보이고 읽는 사람에게 명령조의 불쾌감을 줄 수 있어요. '~요청함', '~바람(명사형)', '~확인 필요'처럼 완결된 명사형 어미나 공적 서술어로 다듬으면, 문서의 신뢰도와 전문성이 단번에 올라갑니다."
+  },
+  {
+    "type": "compare",
+    "title": "불완전 종결과 공적 완결 비교",
+    "analysis": "명확한 종결어로 책임과 예의를 갖춰요.",
+    "versions": [
+      {
+        "label": "불완전 종결",
+        "mark": "제출 요망",
+        "text": "ㅇ 부서별 취합 자료 17시까지 제출 요망"
+      },
+      {
+        "label": "공적 완결",
+        "mark": "제출 요청함",
+        "text": "ㅇ 부서별 취합 자료 17시까지 제출 요청함"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "종결어 작성 원칙인가요?",
+    "statement": "'~요망'은 공적 보고서에서 가장 권장되는 종결어이다.",
+    "correct": false,
+    "explanation": "'~요망'은 고압적이고 불완전하므로 '~요청함'을 써요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "'참석 요망'의 바른 대체 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "참석 바람"
+      },
+      {
+        "id": "opt-2",
+        "text": "참석 요함"
+      },
+      {
+        "id": "opt-3",
+        "text": "참석 요청함"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "주체적인 행동 요청을 담은 '~요청함'이 격식에 맞아요."
+  },
+  {
+    "type": "select",
+    "question": "불완전한 종결 구간은?",
+    "segments": ["□ 회의 안건: ", "신규 채용 심사, ", "적격자 통과 여부"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "'통과 여부' 대신 '통과 여부 심의'로 완결해야 해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "완결형 명사 종결 팁인가요?",
+    "statement": "'~함', '~됨' 등 완결된 어미를 쓰면 문장이 또렷해져요.",
+    "correct": true,
+    "explanation": "명사형 종결어미 '-(으)ㅁ'은 공식 보고의 표준이에요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "'승인 바람'은 공적 문서에서 '승인 ___'으로 정돈해요.",
+    "words": ["요청함", "바래요", "원해요", "주세요"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "상급자나 타 부서에는 정중한 '~요청함'이 적절해요."
+  },
+  {
+    "type": "match",
+    "title": "불완전 종결과 공적 표현 매칭",
+    "pairs": [
+      {
+        "left": "자료 제출 요망",
+        "leftId": "p1-l",
+        "right": "자료 제출 요청함",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "타당성 여부",
+        "leftId": "p2-l",
+        "right": "타당성 검토 완료",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "적극 협조 바람",
+        "leftId": "p3-l",
+        "right": "협조를 당부드림",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "명사 나열을 동작 중심의 완결형으로 전환하세요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 신뢰감 있는 종결 표현은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "개선책 마련함"
+      },
+      {
+        "id": "opt-2",
+        "text": "개선책 마련 요망"
+      },
+      {
+        "id": "opt-3",
+        "text": "개선책 바람"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "'~함'으로 끝맺어 담당자의 조치 완료를 명확히 해요."
+  },
+  {
+    "type": "order",
+    "title": "공적 보고서 완결 문장 순서",
+    "items": [
+      "□ 8월 마케팅 성과 보고",
+      "ㅇ 유입 고객 20% 증가 달성",
+      "ㅇ 우수 고객 전환율 개선됨",
+      "- 추가 예산 지원 승인 요청함"
+    ],
+    "itemIds": ["i-1", "i-2", "i-3", "i-4"],
+    "correct": ["i-1", "i-2", "i-3", "i-4"],
+    "explanation": "보고 목적에서 성과 사실, 최종 요청 순으로 완결해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "어색한 종결어를 고치세요.",
+    "segments": [
+      "ㅇ 기획안 검토 결과: ",
+      "예산 증액 승인 요망, ",
+      "즉시 집행 예정"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["승인 요망", "승인을 건의함"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "공식 상신 보고에서는 '건의함'이나 '요청함'을 써요."
+  }
+]

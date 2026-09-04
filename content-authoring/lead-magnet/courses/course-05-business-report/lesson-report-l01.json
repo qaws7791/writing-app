@@ -1,0 +1,150 @@
+[
+  {
+    "type": "reading",
+    "title": "보고서는 읽는 글이 아닌 판단 도구",
+    "body": "상사는 보고서를 감상하지 않아요. 수많은 결재 중 '승인할까, 반려할까, 무엇을 고를까'를 판단할 뿐이죠. 내가 조사한 지식을 나열하지 말고, 상사의 의사결정 질문에 3초 만에 답하는 비즈니스 인터페이스로 문서를 설계해 보세요."
+  },
+  {
+    "type": "compare",
+    "title": "문서 인터페이스 관점 비교",
+    "analysis": "원하는 결정 행동을 첫 줄에 명시해야 검토가 빨라져요.",
+    "versions": [
+      {
+        "label": "서술 나열형",
+        "mark": "조사하여 정리했습니다",
+        "text": "신규 협업툴 기능과 요금제를 장단점별로 조사하여 정리했습니다."
+      },
+      {
+        "label": "결정 지원형",
+        "mark": "도입 승인 요청",
+        "text": "신규 협업툴 도입 승인 요청의 건으로 A안 채택을 제안합니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "보고서 목적에 맞나요?",
+    "statement": "보고서는 작성자가 공부한 조사 과정을 빠짐없이 기록해야 해요.",
+    "correct": false,
+    "explanation": "보고서는 지식 저장이 아닌 독자의 빠른 의사결정이 목적이에요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "상사의 판단을 돕는 첫 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "A안 채택 승인을 요청합니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "협업툴 역사를 조사했습니다"
+      },
+      {
+        "id": "opt-3",
+        "text": "다양한 제품군이 존재합니다"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "상사가 내려야 할 최종 판단 행동을 직관적으로 제시해야 해요."
+  },
+  {
+    "type": "match",
+    "title": "상사 질문과 문서 구성 매칭",
+    "pairs": [
+      {
+        "left": "내가 뭘 결정해?",
+        "leftId": "p1-l",
+        "right": "요청 사항 및 대안",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "왜 해야 하는데?",
+        "leftId": "p2-l",
+        "right": "도입 배경과 기대효과",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "언제 끝나?",
+        "leftId": "p3-l",
+        "right": "추진 일정과 마감",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "상사가 던질 핵심 질문에 대응하도록 항목을 배치하세요."
+  },
+  {
+    "type": "select",
+    "question": "의사결정 요구 표현은?",
+    "segments": [
+      "시장 조사 결과 ",
+      "3개 후보 중 ",
+      "B안 승인을 요청합니다 ",
+      "참고 바랍니다"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "단순 참고가 아닌 명확한 승인 요구가 드러나야 인터페이스가 돼요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "올바른 인터페이스인가요?",
+    "statement": "상사가 해야 할 행동(승인/반려/선택)을 문서 상단에 명시해요.",
+    "correct": true,
+    "explanation": "필요한 조치를 먼저 밝혀야 문서 검토 방향이 즉시 잡혀요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "보고서는 지식 저장이 아니라 상사의 ___을 지원하는 도구예요.",
+    "words": ["의사결정", "단순암기", "감정공감", "자료정리"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "보고서는 상사의 승인과 선택을 지원하는 비즈니스 인터페이스예요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "인터페이스 관점의 보고 방식은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "조사한 모든 수치를 나열한다"
+      },
+      {
+        "id": "opt-2",
+        "text": "결정 옵션 2개를 제시한다"
+      },
+      {
+        "id": "opt-3",
+        "text": "시간 순서대로 일기를 쓴다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "비교 가능한 선택지를 압축 제공해야 판단 시간이 대폭 줄어요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 보고 문장을 고치세요.",
+    "segments": ["협업툴 도입 건 ", "확인 바랍니다 ", "세부안 첨부"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["확인 바랍니다", "B안 승인 요청"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "단순 확인 대신 승인 요청으로 목적을 못 박아야 해요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "결정 지원형 첫 문장을 만드세요.",
+    "tiles": [
+      "팀 생산성",
+      "향상을 위한",
+      "협업툴 B안",
+      "도입 승인을",
+      "요청합니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "목적, 대상, 원하는 결정 행동 순으로 조립하면 명쾌해요."
+  }
+]

@@ -1,0 +1,150 @@
+[
+  {
+    "type": "reading",
+    "title": "핑퐁을 없애는 5열 실행 조치표",
+    "body": "보고서 말미의 실행 계획이 흐지부지되는 이유는 '누가 언제까지 무엇을 낼지' 정하지 않았기 때문이에요. 조치 항목, 주관 담당자, 협조 부서, 마감 기한, 최종 산출물의 5개 열로 조치표를 짜면 부서 간 핑퐁 없이 실행력이 100% 보장돼요."
+  },
+  {
+    "type": "compare",
+    "title": "서술 계획과 5열 조치표 대조",
+    "analysis": "주체와 마감, 산출물이 있어야 실행돼요.",
+    "versions": [
+      {
+        "label": "모호한 서술",
+        "mark": "유관부서가 협력하여 개선함",
+        "text": "신규 결제 오류는 유관부서가 협력하여 개선함."
+      },
+      {
+        "label": "5열 조치표",
+        "mark": "서버팀(김과장) 5/20 패치",
+        "text": "조치: 결제 안정화 / 주관: 서버팀(김과장) 5/20 패치 배포"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "조치표 작성 원칙인가요?",
+    "statement": "마감 시점은 '조속히'처럼 유연하게 쓰는 게 좋아요.",
+    "correct": false,
+    "explanation": "모호한 기한은 실행을 미루게 하므로 정확한 날짜를 못 박아야 해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "핑퐁을 막는 명확한 주관자는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "개발 부서 일동"
+      },
+      {
+        "id": "opt-2",
+        "text": "유관 부서 및 TFT"
+      },
+      {
+        "id": "opt-3",
+        "text": "플랫폼팀 김 책임"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "부서명과 실명 담당자를 단일 주체로 지정해야 책임이 생겨요."
+  },
+  {
+    "type": "select",
+    "question": "검증 가능한 산출물은?",
+    "segments": [
+      "적극적 검토 ",
+      "개선안 마련 ",
+      "결제 개편 기획서 v1 ",
+      "업무 협의"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "'기획서 v1'처럼 물리적으로 확인 가능한 문서를 산출물로 적어요.",
+    "layout": "inline"
+  },
+  {
+    "type": "match",
+    "title": "5열 조치표 구성 요소 매칭",
+    "pairs": [
+      {
+        "left": "결제 오류 패치",
+        "leftId": "p-1-l",
+        "right": "조치 항목",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "서버팀(이대리)",
+        "leftId": "p-2-l",
+        "right": "주관 부서·담당",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "2026-05-30",
+        "leftId": "p-3-l",
+        "right": "완료 기한",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "결과 보고서",
+        "leftId": "p-4-l",
+        "right": "최종 산출물",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "조치 내용, 담당자, 기한, 산출물이 톱니바퀴처럼 맞물려야 해요."
+  },
+  {
+    "type": "true_false",
+    "question": "5열 조치표의 장점인가요?",
+    "statement": "산출물을 명시하면 업무 완료 여부를 객관적으로 검증할 수 있어요.",
+    "correct": true,
+    "explanation": "결과 문서나 배포 파일이 있어야 작업 완료를 투명하게 확인해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "협조 부서를 명시하는 이유는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "회의 참석자를 늘리려고"
+      },
+      {
+        "id": "opt-2",
+        "text": "지원 범위를 사전 합의하려고"
+      },
+      {
+        "id": "opt-3",
+        "text": "책임을 분산시키려고"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "주관 부서 외에 지원받을 범위를 명확히 해 일정 차질을 막아요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "실행표에는 주관 담당자 외에도 마감 ___과 최종 ___을 반드시 적어야 해요.",
+    "words": ["기한", "산출물", "감정", "변명"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1", "w-2"],
+    "explanation": "마감 기한과 산출물이 명시되어야 실제 업무가 종결될 수 있어요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "조치표 한 줄을 조립하세요.",
+    "tiles": ["보안 패치를", "인프라팀이", "5월 15일까지", "배포 완료함"],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4"],
+    "correct": ["t-1", "t-2", "t-3", "t-4"],
+    "explanation": "조치 항목, 담당 주체, 완료 기한, 완결 행동 순으로 배치하세요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 마감 표현을 고치세요.",
+    "segments": ["UI 개선안 배포 / ", "디자인팀 박 대리 / ", "추후 일정 협의"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["추후 일정 협의", "6/10 정기배포"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "'추후 협의' 대신 확정된 배포 날짜를 명시해야 실행이 담보돼요."
+  }
+]

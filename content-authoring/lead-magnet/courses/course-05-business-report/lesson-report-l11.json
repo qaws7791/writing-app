@@ -1,0 +1,178 @@
+[
+  {
+    "type": "reading",
+    "title": "팩트와 생각을 가르는 4단계 보고",
+    "body": "상사가 '이게 데이터야, 자네 생각이야?'라고 묻는다면 층위가 섞인 거예요. 객관적 사실(Fact), 원인 분석(Analysis), 작성자 제안(Opinion), 조직의 조치(Decision)를 문장 단위로 명확히 분리해야 데이터의 신뢰가 생겨요."
+  },
+  {
+    "type": "compare",
+    "title": "사실과 의견의 분리 서술",
+    "analysis": "팩트와 주관적 판단을 분리해야 왜곡이 없어요.",
+    "versions": [
+      {
+        "label": "혼합 서술",
+        "mark": "실적이 부진하여 실패했습니다",
+        "text": "신제품 판매량이 300대에 그쳐 실적이 부진하여 실패했습니다."
+      },
+      {
+        "label": "층위 분리",
+        "mark": "목표 대비 30% 수준입니다",
+        "text": "신제품 판매량은 300대로 집계되어 목표 대비 30% 수준입니다."
+      }
+    ]
+  },
+  {
+    "type": "categorize",
+    "title": "보고서 문장의 정보 층위 분류",
+    "categories": [
+      {
+        "id": "c-fact",
+        "label": "사실(Fact)"
+      },
+      {
+        "id": "c-op",
+        "label": "의견·해석"
+      }
+    ],
+    "items": [
+      {
+        "id": "i-1",
+        "text": "지난달 이탈률 12%",
+        "categoryId": "c-fact"
+      },
+      {
+        "id": "i-2",
+        "text": "사용법이 다소 복잡함",
+        "categoryId": "c-op"
+      },
+      {
+        "id": "i-3",
+        "text": "경쟁사 가격 10% 인하",
+        "categoryId": "c-fact"
+      },
+      {
+        "id": "i-4",
+        "text": "마케팅 소구점 개선 필요",
+        "categoryId": "c-op"
+      }
+    ],
+    "explanation": "검증 가능한 수치는 사실, 주관적 평가는 의견으로 분리해요."
+  },
+  {
+    "type": "true_false",
+    "question": "팩트 서술 원칙인가요?",
+    "statement": "보고서에서는 사실과 주관적 견해를 한 문장으로 묶는 게 좋아요.",
+    "correct": false,
+    "explanation": "두 정보가 섞이면 상사가 팩트를 왜곡해 인지할 위험이 커져요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "순수한 사실만 담은 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "고객 반응이 매우 뜨겁습니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "첫 주 5천 회 다운로드"
+      },
+      {
+        "id": "opt-3",
+        "text": "성공 가능성이 높아 보입니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "측정 가능한 객관적 수치와 일자만 제시해야 순수 사실이에요."
+  },
+  {
+    "type": "select",
+    "question": "작성자의 주관적 판단 구간은?",
+    "segments": [
+      "1분기 매출은 4억 원이며, ",
+      "전년 대비 15% 늘어 ",
+      "기대 이상의 훌륭한 성과임"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-3"],
+    "explanation": "훌륭한 성과는 감정적 형용사이므로 의견에 해당해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "4단계 층위 규칙인가요?",
+    "statement": "사실을 먼저 적고 그 뒤에 해석과 제안을 덧붙여야 설득력이 커져요.",
+    "correct": true,
+    "explanation": "탄탄한 사실 뼈대 위에 해석을 얹어야 상사가 납득할 수 있어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "조직의 결정을 담은 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "서버 장애 3건 발생"
+      },
+      {
+        "id": "opt-2",
+        "text": "개발팀 피로도가 큼"
+      },
+      {
+        "id": "opt-3",
+        "text": "서버 증설안 최종 승인"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "승인, 확정, 채택 등 조직 차원의 확정 조치는 결정에 속해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "객관적 수치인 ___ 위에 작성자의 제안인 ___을 분리해 얹어야 해요.",
+    "words": ["사실", "의견", "추측", "소문"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1", "w-2"],
+    "explanation": "사실을 토대로 의견을 분리 배치해야 왜곡 없는 판단이 가능해요."
+  },
+  {
+    "type": "match",
+    "title": "문장과 정보 층위 매칭",
+    "pairs": [
+      {
+        "left": "전환율 2.1% 기록",
+        "leftId": "p-1-l",
+        "right": "사실(Fact)",
+        "rightId": "p-1-r"
+      },
+      {
+        "left": "결제 UI 이탈이 원인",
+        "leftId": "p-2-l",
+        "right": "해석(Analysis)",
+        "rightId": "p-2-r"
+      },
+      {
+        "left": "간편결제 도입 제안",
+        "leftId": "p-3-l",
+        "right": "의견(Opinion)",
+        "rightId": "p-3-r"
+      },
+      {
+        "left": "3분기 예산 1억 배정",
+        "leftId": "p-4-l",
+        "right": "결정(Decision)",
+        "rightId": "p-4-r"
+      }
+    ],
+    "explanation": "사실, 해석, 의견, 결정의 4단계 위계를 명확히 식별해 보세요."
+  },
+  {
+    "type": "error_correct",
+    "question": "주관적 수식어를 팩트로 고치세요.",
+    "segments": ["고객센터 문의가 ", "말도 안 되게 폭증하여 ", "업무가 마비됨"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["엄청나게 폭증하여", "3배 증가하여"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "감정적 과장 대신 '3배 증가'처럼 측정 가능한 배수로 바꿔요."
+  }
+]

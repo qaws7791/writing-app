@@ -1,0 +1,152 @@
+﻿[
+  {
+    "type": "reading",
+    "title": "1-Pager 요약의 힘",
+    "body": "바쁜 최고결정권자는 긴 첨부 문서를 열어볼 시간이 없어요. 단 1장만 읽고도 '승인'할지 '반려'할지 결정할 수 있어야 진짜 1-Pager예요. 1문장 결론, 3개 이내 핵심 근거, 그리고 지금 당장 필요한 결정 사항만 압축해 담아 보세요."
+  },
+  {
+    "type": "compare",
+    "title": "1-Pager 결론 표현 대조",
+    "analysis": "배경 서술 대신 안건과 요구 사항을 첫머리에 씁니다.",
+    "versions": [
+      {
+        "label": "배경 줄글",
+        "mark": "여러 방안을 검토해 왔습니다",
+        "text": "최근 시장 경쟁이 심화됨에 따라 여러 방안을 검토해 왔습니다."
+      },
+      {
+        "label": "1문장 결론",
+        "mark": "5천만 원 예산 승인을 요청합니다",
+        "text": "B2B 신규 요금제 출시를 제안하며, 5천만 원 예산 승인을 요청합니다."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "1-Pager 작성 원칙은?",
+    "statement": "1-Pager는 첨부 문서를 반드시 함께 읽어야 이해되도록 써야 해요.",
+    "correct": false,
+    "explanation": "첨부 없이 1장만으로 독자적 의사결정이 가능해야 해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "적절한 핵심 근거 개수는?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "가능한 많은 7개"
+      },
+      {
+        "id": "opt-2",
+        "text": "형식적인 1개"
+      },
+      {
+        "id": "opt-3",
+        "text": "기억하기 쉬운 3개 이내"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "핵심 근거는 3개 이내일 때 상사의 인지 부담이 최소화돼요."
+  },
+  {
+    "type": "match",
+    "title": "1-Pager 3단 공식 매칭",
+    "pairs": [
+      {
+        "left": "문서 서두",
+        "leftId": "p1-l",
+        "right": "1문장 결론",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "본문 전개",
+        "leftId": "p2-l",
+        "right": "3대 핵심 근거",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "문서 결미",
+        "leftId": "p3-l",
+        "right": "필수 조치 요청",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "결론, 3대 근거, 요청 사항이 한 장에 완결되어야 해요."
+  },
+  {
+    "type": "true_false",
+    "question": "1-Pager 가독성 원칙은?",
+    "statement": "장황한 줄글 대신 불릿포인트와 핵심 키워드로 시각화해요.",
+    "correct": true,
+    "explanation": "개조식 불릿을 쓰면 3초 안에 핵심 요지를 훑어볼 수 있어요."
+  },
+  {
+    "type": "select",
+    "question": "1-Pager에서 쳐낼 사족은?",
+    "segments": [
+      "신규 결제 수단 도입 건, ",
+      "담당자로서 고민이 깊었으나, ",
+      "도입 시 이탈률 12% 감소 예상."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "담당자의 개인적 소회나 감정은 과감히 지워야 압축돼요.",
+    "layout": "inline"
+  },
+  {
+    "type": "order",
+    "title": "1-Pager 배치 순서 정렬",
+    "items": [
+      "핵심 헤드라인 및 의사결정 요청",
+      "추진 타당성 및 3대 핵심 근거",
+      "예상 기대 효과 및 소요 예산",
+      "승인 후 차주 실행 마일스톤"
+    ],
+    "itemIds": ["ord-1", "ord-2", "ord-3", "ord-4"],
+    "correct": ["ord-1", "ord-2", "ord-3", "ord-4"],
+    "explanation": "결론 요청에서 시작해 근거와 효과, 실행 일정 순으로 압축해요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "1-Pager의 핵심 근거는 모호한 형용사 대신 객관적 ___를 제시해야 해요.",
+    "words": ["데이터", "의견", "자신감", "열정"],
+    "wordIds": ["w1", "w2", "w3", "w4"],
+    "answer": ["w1"],
+    "explanation": "구체적 수치와 근거 데이터가 있어야 반박 없는 승인을 받아요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "가장 확실한 결미 요청문은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "참고하시기 바랍니다"
+      },
+      {
+        "id": "opt-2",
+        "text": "예산 1억 원 승인 요청"
+      },
+      {
+        "id": "opt-3",
+        "text": "긍정적 검토 부탁드립니다"
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "상사가 내려야 할 승인 액션과 기한을 명확히 명시해야 해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "사족 문장을 압축해 보세요.",
+    "segments": [
+      "금번 신사업은 ",
+      "많은 논의 끝에 진행되었고 ",
+      "영업익 15% 개선이 기대됩니다."
+    ],
+    "segmentIds": ["ec-s1", "ec-s2", "ec-s3"],
+    "correctSegment": "ec-s2",
+    "fixes": ["초기 투자 2억 원에", "매우 치열하게 검토되어"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-1",
+    "explanation": "과정 서술을 빼고 구체적 투자액이나 핵심 조건을 못 박아요."
+  }
+]

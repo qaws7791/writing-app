@@ -1,0 +1,161 @@
+[
+  {
+    "type": "reading",
+    "title": "문제점 서술의 2가지 핵심",
+    "body": "보고서에서 '매출이 줄었다'는 증상일 뿐 원인이 아니에요. 진짜 문제는 '목표 대비 현재 상태의 격차(Gap)'이고, 해결책은 그 틈을 만든 '근본 원인'에서 나옵니다. 겉으로 드러난 현상과 본질적 원인을 분리해 숫자로 격차를 정의해 보세요."
+  },
+  {
+    "type": "compare",
+    "title": "문제점 정의 방식 대조",
+    "analysis": "증상 호소 대신 목표 대비 격차를 숫자로 밝혀요.",
+    "versions": [
+      {
+        "label": "단순 증상",
+        "mark": "고객 불만이 크게 늘어",
+        "text": "최근 고객 불만이 크게 늘어 사태가 심각함"
+      },
+      {
+        "label": "격차 정의",
+        "mark": "목표 대비 12%p 초과",
+        "text": "응답 지연으로 이탈률이 목표 대비 12%p 초과"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "문제점 작성 원칙인가요?",
+    "statement": "매출 감소는 원인이 아니라 드러난 증상이에요.",
+    "correct": true,
+    "explanation": "현상 이면에 숨은 프로세스 결함을 찾아야 원인이 돼요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "격차(Gap)가 명확한 서술은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "품질 관리가 다소 미흡함"
+      },
+      {
+        "id": "opt-2",
+        "text": "업무 부하가 심각한 수준임"
+      },
+      {
+        "id": "opt-3",
+        "text": "납기 준수율 15% 미달"
+      }
+    ],
+    "correct": "opt-3",
+    "explanation": "목표 기준선 대비 결손 수치를 명확히 제시했어요."
+  },
+  {
+    "type": "categorize",
+    "title": "증상과 원인 분류하기",
+    "categories": [
+      {
+        "id": "c-1",
+        "label": "증상(현상)"
+      },
+      {
+        "id": "c-2",
+        "label": "원인(근본 요인)"
+      }
+    ],
+    "items": [
+      {
+        "id": "it-1",
+        "text": "이탈률 30% 증가",
+        "categoryId": "c-1"
+      },
+      {
+        "id": "it-2",
+        "text": "결제 UI 버튼 오류",
+        "categoryId": "c-2"
+      },
+      {
+        "id": "it-3",
+        "text": "고객 클레임 폭증",
+        "categoryId": "c-1"
+      },
+      {
+        "id": "it-4",
+        "text": "CS 상담 인력 부족",
+        "categoryId": "c-2"
+      }
+    ],
+    "explanation": "현상과 원인을 구분해야 엉뚱한 처방을 막을 수 있어요."
+  },
+  {
+    "type": "select",
+    "question": "원인을 지목한 구간은?",
+    "segments": [
+      "배송 문의가 급증하여 ",
+      "분류 장비 노후화로 ",
+      "출고율이 떨어졌음"
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correct": ["seg-2"],
+    "explanation": "문의 급증은 결과이며 장비 노후화가 근본 원인이에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "원인 분석 원칙인가요?",
+    "statement": "증상이 심각할수록 원인을 분석할 필요 없이 즉시 조치해요.",
+    "correct": false,
+    "explanation": "원인 없는 조치는 땜질 처방에 그쳐 재발을 부릅니다."
+  },
+  {
+    "type": "fill_blank",
+    "template": "문제점은 '___ 대비 현재 수준의 격차'로 적어야 선명해요.",
+    "words": ["기준 목표", "개인 감정", "과거 습관"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "목표치가 있어야 현재 상태의 부족분이 객관화돼요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "원인 분석이 구체적인 것은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "결재 지연으로 납기 미달"
+      },
+      {
+        "id": "opt-2",
+        "text": "직원들의 소통 미흡"
+      },
+      {
+        "id": "opt-3",
+        "text": "전반적 분위기 쇄신 필요"
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "어느 프로세스에서 지연이 생겼는지 병목을 밝혔어요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 증상 서술을 고치세요.",
+    "segments": ["앱 다운로드 후 ", "고객 만족도가 낮아 ", "개선이 요구됨"],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-2",
+    "fixes": ["고객 만족도가 낮아", "가입 이탈률 40%로"],
+    "fixIds": ["fix-1", "fix-2"],
+    "correctFix": "fix-2",
+    "explanation": "주관적 불만 대신 가입 이탈률이라는 측정치를 써요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "문제점 격차 문장을 완성하세요.",
+    "tiles": [
+      "분기 매출이",
+      "목표 대비",
+      "15% 미달하여",
+      "결제 개선이",
+      "시급합니다"
+    ],
+    "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+    "explanation": "목표 대비 결손 수치와 후속 과제를 결합하여 전달해요."
+  }
+]
