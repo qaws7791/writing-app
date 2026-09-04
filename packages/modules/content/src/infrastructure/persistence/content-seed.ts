@@ -229,7 +229,7 @@ export async function validateSeed(input?: {
 
   const issues = collectAuthoringIssuesFromSeedCourses(courses, {
     courseIds: input.authoringCourseIds,
-  })
+  }).filter((issue) => issue.severity === "error")
   if (issues.length > 0) {
     const summary = issues
       .map((issue) => `${issue.path}: ${issue.message}`)

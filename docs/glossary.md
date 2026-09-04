@@ -6,8 +6,9 @@
 - 관리자: 어드민에서 커리큘럼과 사용자를 관리하는 owner 역할의 사용자.
 - owner: 현재 지원하는 유일한 관리자 역할.
 - 콘텐츠: 코스, 유닛, 레슨과 학습 스텝으로 이루어진 학습 자료.
-- 집필 품질 계약: 스텝 필드 상·하한, 레슨 구조, 템플릿 배치, 정답 분포를 코드로 강제하는 Zod 계약. [`packages/shared/contracts/src/content/authoring/`](../../packages/shared/contracts/src/content/authoring/)이 소유한다.
-- 작업 지시서: 코스 집필 시 레슨별 `template` 또는 `layout`, `lessonId`, 스텝 수를 담은 `work-orders.json`. 검증 CLI가 레슨 JSON과 대조한다.
+- 집필 품질 계약: 스텝 필드 상·하한, 레슨 구조, 정답 분포, 스텝 의미 품질(앵커, 오답 개수, 위치 편중, 톤, 브랜드 금지)을 오류·경고로 강제하는 계약. [`packages/shared/contracts/src/content/authoring/`](../../packages/shared/contracts/src/content/authoring/)이 소유한다.
+- 레슨 브리프: 레슨 하나의 정체성(`title`, `thesis`), 판정 축, 장면, 대립쌍, 오답 규칙, 마무리 문장을 담은 집필 입력. `work-orders.json`의 항목 하나가 브리프 하나다. 검증 CLI가 브리프 목록과 레슨 JSON을 대조한다.
+- 권장 배치 템플릿: 스텝 유형 조합의 출발점인 60종 배치. 검증기는 순서를 강제하지 않는다.
 - 커리큘럼 버전: 학습자가 시작한 콘텐츠 구성을 일관되게 유지하기 위한 버전 단위.
 - 학습 진행: 학습자의 현재 위치, 답안, 완료 상태와 활동 기록.
 - 학습 날짜 경계: 학습 활동일과 일일 한도를 판정하는 플랫폼 논리 날짜의 기준 시간대.

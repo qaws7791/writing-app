@@ -9,6 +9,7 @@ type SeedLesson = {
 }
 
 type SeedUnit = {
+  id: string
   lessons: SeedLesson[]
 }
 
@@ -40,6 +41,7 @@ export async function mergeAuthoringIntoSeed(input: {
         {
           message: "시드 파일이 없습니다.",
           path: input.seedPath,
+          severity: "error",
         },
       ],
       ok: false,
@@ -54,6 +56,7 @@ export async function mergeAuthoringIntoSeed(input: {
         {
           message: `시드에서 코스를 찾을 수 없습니다: ${input.courseId}`,
           path: input.seedPath,
+          severity: "error",
         },
       ],
       ok: false,
@@ -80,6 +83,7 @@ export async function mergeAuthoringIntoSeed(input: {
             {
               message: "레슨 루트가 배열이 아닙니다.",
               path: lessonPath,
+              severity: "error",
             },
           ],
           ok: false,
@@ -95,7 +99,8 @@ export async function mergeAuthoringIntoSeed(input: {
   if (input.validateAuthoring !== false) {
     const issues = collectAuthoringIssuesFromSeedCourses(seed, {
       courseIds: [input.courseId],
-    })
+      lessonIds: mergedLessonIds,
+    }).filter((issue) => issue.severity === "error")
     if (issues.length > 0) {
       return { issues, ok: false }
     }

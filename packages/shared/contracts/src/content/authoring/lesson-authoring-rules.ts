@@ -1,14 +1,13 @@
 import type { LessonStepDto } from "#contracts/content/course"
 import { collectAnswerDistributionIssues } from "#contracts/content/authoring/answer-distribution"
+import type { LessonAuthoringIssue } from "#contracts/content/authoring/authoring-issue"
 import {
   authoringLimits,
   forbiddenLessonClosingStepTypes,
 } from "#contracts/content/authoring/authoring-limits"
+import { collectLessonQualityIssues } from "#contracts/content/authoring/lesson-quality-rules"
 
-export type LessonAuthoringIssue = Readonly<{
-  message: string
-  path: string
-}>
+export type { LessonAuthoringIssue } from "#contracts/content/authoring/authoring-issue"
 
 export function collectLessonAuthoringIssues(input: {
   readonly lessonId: string
@@ -24,6 +23,7 @@ export function collectLessonAuthoringIssues(input: {
     issues.push({
       message: `레슨 스텝은 ${authoringLimits.lessonStepCount.min}~${authoringLimits.lessonStepCount.max}개여야 합니다. 현재 ${steps.length}개입니다.`,
       path: lessonId,
+      severity: "error",
     })
   }
 
@@ -34,12 +34,14 @@ export function collectLessonAuthoringIssues(input: {
     issues.push({
       message: `READING은 레슨당 최대 ${authoringLimits.readingPerLesson}개입니다.`,
       path: lessonId,
+      severity: "error",
     })
   }
   if (readingIndices.some((index) => index > 0)) {
     issues.push({
       message: "READING은 첫 스텝에만 올 수 있습니다.",
       path: lessonId,
+      severity: "error",
     })
   }
 
@@ -53,6 +55,7 @@ export function collectLessonAuthoringIssues(input: {
     issues.push({
       message: "마지막 스텝은 MULTIPLE_CHOICE일 수 없습니다.",
       path: lessonId,
+      severity: "error",
     })
   }
 
@@ -65,11 +68,13 @@ export function collectLessonAuthoringIssues(input: {
       issues.push({
         message: `${type}은(는) 레슨당 최대 ${authoringLimits.maxSameStepTypePerLesson}개입니다.`,
         path: lessonId,
+        severity: "error",
       })
     }
   }
 
   issues.push(...collectAnswerDistributionIssues({ lessonId, steps }))
+  issues.push(...collectLessonQualityIssues({ lessonId, steps }))
 
   return issues
 }

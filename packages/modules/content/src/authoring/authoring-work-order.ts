@@ -2,24 +2,34 @@ import { z } from "zod"
 
 import { lessonTemplateIdSchema } from "@workspace/contracts/content/authoring"
 
-const authoringWorkOrderSchema = z
-  .strictObject({
-    courseId: z.string().min(1).optional(),
-    layout: z.array(z.string().min(1)).min(1).optional(),
-    lessonId: z.string().min(1),
-    lessonsDirectory: z.string().min(1).optional(),
-    stepCount: z.number().int().positive().optional(),
-    template: lessonTemplateIdSchema.optional(),
-  })
-  .superRefine((order, context) => {
-    if (order.layout === undefined && order.template === undefined) {
-      context.addIssue({
-        code: "custom",
-        message: "layout 또는 template 중 하나는 필요합니다.",
-        path: ["layout"],
-      })
-    }
-  })
+const briefTextSchema = z.string().trim().min(1)
+
+const contrastPairSchema = z.strictObject({
+  awkward: briefTextSchema,
+  correct: briefTextSchema,
+})
+
+/**
+ * 레슨 브리프. 집필 에이전트는 이 브리프만 받고 형제 레슨 파일을 읽지 않는다.
+ * 제품 문서: docs/product/authoring-guidelines.md
+ */
+const authoringWorkOrderSchema = z.strictObject({
+  closing: briefTextSchema,
+  contrastPairs: z.array(contrastPairSchema).min(6).max(8),
+  courseId: z.string().min(1).optional(),
+  distractorRules: z.strictObject({
+    allowed: z.array(briefTextSchema).min(1),
+    forbidden: z.array(briefTextSchema).min(1),
+  }),
+  forbidden: z.array(briefTextSchema),
+  judgementAxis: briefTextSchema,
+  lessonId: z.string().min(1),
+  lessonsDirectory: z.string().min(1).optional(),
+  scene: briefTextSchema,
+  template: lessonTemplateIdSchema.optional(),
+  thesis: briefTextSchema,
+  title: briefTextSchema,
+})
 
 const authoringWorkOrderListSchema = z.array(authoringWorkOrderSchema)
 

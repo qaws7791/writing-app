@@ -1,0 +1,148 @@
+[
+  {
+    "type": "compare",
+    "title": "도윤이 회원 단체방에 올리는 부스 인사 글",
+    "analysis": "부사어를 보면 문장 끝이 미리 정해져요. '결코'는 부정, '비록'은 맞서는 꼬리, '마치'는 비유 꼬리와 짝이에요.",
+    "versions": [
+      {
+        "label": "어긋난 짝",
+        "mark": "쉬운 일이었어요",
+        "text": "이번 축제 부스는 결코 쉬운 일이었어요."
+      },
+      {
+        "label": "맞는 짝",
+        "mark": "쉬운 일이 아니었어요",
+        "text": "이번 축제 부스는 결코 쉬운 일이 아니었어요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "둘째 줄을 그대로 올려도 되나요?",
+    "statement": "비록 둘째 날에 비가 와서 손님이 예상보다 많이 왔어요.",
+    "correct": false,
+    "explanation": "비가 온 일과 손님이 많이 온 일이 맞서는 사정이에요. '비록'은 맞서는 꼬리와 짝이에요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "인사 글에서 고쳐야 할 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "이번 축제 부스는 결코 쉬운 일이 아니었어요."
+      },
+      {
+        "id": "opt-b",
+        "text": "만약 내년에도 부스를 연다고 두 배 더 준비하려고 해요."
+      },
+      {
+        "id": "opt-c",
+        "text": "굿즈는 첫날 오후에 다 팔려 버렸어요."
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "내년 부스는 아직 정해지지 않은 조건이에요. '만약'은 조건 꼬리와 짝이고, 나머지 두 줄은 그대로 둬도 돼요."
+  },
+  {
+    "type": "select",
+    "question": "빌려 온 꼬리가 있는 자리를 누르세요.",
+    "segments": [
+      "준비한 굿즈는 ",
+      "마치 ",
+      "날개가 ",
+      "달렸지만 ",
+      "첫날 오후에 다 팔려 버렸어요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+    "correct": ["seg-4"],
+    "explanation": "굿즈 판매를 날개에 비유하는 문장이에요. 맞서는 뜻의 꼬리는 '마치'와 짝이 아니에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "fill_blank",
+    "template": "남은 재료는 아까워서 차마 ___.",
+    "words": ["버리지 못했어요", "버렸어요", "버릴 거예요", "다 버렸어요"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "아까워서 손이 안 간 재료 이야기예요. '차마'는 부정 꼬리와 짝이라 버리지 못하는 쪽으로 맺어요."
+  },
+  {
+    "type": "categorize",
+    "title": "부사어와 꼬리가 맞는지 나누세요",
+    "categories": [
+      { "id": "cat-ok", "label": "짝이 맞아요" },
+      { "id": "cat-bad", "label": "짝이 어긋나요" }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "결코 쉬운 일이었어요",
+        "categoryId": "cat-bad"
+      },
+      {
+        "id": "item-2",
+        "text": "결코 일이 아니었어요",
+        "categoryId": "cat-ok"
+      },
+      { "id": "item-3", "text": "비록 비가 와서", "categoryId": "cat-bad" },
+      { "id": "item-4", "text": "비록 비가 왔지만", "categoryId": "cat-ok" },
+      { "id": "item-5", "text": "마치 팔려 버렸어요", "categoryId": "cat-bad" },
+      { "id": "item-6", "text": "차마 버렸어요", "categoryId": "cat-bad" }
+    ],
+    "explanation": "부사어와 문장 끝만 붙여 읽어요. 부정·맞섬·비유 꼬리가 아니면 어긋난 짝이에요."
+  },
+  {
+    "type": "match",
+    "title": "인사 글의 부사어와 꼬리를 이어요",
+    "pairs": [
+      {
+        "left": "결코",
+        "leftId": "l-1",
+        "right": "아니었어요",
+        "rightId": "r-1"
+      },
+      {
+        "left": "비록",
+        "leftId": "l-2",
+        "right": "비가 왔지만",
+        "rightId": "r-2"
+      },
+      {
+        "left": "만약",
+        "leftId": "l-3",
+        "right": "부스를 연다면",
+        "rightId": "r-3"
+      }
+    ],
+    "explanation": "부사어 세 개는 각각 부정·맞섬·조건 꼬리를 불러요. 다른 부사어의 꼬리를 빌려 오면 어긋나요."
+  },
+  {
+    "type": "error_correct",
+    "question": "전망 줄에서 어긋난 자리를 고쳐요.",
+    "segments": [
+      "아마 ",
+      "다음 학기에는 ",
+      "신입 회원이 ",
+      "더 많이 들어와요. ",
+      "부스 마무리를 도와줘서 고마워요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+    "correctSegment": "seg-4",
+    "fixes": [
+      "더 많이 들어올 거예요.",
+      "더 많이 들어온대요.",
+      "더 많이 들어왔으면 해요."
+    ],
+    "fixIds": ["fix-1", "fix-2", "fix-3"],
+    "correctFix": "fix-1",
+    "explanation": "다음 학기 회원 수는 아직 짐작이에요. 전하거나 바라는 꼬리로 바꿔도 '아마'의 짝은 아니에요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "여러분이 없었다면 저 혼자서는 절대 ___.",
+    "words": ["해냈을 거예요", "해내지 못했을 거예요", "해낼 수 있었을 거예요"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-2"],
+    "explanation": "여러분 도움 없이는 안 됐다는 뜻이에요. '절대' 뒤는 부정으로 닫아야 해요."
+  }
+]

@@ -1,82 +1,153 @@
 [
   {
-    "type": "true_false",
-    "question": "맞는 문장은?",
-    "statement": "로서는 자격을 뜻한다.",
-    "correct": true,
-    "explanation": "'로서'가 맞아요."
-  },
-  {
     "type": "compare",
-    "title": "두 표기 비교",
-    "analysis": "로서는 자격, 로써는 수단입니다.",
+    "title": "회고 첫 줄과 둘째 줄, 조사가 갈리는 이유",
+    "analysis": "사람·역할 뒤에는 자격의 '로서', 방법·재료 뒤에는 수단의 '로써'를 써요.",
     "versions": [
       {
         "label": "자격",
-        "mark": "로서",
-        "text": "자격으로서 적합하다."
+        "mark": "담당자로서",
+        "text": "캠페인 담당자로서 1분기 결과를 정리해 공유해요."
       },
       {
         "label": "수단",
-        "mark": "로써",
-        "text": "수단으로써 해결했다."
+        "mark": "300건으로써",
+        "text": "설문 응답 300건으로써 고객 반응을 분석했어요."
       }
     ]
   },
   {
+    "type": "true_false",
+    "question": "이 문장을 그대로 올려도 되나요?",
+    "statement": "캠페인 담당자로서 1분기 결과를 정리해 공유해요.",
+    "correct": true,
+    "explanation": "담당자는 지우가 맡은 역할이에요. '담당자 자격으로'로 읽히면 자격의 '로서'가 맞아요."
+  },
+  {
     "type": "multiple_choice",
-    "question": "빈칸에 맞는 말은?",
+    "question": "회고 초안 세 줄 중 고쳐야 할 문장은?",
     "options": [
-      { "id": "opt-a", "text": "자격으로서" },
-      { "id": "opt-b", "text": "수단으로써" },
-      { "id": "opt-c", "text": "이유로서" }
+      {
+        "id": "opt-a",
+        "text": "캠페인 담당자로서 결과를 정리했어요."
+      },
+      {
+        "id": "opt-b",
+        "text": "설문 응답 300건으로서 반응을 분석했어요."
+      },
+      {
+        "id": "opt-c",
+        "text": "짧은 영상으로써 첫 주 클릭률을 올렸어요."
+      }
     ],
     "correct": "opt-b",
-    "explanation": "수단은 '로써'예요."
+    "explanation": "설문 응답은 분석에 쓴 재료예요. '응답을 가지고'로 읽히니 수단의 '로써'로 고쳐요."
   },
   {
     "type": "select",
-    "question": "틀린 표기는?",
-    "segments": ["자격으로서", " ", "적합하다."],
-    "segmentIds": ["seg-a", "seg-space", "seg-b"],
-    "correct": ["seg-a"],
-    "explanation": "자격은 '로서'예요.",
+    "question": "조사가 어긋난 자리를 누르세요.",
+    "segments": ["두 번째 광고안은 ", "첫 안의 ", "대안으로써 ", "준비했어요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-3"],
+    "explanation": "대안은 두 번째 광고안이 맡은 자리예요. 도구가 아니라 자격이니 '대안으로서'예요.",
     "layout": "inline"
   },
   {
     "type": "fill_blank",
-    "template": "수단___ 해결했다.",
-    "words": ["으로써", "로서", "에서", "에게"],
-    "wordIds": ["w1", "w2", "w3", "w4"],
-    "answer": ["w1"],
-    "explanation": "수단은 '로써'예요."
+    "template": "짧은 영상___ 첫 주 클릭률을 두 배로 올렸어요.",
+    "words": ["으로써", "으로서", "으로서는", "이로써"],
+    "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+    "answer": ["w-1"],
+    "explanation": "영상은 클릭률을 올린 방법이에요. '영상을 이용해서'로 읽히면 수단의 '로써'예요."
   },
   {
     "type": "true_false",
-    "question": "맞는 문장은?",
-    "statement": "수단으로서 일을 끝냈다.",
+    "question": "회고 다섯째 줄, 그대로 둘까요?",
+    "statement": "팀의 막내로써 배운 점도 한 줄 남겨요.",
     "correct": false,
-    "explanation": "'로써'가 맞아요."
+    "explanation": "막내는 지우의 자격이라 '막내 자격으로'로 읽혀요. 수단이 아니니 '막내로서'로 고쳐요."
   },
   {
-    "type": "multiple_choice",
-    "question": "어색한 문장은?",
-    "options": [
-      { "id": "opt-a", "text": "자격으로서 적합" },
-      { "id": "opt-b", "text": "수단으로써 해결" }
+    "type": "categorize",
+    "title": "회고에 나온 표현을 자격과 수단으로 나누세요",
+    "categories": [
+      { "id": "cat-role", "label": "자격·역할 → 로서" },
+      { "id": "cat-means", "label": "수단·재료·기준 → 로써" }
     ],
-    "correct": "opt-a",
-    "explanation": "자격은 '로서'예요."
+    "items": [
+      { "id": "item-1", "text": "담당자로서", "categoryId": "cat-role" },
+      { "id": "item-2", "text": "설문 300건으로써", "categoryId": "cat-means" },
+      { "id": "item-3", "text": "대안으로서", "categoryId": "cat-role" },
+      { "id": "item-4", "text": "짧은 영상으로써", "categoryId": "cat-means" },
+      { "id": "item-5", "text": "막내로서", "categoryId": "cat-role" },
+      { "id": "item-6", "text": "오늘로써", "categoryId": "cat-means" }
+    ],
+    "explanation": "사람·역할·지위면 '로서', 방법·재료·시간의 기준점이면 '로써'예요. '오늘로써 사흘째'처럼 날짜 기준도 '로써'예요."
   },
   {
     "type": "error_correct",
-    "question": "틀린 구간을 고르세요",
-    "segments": ["수단", "으로서", "해결했다."],
+    "question": "여섯째 줄에서 어긋난 자리를 고쳐요.",
+    "segments": [
+      "이 회고는 ",
+      "다음 분기 계획의 ",
+      "출발점으로써 쓰일 거예요."
+    ],
     "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": [
+      "출발점으로서 쓰일 거예요.",
+      "출발점으로써 활용될 거예요.",
+      "출발점으로써 쓰일 예정이에요."
+    ],
+    "fixIds": ["fix-1", "fix-2", "fix-3"],
+    "correctFix": "fix-1",
+    "explanation": "출발점은 회고가 맡게 될 자리라 자격의 '로서'예요. 동사를 바꿔도 조사가 그대로면 고쳐진 게 아니에요."
+  },
+  {
+    "type": "select",
+    "question": "정산 안내 줄에서 조사가 어긋난 자리는?",
+    "segments": ["오늘로서 ", "캠페인 정산을 ", "모두 ", "마무리해요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-1"],
+    "explanation": "날짜를 기준점으로 세울 때는 수단 쪽 '로써'를 써요. '오늘을 기준으로'로 읽혀요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "회고에 덧붙일 문장으로 바른 것은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "설문 응답 300건으로서 개선점을 찾았어요."
+      },
+      {
+        "id": "opt-b",
+        "text": "짧은 영상으로서 첫 주 클릭률을 올렸어요."
+      },
+      {
+        "id": "opt-c",
+        "text": "팀장님의 대리로서 주간 회의에 들어갔어요."
+      }
+    ],
+    "correct": "opt-c",
+    "explanation": "대리는 지우가 맡은 자격이라 '로서'가 맞아요. 앞 두 문장은 재료와 방법이라 '로써'여야 해요."
+  },
+  {
+    "type": "error_correct",
+    "question": "마무리 줄에서 어긋난 자리를 고쳐요.",
+    "segments": ["이 글은 ", "팀 공유 자료로써 ", "남겨 ", "둘게요."],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
     "correctSegment": "seg-2",
-    "fixes": ["으로서", "으로써"],
-    "fixIds": ["fix-a", "fix-b"],
-    "correctFix": "fix-b",
-    "explanation": "수단은 '로써'예요."
+    "fixes": ["팀 공유 자료로서", "팀 공유용 자료로써", "팀 공유 자료로써도"],
+    "fixIds": ["fix-1", "fix-2", "fix-3"],
+    "correctFix": "fix-1",
+    "explanation": "이 글이 맡을 자리가 '공유 자료'라서 자격의 '로서'예요. 낱말을 덧붙여도 '로써'가 남으면 어긋난 채예요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "담당자___ 결과를 정리했고, 설문 결과___ 다음 계획을 세웠어요.",
+    "words": ["로서", "로써", "이로써"],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1", "w-2"],
+    "explanation": "담당자는 자격이라 '로서', 설문 결과는 계획을 세운 재료라 '로써'예요. 한 문장에 둘이 같이 와도 기준은 같아요."
   }
 ]

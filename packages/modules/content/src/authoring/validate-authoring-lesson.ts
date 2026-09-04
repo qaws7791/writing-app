@@ -1,11 +1,9 @@
 import type { LessonStepDto } from "@workspace/contracts/content/course"
 import { lessonStepDtoSchema } from "@workspace/contracts/content/course"
+import type { LessonAuthoringIssue } from "@workspace/contracts/content/authoring"
 import { collectLessonAuthoringIssues } from "@workspace/contracts/content/authoring"
 
-export type AuthoringValidationIssue = Readonly<{
-  message: string
-  path: string
-}>
+export type AuthoringValidationIssue = LessonAuthoringIssue
 
 type AuthoringSeedStepType =
   | "categorize"
@@ -19,20 +17,6 @@ type AuthoringSeedStepType =
   | "select"
   | "sentence_build"
   | "true_false"
-
-const seedTypeByKind: Record<string, AuthoringSeedStepType> = {
-  Cg: "categorize",
-  Cp: "compare",
-  EC: "error_correct",
-  FB: "fill_blank",
-  MC: "multiple_choice",
-  Mt: "match",
-  Or: "order",
-  Rd: "reading",
-  SB: "sentence_build",
-  Sl: "select",
-  TF: "true_false",
-}
 
 const standardTypeBySeedType: Record<AuthoringSeedStepType, string> = {
   categorize: "CATEGORIZE",
@@ -48,6 +32,12 @@ const standardTypeBySeedType: Record<AuthoringSeedStepType, string> = {
   true_false: "TRUE_FALSE",
 }
 
+export function hasAuthoringErrors(
+  issues: readonly AuthoringValidationIssue[]
+): boolean {
+  return issues.some((issue) => issue.severity === "error")
+}
+
 export function validateAuthoringLessonSteps(input: {
   readonly lessonId: string
   readonly steps: unknown
@@ -57,6 +47,7 @@ export function validateAuthoringLessonSteps(input: {
       {
         message: "루트가 배열이 아닙니다.",
         path: input.lessonId,
+        severity: "error",
       },
     ]
   }
@@ -70,6 +61,7 @@ export function validateAuthoringLessonSteps(input: {
       issues.push({
         message: "스텝이 객체가 아닙니다.",
         path: stepId,
+        severity: "error",
       })
       return
     }
@@ -79,6 +71,7 @@ export function validateAuthoringLessonSteps(input: {
       issues.push({
         message: "스텝 유형이 없습니다.",
         path: stepId,
+        severity: "error",
       })
       return
     }
@@ -87,6 +80,7 @@ export function validateAuthoringLessonSteps(input: {
       issues.push({
         message: `알 수 없는 스텝 유형입니다: ${seedType}`,
         path: stepId,
+        severity: "error",
       })
       return
     }
@@ -104,6 +98,7 @@ export function validateAuthoringLessonSteps(input: {
         issues.push({
           message: issue.message,
           path: [stepId, ...issue.path].join("."),
+          severity: "error",
         })
       }
       return
@@ -116,6 +111,7 @@ export function validateAuthoringLessonSteps(input: {
       issues.push({
         message: blankMismatch,
         path: stepId,
+        severity: "error",
       })
     }
   })
@@ -127,47 +123,6 @@ export function validateAuthoringLessonSteps(input: {
         steps: parsedSteps,
       })
     )
-  }
-
-  return issues
-}
-
-export function validateAuthoringLessonLayout(input: {
-  readonly layout: readonly string[]
-  readonly lessonId: string
-  readonly stepCount: number
-  readonly steps: unknown
-}): readonly AuthoringValidationIssue[] {
-  const issues = [...validateAuthoringLessonSteps(input)]
-  if (!Array.isArray(input.steps)) return issues
-
-  if (input.steps.length !== input.stepCount) {
-    issues.push({
-      message: `스텝 개수가 다릅니다. 기대 ${input.stepCount}개, 실제 ${input.steps.length}개`,
-      path: input.lessonId,
-    })
-    return issues
-  }
-
-  const expectedTypes = input.layout.map((kind) => {
-    const seedType = seedTypeByKind[kind]
-    if (seedType === undefined) {
-      throw new Error(`알 수 없는 템플릿 약칭: ${kind}`)
-    }
-    return seedType
-  })
-
-  const actualTypes = input.steps.map((step) =>
-    isRecord(step) ? String(step["type"]) : "<유형 없음>"
-  )
-  const mismatch = actualTypes.findIndex(
-    (type, index) => type !== expectedTypes[index]
-  )
-  if (mismatch >= 0) {
-    issues.push({
-      message: `${mismatch + 1}번째 스텝 유형이 다릅니다. 기대 ${expectedTypes[mismatch]}, 실제 ${actualTypes[mismatch]}`,
-      path: input.lessonId,
-    })
   }
 
   return issues

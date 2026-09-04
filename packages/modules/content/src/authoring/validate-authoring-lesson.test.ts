@@ -2,10 +2,7 @@ import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
 
-import {
-  validateAuthoringLessonLayout,
-  validateAuthoringLessonSteps,
-} from "#content/authoring/validate-authoring-lesson"
+import { validateAuthoringLessonSteps } from "#content/authoring/validate-authoring-lesson"
 
 const goldenLessonPath = resolve(
   process.cwd(),
@@ -37,17 +34,6 @@ describe("validateAuthoringLessonSteps", () => {
 
     expect(issues.length).toBeGreaterThan(0)
     expect(issues[0]?.message).toContain("20자 이상")
-  })
-
-  it("템플릿 A1 배치와 일치하는 레슨을 허용한다", () => {
-    const steps = JSON.parse(readFileSync(goldenLessonPath, "utf8"))
-    const issues = validateAuthoringLessonLayout({
-      layout: ["TF", "Cp", "MC", "Sl", "FB", "TF", "MC", "EC"],
-      lessonId: "lesson-spelling-roseo",
-      stepCount: 8,
-      steps,
-    })
-
-    expect(issues).toEqual([])
+    expect(issues[0]?.severity).toBe("error")
   })
 })

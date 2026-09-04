@@ -1,0 +1,146 @@
+[
+  {
+    "type": "compare",
+    "title": "서연의 개선안 메모, 붙여 읽으면 보이는 짝",
+    "analysis": "수식어를 가리고 주어와 서술어만 붙여 읽어요. 말이 안 되면 서술어를 고치거나 주어 조사를 바꿔요.",
+    "versions": [
+      {
+        "label": "어긋남",
+        "mark": "의견이 나왔어요",
+        "text": "인터뷰에 참여한 신규 사용자 다섯 명은 첫 화면에 버튼이 너무 많다는 의견이 나왔어요."
+      },
+      {
+        "label": "호응",
+        "mark": "많다고 말했어요",
+        "text": "인터뷰에 참여한 신규 사용자 다섯 명은 첫 화면에 버튼이 너무 많다고 말했어요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장을 팀장에게 그대로 보내도 되나요?",
+    "statement": "가입 직후 앱을 다시 연 사용자 비율은 문구를 바꾼 뒤 일주일 만에 12%에서 20%로 늘렸어요.",
+    "correct": false,
+    "explanation": "수식어를 가리면 비율이 무엇을 늘리는 짝이 돼요. 비율은 스스로 변하는 쪽이라 능동 서술어가 어긋나요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "넷째 줄로 보낼 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "두 줄로 줄인 시안은 이해하기 쉽다고 말했어요."
+      },
+      {
+        "id": "opt-b",
+        "text": "두 줄로 줄인 시안은 이해하기 쉽다는 반응을 얻었어요."
+      },
+      {
+        "id": "opt-c",
+        "text": "두 줄로 줄인 시안은 이해하기 쉽다고 반응했어요."
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "반응한 쪽은 시안이 아니라 팀원이에요. 시안이 말한 것처럼 끝나면 붙여 읽은 짝이 어긋나요."
+  },
+  {
+    "type": "select",
+    "question": "둘째 줄에서 조사를 바꿔야 할 자리는?",
+    "segments": [
+      "지난달 새로 넣은 ",
+      "시작 안내 팝업은 ",
+      "사용자 열 명 중 일곱 명이 ",
+      "읽지 않고 닫았어요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+    "correct": ["seg-2"],
+    "explanation": "닫은 사람은 일곱 명이고 팝업은 닫힌 대상이에요. 주어 조사를 '을'로 바꿔 진짜 주어와 짝을 맞춰요.",
+    "layout": "inline"
+  },
+  {
+    "type": "error_correct",
+    "question": "셋째 줄에서 어긋난 자리를 고쳐요.",
+    "segments": [
+      "첫 화면의 파란 시작 버튼은 ",
+      "가입을 마친 사용자 대부분이 ",
+      "한 번도 누르지 않은 것으로 ",
+      "조사했어요. ",
+      "디자인팀과 일정은 내일 오전에 맞추기로 했어요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+    "correctSegment": "seg-4",
+    "fixes": ["조사됐어요.", "집계했어요.", "지난주에 조사했어요."],
+    "fixIds": ["fix-1", "fix-2", "fix-3"],
+    "correctFix": "fix-1",
+    "explanation": "버튼이 조사를 한 게 아니라 조사된 대상이에요. 다른 능동 동사나 시점만 더하면 능동 짝은 그대로예요."
+  },
+  {
+    "type": "select",
+    "question": "여섯째 줄에서 조사를 바꿔야 할 자리는?",
+    "segments": [
+      "다음 주에 진행할 ",
+      "두 번째 ",
+      "사용자 테스트는 ",
+      "디자인팀과 함께 ",
+      "참여자 여덟 명을 모집하려고 해요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+    "correct": ["seg-3"],
+    "explanation": "모집하는 주체는 테스트가 아니라 서연의 팀이에요. 테스트는 모집이 이뤄지는 자리라 조사를 '에는'으로 바꿔요.",
+    "layout": "inline"
+  },
+  {
+    "type": "categorize",
+    "title": "붙여 읽은 짝이 말되는지 가르세요",
+    "categories": [
+      { "id": "cat-pass", "label": "붙여 읽어도 말이 됨" },
+      { "id": "cat-fix", "label": "말이 안 됨 → 고치기" }
+    ],
+    "items": [
+      { "id": "item-1", "text": "사용자는 말했어요", "categoryId": "cat-pass" },
+      { "id": "item-2", "text": "비율은 늘렸어요", "categoryId": "cat-fix" },
+      { "id": "item-3", "text": "버튼은 조사했어요", "categoryId": "cat-fix" },
+      { "id": "item-4", "text": "시안은 얻었어요", "categoryId": "cat-pass" },
+      { "id": "item-5", "text": "팝업은 닫았어요", "categoryId": "cat-fix" },
+      { "id": "item-6", "text": "비율은 늘었어요", "categoryId": "cat-pass" }
+    ],
+    "explanation": "두 덩이가 말이 되면 통과예요. 안 되면 서술어나 주어 조사를 고치고, 기준은 이 한 가지예요."
+  },
+  {
+    "type": "match",
+    "title": "메모의 주어와 맞는 서술어를 이어요",
+    "pairs": [
+      {
+        "left": "사용자는",
+        "leftId": "l-1",
+        "right": "말했어요",
+        "rightId": "r-1"
+      },
+      {
+        "left": "비율은",
+        "leftId": "l-2",
+        "right": "늘었어요",
+        "rightId": "r-2"
+      },
+      {
+        "left": "버튼은",
+        "leftId": "l-3",
+        "right": "조사됐어요",
+        "rightId": "r-3"
+      }
+    ],
+    "explanation": "사람 주어는 말하는 행동이, 비율과 버튼은 스스로 변하는 쪽 서술어가 짝이에요. 붙여 읽어 맞는 쪽을 고르면 돼요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "개선안이 통과되면 저희 팀은 이달 안에 첫 화면 문구와 버튼 배치___.",
+    "words": [
+      "를 바꿀 예정이에요",
+      "가 바뀔 예정이에요",
+      "가 바꾸어질 예정이에요"
+    ],
+    "wordIds": ["w-1", "w-2", "w-3"],
+    "answer": ["w-1"],
+    "explanation": "바꾸는 쪽은 팀이라 '팀은 바뀔 예정이에요'는 짝이 어긋나요. 팀이 배치를 손보는 능동이 맞아요."
+  }
+]

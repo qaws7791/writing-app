@@ -3413,158 +3413,178 @@
             "desc": "중간에 삽입된 수식 어구를 걷어내어 주어와 서술어의 짝을 확인하고, 거리를 좁혀 주술 호응을 일치시킬 수 있다.",
             "steps": [
               {
-                "type": "select",
-                "question": "어색한 서술어 구간을 고르세요.",
-                "segments": [
-                  "이번 프로젝트의 목적은 ",
-                  "데이터를 정밀 분석하여 ",
-                  "효율을 높이고자 합니다."
-                ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "'목적은 ~높이는 것이다'로 호응해야 맞습니다.",
-                "layout": "inline"
+                "type": "compare",
+                "title": "서연의 개선안 메모, 붙여 읽으면 보이는 짝",
+                "analysis": "수식어를 가리고 주어와 서술어만 붙여 읽어요. 말이 안 되면 서술어를 고치거나 주어 조사를 바꿔요.",
+                "versions": [
+                  {
+                    "label": "어긋남",
+                    "mark": "의견이 나왔어요",
+                    "text": "인터뷰에 참여한 신규 사용자 다섯 명은 첫 화면에 버튼이 너무 많다는 의견이 나왔어요."
+                  },
+                  {
+                    "label": "호응",
+                    "mark": "많다고 말했어요",
+                    "text": "인터뷰에 참여한 신규 사용자 다섯 명은 첫 화면에 버튼이 너무 많다고 말했어요."
+                  }
+                ]
               },
               {
                 "type": "true_false",
-                "question": "올바른 문장 수정 원칙인가요?",
-                "statement": "주어와 서술어 사이 수식어를 걷어내면 호응이 쉽게 보입니다.",
-                "correct": true,
-                "explanation": "중간 수식어를 걷어내면 주어와 서술어의 어색한 짝이 드러납니다."
+                "question": "이 문장을 팀장에게 그대로 보내도 되나요?",
+                "statement": "가입 직후 앱을 다시 연 사용자 비율은 문구를 바꾼 뒤 일주일 만에 12%에서 20%로 늘렸어요.",
+                "correct": false,
+                "explanation": "수식어를 가리면 비율이 무엇을 늘리는 짝이 돼요. 비율은 스스로 변하는 쪽이라 능동 서술어가 어긋나요."
               },
               {
                 "type": "multiple_choice",
-                "question": "슬랙 공유에 바른 문장은?",
+                "question": "넷째 줄로 보낼 문장은?",
                 "options": [
                   {
                     "id": "opt-a",
-                    "text": "핵심은 비용을 아껴야 한다"
+                    "text": "두 줄로 줄인 시안은 이해하기 쉽다고 말했어요."
                   },
                   {
                     "id": "opt-b",
-                    "text": "핵심은 비용을 아끼는 것이다"
+                    "text": "두 줄로 줄인 시안은 이해하기 쉽다는 반응을 얻었어요."
+                  },
+                  {
+                    "id": "opt-c",
+                    "text": "두 줄로 줄인 시안은 이해하기 쉽다고 반응했어요."
                   }
                 ],
                 "correct": "opt-b",
-                "explanation": "'핵심은 ~것이다'로 주어와 서술어가 어울려야 합니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "어색한 서술어를 바르게 고치세요.",
-                "segments": ["팀장님이 당부한 사항은 ", "기한을 ", "지키자."],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["지키자.", "지키자는 것이다."],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "'사항은 ~것이다'로 짝을 맞춰 주어와 서술어를 일치시킵니다."
+                "explanation": "반응한 쪽은 시안이 아니라 팀원이에요. 시안이 말한 것처럼 끝나면 붙여 읽은 짝이 어긋나요."
               },
               {
                 "type": "select",
-                "question": "주술 호응이 어긋난 구간은?",
+                "question": "둘째 줄에서 조사를 바꿔야 할 자리는?",
                 "segments": [
-                  "신규 기능의 장점은 ",
-                  "누구나 쉽게 ",
-                  "가입할 수 있습니다."
+                  "지난달 새로 넣은 ",
+                  "시작 안내 팝업은 ",
+                  "사용자 열 명 중 일곱 명이 ",
+                  "읽지 않고 닫았어요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "'장점은 ~점입니다' 또는 '~가입할 수 있다는 것입니다'로 씁니다.",
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correct": ["seg-2"],
+                "explanation": "닫은 사람은 일곱 명이고 팝업은 닫힌 대상이에요. 주어 조사를 '을'로 바꿔 진짜 주어와 짝을 맞춰요.",
                 "layout": "inline"
               },
               {
-                "type": "multiple_choice",
-                "question": "보고서에 올바른 문장은?",
-                "options": [
+                "type": "error_correct",
+                "question": "셋째 줄에서 어긋난 자리를 고쳐요.",
+                "segments": [
+                  "첫 화면의 파란 시작 버튼은 ",
+                  "가입을 마친 사용자 대부분이 ",
+                  "한 번도 누르지 않은 것으로 ",
+                  "조사했어요. ",
+                  "디자인팀과 일정은 내일 오전에 맞추기로 했어요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+                "correctSegment": "seg-4",
+                "fixes": ["조사됐어요.", "집계했어요.", "지난주에 조사했어요."],
+                "fixIds": ["fix-1", "fix-2", "fix-3"],
+                "correctFix": "fix-1",
+                "explanation": "버튼이 조사를 한 게 아니라 조사된 대상이에요. 다른 능동 동사나 시점만 더하면 능동 짝은 그대로예요."
+              },
+              {
+                "type": "select",
+                "question": "여섯째 줄에서 조사를 바꿔야 할 자리는?",
+                "segments": [
+                  "다음 주에 진행할 ",
+                  "두 번째 ",
+                  "사용자 테스트는 ",
+                  "디자인팀과 함께 ",
+                  "참여자 여덟 명을 모집하려고 해요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+                "correct": ["seg-3"],
+                "explanation": "모집하는 주체는 테스트가 아니라 서연의 팀이에요. 테스트는 모집이 이뤄지는 자리라 조사를 '에는'으로 바꿔요.",
+                "layout": "inline"
+              },
+              {
+                "type": "categorize",
+                "title": "붙여 읽은 짝이 말되는지 가르세요",
+                "categories": [
                   {
-                    "id": "opt-a",
-                    "text": "목표는 일정을 지키는 것"
+                    "id": "cat-pass",
+                    "label": "붙여 읽어도 말이 됨"
                   },
                   {
-                    "id": "opt-b",
-                    "text": "목표는 일정을 지키겠다"
+                    "id": "cat-fix",
+                    "label": "말이 안 됨 → 고치기"
                   }
                 ],
-                "correct": "opt-a",
-                "explanation": "주어 '목표는'에 맞춰 서술어를 '~것'으로 맺어야 자연스럽습니다."
-              },
-              {
-                "type": "true_false",
-                "question": "올바른 설명인가요?",
-                "statement": "주어와 서술어 사이에 수식어가 길수록 문장이 명확해진다.",
-                "correct": false,
-                "explanation": "수식어가 길어져 주어와 서술어가 멀어지면 문장의 뜻이 흐려집니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "호응에 맞게 서술어를 고치세요.",
-                "segments": [
-                  "가장 중요한 것은 ",
-                  "원활한 소통을 ",
-                  "이어가야 합니다."
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "사용자는 말했어요",
+                    "categoryId": "cat-pass"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "비율은 늘렸어요",
+                    "categoryId": "cat-fix"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "버튼은 조사했어요",
+                    "categoryId": "cat-fix"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "시안은 얻었어요",
+                    "categoryId": "cat-pass"
+                  },
+                  {
+                    "id": "item-5",
+                    "text": "팝업은 닫았어요",
+                    "categoryId": "cat-fix"
+                  },
+                  {
+                    "id": "item-6",
+                    "text": "비율은 늘었어요",
+                    "categoryId": "cat-pass"
+                  }
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["이어가야 합니다.", "이어가는 일입니다."],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "'중요한 것은 ~일입니다'로 주어와 서술어의 호응을 맞춥니다."
+                "explanation": "두 덩이가 말이 되면 통과예요. 안 되면 서술어나 주어 조사를 고치고, 기준은 이 한 가지예요."
               },
               {
-                "type": "select",
-                "question": "주술 호응이 어색한 구간은?",
-                "segments": [
-                  "우리의 주요 과제는 ",
-                  "서버의 안정성을 ",
-                  "유지하고자 합니다."
+                "type": "match",
+                "title": "메모의 주어와 맞는 서술어를 이어요",
+                "pairs": [
+                  {
+                    "left": "사용자는",
+                    "leftId": "l-1",
+                    "right": "말했어요",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "비율은",
+                    "leftId": "l-2",
+                    "right": "늘었어요",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "버튼은",
+                    "leftId": "l-3",
+                    "right": "조사됐어요",
+                    "rightId": "r-3"
+                  }
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "'과제는 ~유지하는 것입니다'로 서술어를 주어와 일치시킵니다.",
-                "layout": "inline"
+                "explanation": "사람 주어는 말하는 행동이, 비율과 버튼은 스스로 변하는 쪽 서술어가 짝이에요. 붙여 읽어 맞는 쪽을 고르면 돼요."
               },
               {
                 "type": "fill_blank",
-                "template": "이번 프로젝트에서 나의 바람은 모두가 함께 ___",
+                "template": "개선안이 통과되면 저희 팀은 이달 안에 첫 화면 문구와 버튼 배치___.",
                 "words": [
-                  "성장하는 것이다.",
-                  "성장해야 한다.",
-                  "성장하고자 본다.",
-                  "성장하려 한다."
+                  "를 바꿀 예정이에요",
+                  "가 바뀔 예정이에요",
+                  "가 바꾸어질 예정이에요"
                 ],
-                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "wordIds": ["w-1", "w-2", "w-3"],
                 "answer": ["w-1"],
-                "explanation": "'바람은 ~것이다'로 맺어야 주어와 서술어가 자연스럽게 어울립니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "자연스러운 서술어로 고치세요.",
-                "segments": [
-                  "제가 제안하는 바는 ",
-                  "배포 일정을 ",
-                  "미루길 바랍니다."
-                ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["미루길 바랍니다.", "미루자는 것입니다."],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "주어 '바는'에 호응하도록 '~것입니다'로 서술어를 수정합니다."
-              },
-              {
-                "type": "sentence_build",
-                "question": "바른 호응의 문장을 만드세요.",
-                "tiles": [
-                  "이번 기획의",
-                  "목적은",
-                  "사용자",
-                  "편의를",
-                  "개선하는 데",
-                  "있다."
-                ],
-                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
-                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
-                "explanation": "'목적은 ~데에 있다'로 주어와 서술어를 바로 연결해 완성합니다."
+                "explanation": "바꾸는 쪽은 팀이라 '팀은 바뀔 예정이에요'는 짝이 어긋나요. 팀이 배치를 손보는 능동이 맞아요."
               }
             ]
           },
@@ -3575,144 +3595,176 @@
             "desc": "주어가 '목적/이유/방법' 등 추상 명사일 때 서술어를 사람의 능동 행위가 아닌 속성 명사형('-는 것임')으로 호응시킬 수 있다.",
             "steps": [
               {
-                "type": "select",
-                "question": "호응이 어색한 서술어는?",
-                "segments": ["서버 장애를 ", "점검하고 ", "정상 복구했습니다."],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "'장애를 복구하다'가 아닌 '서버를 복구하다'여야 합니다.",
-                "layout": "inline"
+                "type": "compare",
+                "title": "민준의 응답 시간 안내, 등식이 갈리는 첫 줄",
+                "analysis": "목적·이유·방법 주어는 '주어 = 무엇'으로 읽어요. 사람의 행동으로 끝나면 명사형 꼬리로 맺어요.",
+                "versions": [
+                  {
+                    "label": "행동 꼬리",
+                    "mark": "줄이려고 해요",
+                    "text": "이 프로젝트의 목적은 고객 문의에 답하는 시간을 하루에서 두 시간 안으로 줄이려고 해요."
+                  },
+                  {
+                    "label": "명사형 꼬리",
+                    "mark": "줄이는 것이에요",
+                    "text": "이 프로젝트의 목적은 고객 문의에 답하는 시간을 하루에서 두 시간 안으로 줄이는 것이에요."
+                  }
+                ]
               },
               {
                 "type": "true_false",
-                "question": "올바른 문장인가요?",
-                "statement": "신규 기능은 고객 만족도를 크게 기여했습니다.",
+                "question": "안내 글 넷째 줄, 그대로 올려도 되나요?",
+                "statement": "이 방식의 장점은 따로 답하는 일이 사라져요.",
                 "correct": false,
-                "explanation": "'기여하다'는 목적어가 아닌 '~에 기여하다'로 씁니다."
+                "explanation": "장점 자리에 사람 행동이 와서 등식이 안 맞아요. 장점은 어떤 점인지 명사형으로 맺어야 해요."
               },
               {
                 "type": "multiple_choice",
-                "question": "호응이 자연스러운 표현은?",
+                "question": "다섯째 줄에서 고쳐야 할 문장은?",
                 "options": [
                   {
                     "id": "opt-a",
-                    "text": "문제를 파악하고 조치했다"
+                    "text": "목적은 답하는 시간을 줄이는 것이에요."
                   },
                   {
                     "id": "opt-b",
-                    "text": "문제를 파악해 해결책을 냈다"
+                    "text": "두 번째 방법은 답을 미리 써 두고 바로 보내요."
                   },
                   {
                     "id": "opt-c",
-                    "text": "문제를 검토하고 조치했다"
+                    "text": "첫 번째 방법은 문의를 모아 처리하는 것이에요."
                   }
                 ],
                 "correct": "opt-b",
-                "explanation": "'문제를 조치하다'가 아닌 '해결책을 내다'로 호응합니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "어색한 부분을 바르게 고치세요.",
-                "segments": ["신규 정책을 발표하고 ", "적극 수렴했습니다."],
-                "segmentIds": ["seg-1", "seg-2"],
-                "correctSegment": "seg-2",
-                "fixes": ["적극 수렴했습니다.", "의견을 수렴했습니다."],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "'정책을 수렴하다'는 어색하므로 '의견을'을 보충합니다."
+                "explanation": "방법 뒤에 보내는 행동이 오면 등식이 깨져요. 목적과 첫 방법 줄은 이미 명사형으로 맺혀 있어요."
               },
               {
                 "type": "select",
-                "question": "조사가 잘못 쓰인 구간은?",
-                "segments": ["이번 출시 일정은 ", "기존 계획을 ", "다릅니다."],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-2"],
-                "explanation": "'다르다' 앞에는 목적어가 아닌 '~와/과'가 옵니다.",
-                "layout": "inline"
-              },
-              {
-                "type": "multiple_choice",
-                "question": "필수 부사어가 올바른 문장은?",
-                "options": [
-                  {
-                    "id": "opt-a",
-                    "text": "규정에 부합합니다"
-                  },
-                  {
-                    "id": "opt-b",
-                    "text": "규정을 부합합니다"
-                  },
-                  {
-                    "id": "opt-c",
-                    "text": "규정으로 부합합니다"
-                  }
-                ],
-                "correct": "opt-a",
-                "explanation": "'부합하다'는 필수 부사어 조사 '~에'와 호응합니다."
-              },
-              {
-                "type": "true_false",
-                "question": "올바른 문장인가요?",
-                "statement": "보고서 내용을 검토하고 수정 사항을 반영했습니다.",
-                "correct": true,
-                "explanation": "두 서술어가 각각의 목적어를 온전히 갖춰 자연스럽습니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "조사를 올바르게 고치세요.",
-                "segments": ["우리 팀은 이번 ", "프로젝트를 ", "착수했습니다."],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-2",
-                "fixes": ["프로젝트를 ", "프로젝트에 "],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "'착수하다'는 목적격 '를' 대신 부사격 '에'를 씁니다."
-              },
-              {
-                "type": "select",
-                "question": "목적어 호응이 어색한 구간은?",
+                "question": "등식이 깨진 서술어 자리를 누르세요.",
                 "segments": [
-                  "고객 문의를 ",
-                  "접수하고 ",
-                  "신속히 안내했습니다."
+                  "남은 과제는 ",
+                  "주말에 들어온 문의를 ",
+                  "누가 맡을지 ",
+                  "아직 정하지 않았어요. ",
+                  "담당자는 한 화면에서 문의를 처리해요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "'문의를 안내하다'가 아닌 '결과를 안내하다'여야 합니다.",
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+                "correct": ["seg-4"],
+                "explanation": "과제 자리에 아직 안 했다는 보고가 왔어요. 할 일이 무엇인지 명사형으로 맺어야 해요.",
                 "layout": "inline"
               },
               {
                 "type": "fill_blank",
-                "template": "오류 원인을 분석하고 ___ 마련했습니다.",
-                "words": ["대응책을", "오류를", "원인으로", "분석을"],
+                "template": "첫 번째 방법은 세 곳의 문의를 한 화면에 모아 담당자가 순서대로 ___.",
+                "words": [
+                  "처리하는 것이에요",
+                  "처리해요",
+                  "처리한다는 점이에요",
+                  "처리하기 때문이에요"
+                ],
                 "wordIds": ["w-1", "w-2", "w-3", "w-4"],
                 "answer": ["w-1"],
-                "explanation": "'마련했습니다'에 맞는 목적어 '대응책을'이 필요합니다."
+                "explanation": "방법은 담당자가 하는 일 자체예요. 장점 꼬리 '점'이나 이유 꼬리 '때문'은 이 주어와 안 맞아요."
+              },
+              {
+                "type": "categorize",
+                "title": "등식이 맞는지 문장 덩이를 나누세요",
+                "categories": [
+                  {
+                    "id": "cat-ok",
+                    "label": "등식이 맞아요"
+                  },
+                  {
+                    "id": "cat-bad",
+                    "label": "등식이 어긋나요"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "목적은 줄이려고",
+                    "categoryId": "cat-bad"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "목적은 줄이는 것",
+                    "categoryId": "cat-ok"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "이유는 들어왔어요",
+                    "categoryId": "cat-bad"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "이유는 들어왔기 때문",
+                    "categoryId": "cat-ok"
+                  },
+                  {
+                    "id": "item-5",
+                    "text": "장점은 사라져요",
+                    "categoryId": "cat-bad"
+                  },
+                  {
+                    "id": "item-6",
+                    "text": "방법은 보내요",
+                    "categoryId": "cat-bad"
+                  }
+                ],
+                "explanation": "개념 주어 뒤에 사람 행동이 오면 어긋나요. 무엇인지를 명사형으로 맺은 덩이만 통과예요."
               },
               {
                 "type": "error_correct",
-                "question": "어색한 조사를 바르게 고치세요.",
-                "segments": ["회사 이익을 ", "크게 기여하는 ", "방안입니다."],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-1",
-                "fixes": ["회사 이익을 ", "회사 이익에 "],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "'기여하다'는 목적어가 아닌 부사어 '~에'가 필수입니다."
+                "question": "둘째 줄에서 어긋난 자리를 고쳐요.",
+                "segments": [
+                  "응답이 늦어진 가장 큰 이유는 ",
+                  "문의가 세 곳으로 흩어져 ",
+                  "들어왔어요. ",
+                  "게시판 공지는 오늘 오후에 올려요."
+                ],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
+                "correctSegment": "seg-3",
+                "fixes": [
+                  "들어왔기 때문이에요.",
+                  "한꺼번에 들어왔어요.",
+                  "지난달부터 들어왔어요."
+                ],
+                "fixIds": ["fix-1", "fix-2", "fix-3"],
+                "correctFix": "fix-1",
+                "explanation": "늦어진 까닭을 말해야 하는데 문의의 행동으로 끝났어요. 수량·시점만 바꾸면 행동 꼬리가 남아요."
               },
               {
-                "type": "sentence_build",
-                "question": "호응이 바른 문장으로 조립하세요.",
-                "tiles": [
-                  "문제를 ",
-                  "파악하고 ",
-                  "해결 방안을 ",
-                  "마련하여 ",
-                  "보고했습니다."
+                "type": "match",
+                "title": "개념 주어와 맞는 꼬리를 이어요",
+                "pairs": [
+                  {
+                    "left": "이유는",
+                    "leftId": "l-1",
+                    "right": "들어왔기 때문",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "과제는",
+                    "leftId": "l-2",
+                    "right": "정하는 일",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "장점은",
+                    "leftId": "l-3",
+                    "right": "사라진다는 점",
+                    "rightId": "r-3"
+                  }
                 ],
-                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5"],
-                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
-                "explanation": "각 서술어가 알맞은 목적어를 갖춰 문장이 매끄럽습니다."
+                "explanation": "이유·과제·장점은 각각 까닭·할 일·특징으로 읽어요. 사람 행동 꼬리를 붙이면 등식이 깨져요."
+              },
+              {
+                "type": "fill_blank",
+                "template": "이번 달 목표는 전체 문의의 80%를 두 시간 안에 ___.",
+                "words": ["답하겠어요", "답하는 것이에요", "답한다는 점이에요"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-2"],
+                "explanation": "목표가 무엇인지 말해야 하는 자리에 다짐이 왔어요. 목표 = 하려는 일이니 명사형으로 맺어요."
               }
             ]
           },
@@ -3723,168 +3775,123 @@
             "desc": "대등하게 이어진 문장에서 두 서술어가 서로 다른 목적어를 요구할 때 생략된 필수 목적어를 찾아 채워 넣을 수 있다.",
             "steps": [
               {
-                "type": "select",
-                "question": "어색하게 겹친 서술어 구간은?",
-                "segments": [
-                  "제 생각은 ",
-                  "이번 안건을 채택하는 것이 ",
-                  "좋겠다고 생각합니다."
-                ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "주어가 '생각'이면 서술어를 '~것입니다'로 맞춰 겹침을 없앱니다.",
-                "layout": "inline"
+                "type": "compare",
+                "title": "하늘이 디자이너에게 보내는 표지 요청 메일",
+                "analysis": "이어진 두 서술어에 각각 '무엇을?'을 물어요. 뒤 서술어가 앞 목적어를 못 받으면 제 목적어를 채워요.",
+                "versions": [
+                  {
+                    "label": "통과",
+                    "mark": "보냈어요",
+                    "text": "첫 시안을 확인하고 저자에게 보냈어요."
+                  },
+                  {
+                    "label": "채움",
+                    "mark": "받았어요",
+                    "text": "저자에게 첫 시안을 보여 드리고 받았어요."
+                  }
+                ]
               },
               {
                 "type": "true_false",
-                "question": "주어와 서술어가 잘 어울리나요?",
-                "statement": "저의 바람은 프로젝트가 꼭 성공하길 바랍니다.",
+                "question": "다섯째 줄을 그대로 보내도 되나요?",
+                "statement": "이전 시리즈 표지를 참고하되 벗어나 주세요.",
                 "correct": false,
-                "explanation": "주어 '바람'에 맞춰 서술어를 '~성공하는 것입니다'로 호응시킵니다."
+                "explanation": "참고할 것은 표지예요. 벗어날 자리는 비어 있어 뒤 서술어 몫의 목적어를 채워야 해요."
               },
               {
                 "type": "multiple_choice",
-                "question": "기획서에 어울리는 올바른 문장은?",
+                "question": "넷째 줄, 그대로 보내도 되는 문장은?",
                 "options": [
                   {
                     "id": "opt-a",
-                    "text": "목적은 오류를 줄이고자 함"
+                    "text": "뒤표지에 저자 사진을 넣고 두 줄로 써 주세요."
                   },
                   {
                     "id": "opt-b",
-                    "text": "목적은 오류를 줄이는 것임"
+                    "text": "뒤표지에 저자 사진을 넣고 소개 글은 두 줄로 써 주세요."
                   },
                   {
                     "id": "opt-c",
-                    "text": "목적은 오류를 줄여야 함"
+                    "text": "뒤표지에 저자 사진을 넣고 저자 사진을 두 줄로 써 주세요."
                   }
                 ],
                 "correct": "opt-b",
-                "explanation": "주어가 '목적'이면 서술어를 '~줄이는 것'으로 호응시킵니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "어색한 서술어를 바르게 고치세요.",
-                "segments": [
-                  "이번 개편의 목적은 ",
-                  "이용 편의를 ",
-                  "높이고자 합니다."
-                ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["높이고자 합니다", "높이는 것입니다"],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "주어가 '목적'이면 서술어를 '~높이는 것입니다'로 호응시킵니다."
+                "explanation": "넣는 것은 사진이고 두 줄로 쓸 것은 다른 덩어리예요. 앞 목적어를 억지로 되받으면 사진만 반복돼요."
               },
               {
                 "type": "select",
-                "question": "주어와 어울리지 않는 서술어는?",
+                "question": "목적어가 빠진 뒤 서술어를 누르세요.",
                 "segments": [
-                  "서버 장애의 원인은 ",
-                  "트래픽이 급증했기 때문에 ",
-                  "문제가 발생했습니다."
+                  "첨부한 원고를 ",
+                  "읽고 ",
+                  "조언해 주세요. ",
+                  "일정은 이번 주까지로 부탁드려요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
                 "correct": ["seg-3"],
-                "explanation": "주어가 '원인은'이면 서술어는 '~때문입니다'로 짝을 맞춰야 합니다."
-              },
-              {
-                "type": "multiple_choice",
-                "question": "간결하고 자연스러운 슬랙 답장은?",
-                "options": [
-                  {
-                    "id": "opt-a",
-                    "text": "저는 이 안이 좋다고 봅니다"
-                  },
-                  {
-                    "id": "opt-b",
-                    "text": "제 생각은 좋다고 생각해요"
-                  },
-                  {
-                    "id": "opt-c",
-                    "text": "내 의견은 이 안이라 봅니다"
-                  }
-                ],
-                "correct": "opt-a",
-                "explanation": "주어를 '저는'으로 바꾸면 불필요한 '생각'의 중복이 사라집니다."
-              },
-              {
-                "type": "true_false",
-                "question": "올바르게 호응한 문장인가요?",
-                "statement": "지연된 주된 이유는 검수가 늦어졌기 때문입니다.",
-                "correct": true,
-                "explanation": "주어 '이유는'과 서술어 '~때문입니다'가 바르게 호응한 문장입니다."
-              },
-              {
-                "type": "error_correct",
-                "question": "보고서의 어색한 서술어를 고치세요.",
-                "segments": [
-                  "품질을 높이는 방법은 ",
-                  "테스트를 주기적으로 ",
-                  "진행해야 합니다."
-                ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["진행해야 합니다", "진행하는 것입니다"],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "주어가 '방법은'이면 서술어를 '~진행하는 것입니다'로 맞춥니다."
-              },
-              {
-                "type": "select",
-                "question": "수정이 필요한 어색한 구간은?",
-                "segments": [
-                  "저의 건의 사항은 ",
-                  "출시일을 일주일 ",
-                  "연기하길 건의합니다."
-                ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "주어 '건의 사항'과 서술어 '건의합니다'의 겹침을 바로잡아야 합니다."
+                "explanation": "원고는 읽는 쪽의 목적어예요. 조언할 대상은 비어 있고, 뒤 줄은 일정을 부탁하는 통과 문장이에요.",
+                "layout": "inline"
               },
               {
                 "type": "fill_blank",
-                "template": "이번 설문의 목적은 사용자의 만족도를 ___.",
-                "words": [
-                  "확인하는 것이다",
-                  "확인하고자 한다",
-                  "확인해야만 한다",
-                  "확인하기 위함임"
-                ],
-                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "template": "저자와 상의하고 ___ 이번 주 안에 결정할게요.",
+                "words": ["표지 색을", "저자를", "디자이너를"],
+                "wordIds": ["w-1", "w-2", "w-3"],
                 "answer": ["w-1"],
-                "explanation": "주어 '목적은'에 맞춰 서술어를 '~확인하는 것이다'로 완성합니다."
+                "explanation": "상의 상대는 이미 '저자와'로 있어요. 결정할 대상은 다른 덩어리라 뒤 서술어 몫을 채워요."
+              },
+              {
+                "type": "match",
+                "title": "뒤 서술어와 채울 목적어를 이어요",
+                "pairs": [
+                  {
+                    "left": "받았어요",
+                    "leftId": "l-1",
+                    "right": "동의를",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "조언해 주세요",
+                    "leftId": "l-2",
+                    "right": "표지 방향을",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "벗어나 주세요",
+                    "leftId": "l-3",
+                    "right": "그 색감에서는",
+                    "rightId": "r-3"
+                  }
+                ],
+                "explanation": "받은 대상·조언 대상·벗어날 자리는 앞 목적어와 달라요. 무엇을? 하고 물어 나온 답이 각 짝이에요."
               },
               {
                 "type": "error_correct",
-                "question": "이메일 문장의 어색한 곳을 고치세요.",
+                "question": "여섯째 줄에서 빈자리를 채워요.",
                 "segments": [
-                  "저희 팀의 희망 사항은 ",
-                  "마감 기한을 ",
-                  "지켜주길 희망합니다."
+                  "수정 시안을 받으면 ",
+                  "팀과 공유하고 ",
+                  "정리해 보낼게요. ",
+                  "시안 파일은 메일로 보내 주세요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4"],
                 "correctSegment": "seg-3",
-                "fixes": ["지켜주길 희망합니다", "지켜주는 것입니다"],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "주어 '희망 사항'에 어울리도록 서술어를 '~것입니다'로 고칩니다."
+                "fixes": [
+                  "의견을 정리해 보낼게요.",
+                  "이틀 안에 정리해 보낼게요.",
+                  "팀을 정리해 보낼게요."
+                ],
+                "fixIds": ["fix-1", "fix-2", "fix-3"],
+                "correctFix": "fix-1",
+                "explanation": "시간만 더하거나 앞 절 '팀과'를 '팀을'로 바꿔도 보낼 대상은 비어 있어요. 뒤 서술어 몫의 목적어를 넣어야 해요."
               },
               {
-                "type": "sentence_build",
-                "question": "올바른 뼈대의 문장을 조립하세요.",
-                "tiles": [
-                  "제 생각은",
-                  "기획안을",
-                  "수정하는",
-                  "것이",
-                  "좋겠다는",
-                  "것입니다."
-                ],
-                "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
-                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
-                "explanation": "주어 '제 생각은'에 맞춰 서술어를 '~것입니다'로 호응시킵니다."
+                "type": "fill_blank",
+                "template": "최종 파일은 인쇄소에 넘기고 ___ 부탁드릴게요.",
+                "words": ["파일을", "감리를", "인쇄소를"],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-2"],
+                "explanation": "넘기는 것은 파일이고 부탁드리는 것은 다른 일이에요. 앞 목적어를 억지로 되받으면 짝이 어긋나요."
               }
             ]
           },
@@ -3895,184 +3902,181 @@
             "desc": "특정한 서술어 형태를 요구하는 호응 부사어('결코 ~않다', '비록 ~ㄹ지라도', '마치 ~처럼')의 짝을 찾아 비문을 수정할 수 있다.",
             "steps": [
               {
+                "type": "compare",
+                "title": "도윤이 회원 단체방에 올리는 부스 인사 글",
+                "analysis": "부사어를 보면 문장 끝이 미리 정해져요. '결코'는 부정, '비록'은 맞서는 꼬리, '마치'는 비유 꼬리와 짝이에요.",
+                "versions": [
+                  {
+                    "label": "어긋난 짝",
+                    "mark": "쉬운 일이었어요",
+                    "text": "이번 축제 부스는 결코 쉬운 일이었어요."
+                  },
+                  {
+                    "label": "맞는 짝",
+                    "mark": "쉬운 일이 아니었어요",
+                    "text": "이번 축제 부스는 결코 쉬운 일이 아니었어요."
+                  }
+                ]
+              },
+              {
                 "type": "true_false",
-                "question": "올바르게 호응한 문장인가요?",
-                "statement": "이 제안은 결코 받아들이겠습니다.",
+                "question": "둘째 줄을 그대로 올려도 되나요?",
+                "statement": "비록 둘째 날에 비가 와서 손님이 예상보다 많이 왔어요.",
                 "correct": false,
-                "explanation": "'결코'는 '받아들일 수 없다'처럼 부정 서술어와 호응합니다."
+                "explanation": "비가 온 일과 손님이 많이 온 일이 맞서는 사정이에요. '비록'은 맞서는 꼬리와 짝이에요."
               },
               {
                 "type": "multiple_choice",
-                "question": "기획서 문장으로 올바른 표현은?",
+                "question": "인사 글에서 고쳐야 할 문장은?",
                 "options": [
                   {
                     "id": "opt-a",
-                    "text": "여간 쉬웠습니다"
+                    "text": "이번 축제 부스는 결코 쉬운 일이 아니었어요."
                   },
                   {
                     "id": "opt-b",
-                    "text": "여간 어렵지 않았습니다"
+                    "text": "만약 내년에도 부스를 연다고 두 배 더 준비하려고 해요."
                   },
                   {
                     "id": "opt-c",
-                    "text": "여간 힘든 편입니다"
+                    "text": "굿즈는 첫날 오후에 다 팔려 버렸어요."
                   }
                 ],
                 "correct": "opt-b",
-                "explanation": "'여간'은 '어렵지 않다'와 같이 부정 서술어와 짝을 이룹니다."
-              },
-              {
-                "type": "match",
-                "title": "부사어와 알맞은 서술어 연결",
-                "pairs": [
-                  {
-                    "left": "결코",
-                    "leftId": "p-1-l",
-                    "right": "양보할 수 없다",
-                    "rightId": "p-1-r"
-                  },
-                  {
-                    "left": "비록",
-                    "leftId": "p-2-l",
-                    "right": "일정이 빠듯하지만",
-                    "rightId": "p-2-r"
-                  },
-                  {
-                    "left": "마치",
-                    "leftId": "p-3-l",
-                    "right": "새 프로그램처럼",
-                    "rightId": "p-3-r"
-                  },
-                  {
-                    "left": "여간",
-                    "leftId": "p-4-l",
-                    "right": "쉽지 않다",
-                    "rightId": "p-4-r"
-                  }
-                ],
-                "explanation": "각 부사어는 정해진 서술어 형태와 짝을 이루어야 자연스럽습니다."
-              },
-              {
-                "type": "true_false",
-                "question": "슬랙 공지 문장으로 적절한가요?",
-                "statement": "비록 예산은 부족하지만 품질은 지킵니다.",
-                "correct": true,
-                "explanation": "'비록'은 '~지만'처럼 양보를 나타내는 서술어와 호응합니다."
-              },
-              {
-                "type": "fill_blank",
-                "template": "보안 규정상 외부 반출은 절대로 ___.",
-                "words": ["불가합니다", "가능합니다", "추천합니다", "바랍니다"],
-                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
-                "answer": ["w-1"],
-                "explanation": "'절대로' 뒤에는 '불가하다'처럼 금지·부정 서술어가 옵니다."
-              },
-              {
-                "type": "match",
-                "title": "실무 문맥의 부사어 짝 맞추기",
-                "pairs": [
-                  {
-                    "left": "만약",
-                    "leftId": "p-1-l",
-                    "right": "장애가 발생한다면",
-                    "rightId": "p-1-r"
-                  },
-                  {
-                    "left": "마치",
-                    "leftId": "p-2-l",
-                    "right": "한 팀인 듯이",
-                    "rightId": "p-2-r"
-                  },
-                  {
-                    "left": "절대로",
-                    "leftId": "p-3-l",
-                    "right": "공유해서는 안 된다",
-                    "rightId": "p-3-r"
-                  }
-                ],
-                "explanation": "문맥에 맞는 부사어와 서술어의 짝을 찾아 문장을 완성합니다."
+                "explanation": "내년 부스는 아직 정해지지 않은 조건이에요. '만약'은 조건 꼬리와 짝이고, 나머지 두 줄은 그대로 둬도 돼요."
               },
               {
                 "type": "select",
-                "question": "서술어 호응이 어색한 구간은?",
+                "question": "빌려 온 꼬리가 있는 자리를 누르세요.",
                 "segments": [
-                  "이번 프로젝트는 ",
-                  "여간 까다로워서 ",
-                  "야근이 늘었습니다."
+                  "준비한 굿즈는 ",
+                  "마치 ",
+                  "날개가 ",
+                  "달렸지만 ",
+                  "첫날 오후에 다 팔려 버렸어요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-2"],
-                "explanation": "'여간'은 '까다롭지 않아서'처럼 부정 서술어로 호응해야 합니다.",
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+                "correct": ["seg-4"],
+                "explanation": "굿즈 판매를 날개에 비유하는 문장이에요. 맞서는 뜻의 꼬리는 '마치'와 짝이 아니에요.",
                 "layout": "inline"
               },
               {
-                "type": "true_false",
-                "question": "올바르게 작성된 문장인가요?",
-                "statement": "새 디자인이 마치 원본과 완전히 똑같았다.",
-                "correct": false,
-                "explanation": "'마치' 뒤에는 '~처럼', '~듯이' 같은 비유 서술어가 와야 합니다."
+                "type": "fill_blank",
+                "template": "남은 재료는 아까워서 차마 ___.",
+                "words": [
+                  "버리지 못했어요",
+                  "버렸어요",
+                  "버릴 거예요",
+                  "다 버렸어요"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
+                "answer": ["w-1"],
+                "explanation": "아까워서 손이 안 간 재료 이야기예요. '차마'는 부정 꼬리와 짝이라 버리지 못하는 쪽으로 맺어요."
               },
               {
-                "type": "fill_blank",
-                "template": "___ 오류가 발생하더라도 즉시 롤백하겠습니다.",
-                "words": ["마치", "비록", "결코", "여간"],
-                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
-                "answer": ["w-2"],
-                "explanation": "'~더라도'와 어울려 양보의 뜻을 나타내는 부사어는 '비록'입니다."
+                "type": "categorize",
+                "title": "부사어와 꼬리가 맞는지 나누세요",
+                "categories": [
+                  {
+                    "id": "cat-ok",
+                    "label": "짝이 맞아요"
+                  },
+                  {
+                    "id": "cat-bad",
+                    "label": "짝이 어긋나요"
+                  }
+                ],
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "결코 쉬운 일이었어요",
+                    "categoryId": "cat-bad"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "결코 일이 아니었어요",
+                    "categoryId": "cat-ok"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "비록 비가 와서",
+                    "categoryId": "cat-bad"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "비록 비가 왔지만",
+                    "categoryId": "cat-ok"
+                  },
+                  {
+                    "id": "item-5",
+                    "text": "마치 팔려 버렸어요",
+                    "categoryId": "cat-bad"
+                  },
+                  {
+                    "id": "item-6",
+                    "text": "차마 버렸어요",
+                    "categoryId": "cat-bad"
+                  }
+                ],
+                "explanation": "부사어와 문장 끝만 붙여 읽어요. 부정·맞섬·비유 꼬리가 아니면 어긋난 짝이에요."
               },
               {
                 "type": "match",
-                "title": "호응 부사어와 서술어 짝 맞추기",
+                "title": "인사 글의 부사어와 꼬리를 이어요",
                 "pairs": [
                   {
-                    "left": "결코 포기하지",
-                    "leftId": "p-1-l",
-                    "right": "않겠습니다",
-                    "rightId": "p-1-r"
+                    "left": "결코",
+                    "leftId": "l-1",
+                    "right": "아니었어요",
+                    "rightId": "r-1"
                   },
                   {
-                    "left": "비록 힘들",
-                    "leftId": "p-2-l",
-                    "right": "지라도 해냅니다",
-                    "rightId": "p-2-r"
+                    "left": "비록",
+                    "leftId": "l-2",
+                    "right": "비가 왔지만",
+                    "rightId": "r-2"
                   },
                   {
-                    "left": "마치 꿈을 꾼",
-                    "leftId": "p-3-l",
-                    "right": "것만 같습니다",
-                    "rightId": "p-3-r"
-                  },
-                  {
-                    "left": "여간 신경 쓰이지",
-                    "leftId": "p-4-l",
-                    "right": "않는 일입니다",
-                    "rightId": "p-4-r"
+                    "left": "만약",
+                    "leftId": "l-3",
+                    "right": "부스를 연다면",
+                    "rightId": "r-3"
                   }
                 ],
-                "explanation": "부사어의 의미에 어울리는 끝맺음 표현을 바르게 짝짓습니다."
+                "explanation": "부사어 세 개는 각각 부정·맞섬·조건 꼬리를 불러요. 다른 부사어의 꼬리를 빌려 오면 어긋나요."
               },
               {
                 "type": "error_correct",
-                "question": "호응이 어긋난 부분을 고치세요.",
+                "question": "전망 줄에서 어긋난 자리를 고쳐요.",
                 "segments": [
-                  "이번 장애는 ",
-                  "결코 사소하여 ",
-                  "전면 재점검합니다."
+                  "아마 ",
+                  "다음 학기에는 ",
+                  "신입 회원이 ",
+                  "더 많이 들어와요. ",
+                  "부스 마무리를 도와줘서 고마워요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-2",
-                "fixes": ["결코 사소하여", "결코 사소하지 않아"],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "'결코' 뒤에는 '사소하지 않아'처럼 부정 서술어가 와야 합니다."
+                "segmentIds": ["seg-1", "seg-2", "seg-3", "seg-4", "seg-5"],
+                "correctSegment": "seg-4",
+                "fixes": [
+                  "더 많이 들어올 거예요.",
+                  "더 많이 들어온대요.",
+                  "더 많이 들어왔으면 해요."
+                ],
+                "fixIds": ["fix-1", "fix-2", "fix-3"],
+                "correctFix": "fix-1",
+                "explanation": "다음 학기 회원 수는 아직 짐작이에요. 전하거나 바라는 꼬리로 바꿔도 '아마'의 짝은 아니에요."
               },
               {
                 "type": "fill_blank",
-                "template": "서버 장애 원인을 찾는 일은 ___ 쉽지 않았습니다.",
-                "words": ["절대로", "마치", "비록", "여간"],
-                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
-                "answer": ["w-4"],
-                "explanation": "'~지 않다'와 짝을 이뤄 강조하는 부사어는 '여간'입니다."
+                "template": "여러분이 없었다면 저 혼자서는 절대 ___.",
+                "words": [
+                  "해냈을 거예요",
+                  "해내지 못했을 거예요",
+                  "해낼 수 있었을 거예요"
+                ],
+                "wordIds": ["w-1", "w-2", "w-3"],
+                "answer": ["w-2"],
+                "explanation": "여러분 도움 없이는 안 됐다는 뜻이에요. '절대' 뒤는 부정으로 닫아야 해요."
               }
             ]
           },
@@ -4084,150 +4088,215 @@
             "steps": [
               {
                 "type": "compare",
-                "title": "주어 일치와 서술어 호응 비교",
-                "analysis": "앞뒤 절 주어를 일치시키면 문장이 명확해집니다.",
+                "title": "수아가 사장님께 보내는 신메뉴 주간 보고",
+                "analysis": "앞 절 주어 '저는'을 뒤 절에도 넣어 읽어요. 어색하면 뒤 절 서술어를 그 주어의 행동으로 바꿔요.",
                 "versions": [
                   {
-                    "label": "오류 문장",
-                    "mark": "보고서가 제출되었다",
-                    "text": "팀장님은 검토를 마치고 보고서가 제출되었다."
+                    "label": "주인공 둘",
+                    "mark": "많이 팔렸어요",
+                    "text": "저는 지난주 신메뉴 세 가지를 출시했고, 첫 주에 예상보다 많이 팔렸어요."
                   },
                   {
-                    "label": "바른 문장",
-                    "mark": "보고서를 제출하셨다",
-                    "text": "팀장님은 검토를 마치고 보고서를 제출하셨다."
+                    "label": "주인공 하나",
+                    "mark": "많이 팔았어요",
+                    "text": "저는 지난주 신메뉴 세 가지를 출시했고, 첫 주에 예상보다 많이 팔았어요."
                   }
                 ]
               },
               {
                 "type": "true_false",
-                "question": "올바른 호응의 문장인가요?",
-                "statement": "우리는 현장을 확인하고 원인이 파악되었다.",
+                "question": "둘째 줄, 그대로 보내도 되나요?",
+                "statement": "저는 민트 라떼를 직원들에게 먼저 맛보게 했고, 너무 달다는 의견이 나왔어요.",
                 "correct": false,
-                "explanation": "앞 절 주어에 맞춰 '원인을 파악했다'로 씁니다."
+                "explanation": "뒤 절에 '저는'을 넣으면 수아가 의견이 된 것처럼 읽혀요. 들은 사람의 행동으로 서술어를 바꿔야 해요."
               },
               {
                 "type": "multiple_choice",
-                "question": "주어가 일관된 문장은?",
+                "question": "세 줄 중 고쳐야 할 문장은?",
                 "options": [
                   {
                     "id": "opt-a",
-                    "text": "결재를 올리고 승인되었다"
+                    "text": "저는 신메뉴를 출시했고, 첫 주에 많이 팔았어요."
                   },
                   {
                     "id": "opt-b",
-                    "text": "결재를 올리고 승인을 받았다"
+                    "text": "직원들은 레시피를 연습했고, 실수 없이 만들어졌어요."
                   },
                   {
                     "id": "opt-c",
-                    "text": "결재가 나고 승인을 올렸다"
+                    "text": "저는 신메뉴 세 가지를 출시했고, 직원들과 시음했어요."
                   }
                 ],
                 "correct": "opt-b",
-                "explanation": "주어 관점을 '승인을 받았다'로 능동 통일합니다."
+                "explanation": "연습한 사람은 직원인데 만들어진 것은 레시피처럼 읽혀요. 나머지 두 줄은 주인공이 한 사람으로 이어져요."
               },
               {
                 "type": "select",
-                "question": "어색한 서술어 구간은?",
+                "question": "앞 절 주어와 안 맞는 서술어를 누르세요.",
                 "segments": [
-                  "민우 님은 ",
-                  "데이터를 분석한 뒤 ",
-                  "결과가 공유되었다."
+                  "저는 신메뉴 안내판을 ",
+                  "입구에 세웠는데, ",
+                  "손님 눈에 ",
+                  "잘 띄지 ",
+                  "않았어요. ",
+                  "직원들은 ",
+                  "레시피를 ",
+                  "이틀 연습했어요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "주어에 맞춰 '결과를 공유했다'로 고쳐야 자연스럽습니다.",
+                "segmentIds": [
+                  "seg-1",
+                  "seg-2",
+                  "seg-3",
+                  "seg-4",
+                  "seg-5",
+                  "seg-6",
+                  "seg-7",
+                  "seg-8"
+                ],
+                "correct": ["seg-5"],
+                "explanation": "세운 사람은 수아인데 띄지 않은 것은 안내판이에요. 뒤 절 서술어를 수아의 행동으로 되돌려야 해요.",
                 "layout": "inline"
               },
               {
                 "type": "fill_blank",
-                "template": "기획팀은 요구사항을 정리하여 ___ 전달했습니다.",
-                "words": ["개발팀에", "개발팀이", "문서가", "결과가"],
+                "template": "저희는 첫 주 매출을 지난달 같은 주와 비교했고, 18% 늘어난 것___.",
+                "words": [
+                  "을 확인했어요",
+                  "으로 나타났어요",
+                  "이 확인됐어요",
+                  "으로 보였어요"
+                ],
                 "wordIds": ["w-1", "w-2", "w-3", "w-4"],
                 "answer": ["w-1"],
-                "explanation": "주어 '기획팀'의 행동이므로 목적어/부사어로 연결합니다."
+                "explanation": "비교한 사람이 저희이니 늘어난 것을 확인한 사람도 저희예요. 매출이 주어로 튀어 나가는 서술어는 빼요."
               },
               {
-                "type": "true_false",
-                "question": "문장 호응이 자연스러운가요?",
-                "statement": "개발팀은 배포를 끝내고 로그를 점검했다.",
-                "correct": true,
-                "explanation": "주어 '개발팀'이 두 동작을 능동으로 자연스럽게 맺습니다."
-              },
-              {
-                "type": "select",
-                "question": "주어와 어긋난 서술어는?",
-                "segments": [
-                  "수진 님은 ",
-                  "발표를 마치고 ",
-                  "질문이 시작되었다."
+                "type": "categorize",
+                "title": "두 절의 주인공이 같은지 나누세요",
+                "categories": [
+                  {
+                    "id": "cat-one",
+                    "label": "주인공 하나 → 그대로"
+                  },
+                  {
+                    "id": "cat-two",
+                    "label": "주인공이 바뀜 → 고치기"
+                  }
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "앞 절 주어에 이어 '질문을 받았다'로 맞춰야 자연스럽습니다.",
-                "layout": "inline"
+                "items": [
+                  {
+                    "id": "item-1",
+                    "text": "출시했고, 팔렸어요",
+                    "categoryId": "cat-two"
+                  },
+                  {
+                    "id": "item-2",
+                    "text": "시음했고, 정했어요",
+                    "categoryId": "cat-one"
+                  },
+                  {
+                    "id": "item-3",
+                    "text": "연습했고, 만들어졌어요",
+                    "categoryId": "cat-two"
+                  },
+                  {
+                    "id": "item-4",
+                    "text": "세웠고, 안내했어요",
+                    "categoryId": "cat-one"
+                  },
+                  {
+                    "id": "item-5",
+                    "text": "비교했고, 나타났어요",
+                    "categoryId": "cat-two"
+                  },
+                  {
+                    "id": "item-6",
+                    "text": "요청했고, 도착하기로",
+                    "categoryId": "cat-two"
+                  }
+                ],
+                "explanation": "뒤 절이 저절로 벌어진 일로 끝나면 주인공이 바뀐 거예요. 앞 절 주어의 행동으로 바꿔요."
+              },
+              {
+                "type": "match",
+                "title": "앞 절과 뒤 절 서술어를 이어요",
+                "pairs": [
+                  {
+                    "left": "출시했고",
+                    "leftId": "l-1",
+                    "right": "팔렸어요",
+                    "rightId": "r-1"
+                  },
+                  {
+                    "left": "연습했고",
+                    "leftId": "l-2",
+                    "right": "만들어졌어요",
+                    "rightId": "r-2"
+                  },
+                  {
+                    "left": "비교했고",
+                    "leftId": "l-3",
+                    "right": "나타났어요",
+                    "rightId": "r-3"
+                  },
+                  {
+                    "left": "세웠는데",
+                    "leftId": "l-4",
+                    "right": "띄게 하지는 못했어요",
+                    "rightId": "r-4"
+                  }
+                ],
+                "explanation": "뒤 절에 앞 절 주어를 넣어 읽어요. 저절로 벌어진 일로 끝나면 주어가 바뀐 꼬리고, 안내판은 수아의 행동으로 맺어요."
               },
               {
                 "type": "error_correct",
-                "question": "어색한 서술어를 바르게 고치세요.",
+                "question": "다섯째 줄, 어긋난 구간을 고쳐요.",
                 "segments": [
-                  "지원자는 ",
-                  "서류를 제출하고 ",
-                  "합격이 통보되었다."
+                  "저는 사장님께 ",
+                  "재료 추가 주문을 ",
+                  "요청했고, ",
+                  "목요일에 ",
+                  "도착하기로 ",
+                  "했어요. ",
+                  "민트 라떼 ",
+                  "재고는 내일 ",
+                  "오전에 세어 볼게요."
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["합격이 통보되었다", "합격 통보를 받았다"],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "주어 '지원자'에 맞춰 '합격 통보를 받았다'로 바꿉니다."
-              },
-              {
-                "type": "fill_blank",
-                "template": "대표님은 신규 사업을 승인하고 ___ 지시하셨다.",
-                "words": ["예산이", "실행을", "계획이", "목표가"],
-                "wordIds": ["w-1", "w-2", "w-3", "w-4"],
-                "answer": ["w-2"],
-                "explanation": "주어 '대표님'의 목적어로 '실행을'을 넣어야 호응합니다."
-              },
-              {
-                "type": "select",
-                "question": "초점이 흐려진 서술어 구간은?",
-                "segments": [
-                  "마케팅팀은 ",
-                  "캠페인을 기획하고 ",
-                  "성과가 측정되었다."
+                "segmentIds": [
+                  "seg-1",
+                  "seg-2",
+                  "seg-3",
+                  "seg-4",
+                  "seg-5",
+                  "seg-6",
+                  "seg-7",
+                  "seg-8",
+                  "seg-9"
                 ],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correct": ["seg-3"],
-                "explanation": "주어 '마케팅팀'에 맞춰 '성과를 측정했다'로 고칩니다.",
-                "layout": "inline"
-              },
-              {
-                "type": "error_correct",
-                "question": "피동 오류 구간을 바르게 고치세요.",
-                "segments": ["PM은 ", "일정을 조율하고 ", "공유가 완료되었다."],
-                "segmentIds": ["seg-1", "seg-2", "seg-3"],
-                "correctSegment": "seg-3",
-                "fixes": ["공유가 완료되었다", "공유를 마쳤다"],
-                "fixIds": ["fix-1", "fix-2"],
-                "correctFix": "fix-2",
-                "explanation": "주어 'PM'의 행동이므로 능동형 '공유를 마쳤다'로 씁니다."
+                "correctSegment": "seg-5",
+                "fixes": [
+                  "재료를 받기로 ",
+                  "늦은 오후에 도착하기로 ",
+                  "두 상자가 도착하기로 "
+                ],
+                "fixIds": ["fix-1", "fix-2", "fix-3"],
+                "correctFix": "fix-1",
+                "explanation": "요청한 사람은 수아지만 도착하는 것은 재료예요. 시간이나 수량만 바꾸면 도착하는 쪽은 재료로 남아요."
               },
               {
                 "type": "sentence_build",
-                "question": "단일 주어로 완성된 문장은?",
+                "question": "보고 마지막 줄을 타일로 조립하세요.",
                 "tiles": [
-                  "지훈 님은",
-                  "회의를",
-                  "마치고",
-                  "회의록을",
-                  "모두에게",
-                  "공유했다."
+                  "저는",
+                  "다음 주에 손님 설문을",
+                  "진행하고,",
+                  "금요일에 결과를",
+                  "정리해 드릴게요.",
+                  "정리될 거예요."
                 ],
                 "tileIds": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
-                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5", "t-6"],
-                "explanation": "단일 주어 '지훈 님은'에 맞춰 문장을 능동으로 구성합니다."
+                "correct": ["t-1", "t-2", "t-3", "t-4", "t-5"],
+                "explanation": "설문을 진행하는 사람과 결과를 정리하는 사람이 같아야 해요. '정리될 거예요'를 고르면 결과가 주어로 올라와요."
               }
             ]
           }

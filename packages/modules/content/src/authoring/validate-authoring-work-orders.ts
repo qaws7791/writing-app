@@ -1,13 +1,13 @@
 import { resolve } from "node:path"
 
-import { getLessonTemplate } from "@workspace/contracts/content/authoring"
+import { findForbiddenBrandTerms } from "@workspace/contracts/content/authoring"
 
 import {
   parseAuthoringWorkOrders,
   type AuthoringWorkOrder,
 } from "#content/authoring/authoring-work-order"
 import {
-  validateAuthoringLessonLayout,
+  validateAuthoringLessonSteps,
   type AuthoringValidationIssue,
 } from "#content/authoring/validate-authoring-lesson"
 
@@ -22,6 +22,7 @@ export async function validateAuthoringWorkOrdersFromFiles(input: {
       {
         message: "작업 지시서 파일이 없습니다.",
         path: input.workOrdersPath,
+        severity: "error",
       },
     ]
   }
@@ -34,6 +35,7 @@ export async function validateAuthoringWorkOrdersFromFiles(input: {
       {
         message: `작업 지시서 JSON 파싱 실패: ${String(cause)}`,
         path: input.workOrdersPath,
+        severity: "error",
       },
     ]
   }
@@ -63,6 +65,15 @@ async function validateAuthoringWorkOrders(input: {
       continue
     }
 
+    const brandTerms = findForbiddenBrandTerms(JSON.stringify(order))
+    if (brandTerms.length > 0) {
+      issues.push({
+        message: `브리프에 브랜드·서비스 이름이 있습니다: ${brandTerms.join(", ")}`,
+        path: order.lessonId,
+        severity: "error",
+      })
+    }
+
     const lessonPath = resolveLessonPath({
       defaultCourseId: parsed.defaultCourseId,
       defaultLessonsDirectory: parsed.defaultLessonsDirectory,
@@ -85,6 +96,7 @@ async function validateAuthoringWorkOrders(input: {
     issues.push({
       message: `작업 지시서에 없는 레슨 ID: ${input.lessonIds?.join(", ")}`,
       path: input.lessonsRoot,
+      severity: "error",
     })
   }
 
@@ -101,6 +113,7 @@ async function validateAuthoringWorkOrder(input: {
       {
         message: `레슨 파일이 없습니다: ${input.lessonPath}`,
         path: input.order.lessonId,
+        severity: "error",
       },
     ]
   }
@@ -113,39 +126,15 @@ async function validateAuthoringWorkOrder(input: {
       {
         message: `JSON 파싱 실패: ${String(cause)}`,
         path: input.order.lessonId,
+        severity: "error",
       },
     ]
   }
 
-  const layout = resolveWorkOrderLayout(input.order)
-  return validateAuthoringLessonLayout({
-    layout: layout.layout,
+  return validateAuthoringLessonSteps({
     lessonId: input.order.lessonId,
-    stepCount: layout.stepCount,
     steps,
   })
-}
-
-function resolveWorkOrderLayout(order: AuthoringWorkOrder): {
-  readonly layout: readonly string[]
-  readonly stepCount: number
-} {
-  if (order.layout !== undefined) {
-    return {
-      layout: order.layout,
-      stepCount: order.stepCount ?? order.layout.length,
-    }
-  }
-
-  if (order.template === undefined) {
-    throw new Error(`레슨 ${order.lessonId}에 layout 또는 template이 없습니다.`)
-  }
-
-  const template = getLessonTemplate(order.template)
-  return {
-    layout: template.layout,
-    stepCount: order.stepCount ?? template.stepCount,
-  }
 }
 
 function resolveLessonPath(input: {

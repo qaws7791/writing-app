@@ -10,6 +10,19 @@ export {
   MIN_RECOMMENDED_LESSON_STEP_COUNT,
 } from "#contracts/content/authoring/authoring-limits"
 export { collectAnswerDistributionIssues } from "#contracts/content/authoring/answer-distribution"
+export type {
+  AuthoringIssueSeverity,
+  LessonAuthoringIssue,
+} from "#contracts/content/authoring/authoring-issue"
+export {
+  findForbiddenBrandTerms,
+  forbiddenBrandTerms,
+} from "#contracts/content/authoring/forbidden-terms"
+export {
+  collectLessonQualityIssues,
+  lessonQualityLimits,
+} from "#contracts/content/authoring/lesson-quality-rules"
+export { collectUnitAuthoringIssues } from "#contracts/content/authoring/unit-authoring-rules"
 export {
   createBoundedKoreanTextSchema,
   categorizeItemTextSchema,
@@ -31,10 +44,7 @@ export {
   wordTextSchema,
 } from "#contracts/content/authoring/authoring-text-schemas"
 export { koreanCharCount } from "#contracts/content/authoring/korean-text"
-export {
-  collectLessonAuthoringIssues,
-  type LessonAuthoringIssue,
-} from "#contracts/content/authoring/lesson-authoring-rules"
+export { collectLessonAuthoringIssues } from "#contracts/content/authoring/lesson-authoring-rules"
 export {
   getLessonTemplate,
   lessonTemplateIdSchema,

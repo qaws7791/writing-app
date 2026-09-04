@@ -1,16 +1,12 @@
 import type { LessonStepDto } from "#contracts/content/course"
+import type { LessonAuthoringIssue } from "#contracts/content/authoring/authoring-issue"
 import { authoringLimits } from "#contracts/content/authoring/authoring-limits"
-
-export type AnswerDistributionIssue = Readonly<{
-  message: string
-  path: string
-}>
 
 export function collectAnswerDistributionIssues(input: {
   readonly lessonId: string
   readonly steps: readonly LessonStepDto[]
-}): readonly AnswerDistributionIssue[] {
-  const issues: AnswerDistributionIssue[] = []
+}): readonly LessonAuthoringIssue[] {
+  const issues: LessonAuthoringIssue[] = []
   const { lessonId, steps } = input
 
   const multipleChoiceSteps = steps.filter(
@@ -30,6 +26,7 @@ export function collectAnswerDistributionIssues(input: {
       issues.push({
         message: `MULTIPLE_CHOICE 정답 위치가 ${dominantIndex.value + 1}번째에 ${Math.round(dominantIndex.ratio * 100)}% 몰려 있습니다.`,
         path: lessonId,
+        severity: "error",
       })
     }
   }
@@ -50,6 +47,7 @@ export function collectAnswerDistributionIssues(input: {
       issues.push({
         message: `FILL_BLANK 정답 패턴이 ${Math.round(dominantPattern.ratio * 100)}% 동일합니다.`,
         path: lessonId,
+        severity: "error",
       })
     }
   }
@@ -69,6 +67,7 @@ export function collectAnswerDistributionIssues(input: {
       issues.push({
         message: `TRUE_FALSE 정답이 ${dominantValue.value === "true" ? "참" : "거짓"}으로 ${Math.round(dominantValue.ratio * 100)}% 몰려 있습니다.`,
         path: lessonId,
+        severity: "error",
       })
     }
   }
