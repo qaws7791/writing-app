@@ -32,7 +32,7 @@ function ChoiceGroup({
 }
 
 const choiceVariants = cva(
-  "relative flex w-full items-start rounded-3xl border px-4 py-3.5 text-left text-sm transition-[background-color,border-color,box-shadow,color] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
+  "relative flex w-full items-start rounded-3xl border px-5 py-5 text-left text-base transition-[background-color,border-color,box-shadow,color] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       state: {
@@ -100,7 +100,7 @@ function ChoiceLabel({ className, ...props }: React.ComponentProps<"span">) {
     <span
       data-slot="choice-label"
       className={cn(
-        "text-sm leading-6 font-medium tracking-[-0.01em]",
+        "text-base leading-7 font-medium tracking-[-0.01em]",
         className
       )}
       {...props}
