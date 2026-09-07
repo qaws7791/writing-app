@@ -141,7 +141,7 @@ function LessonActions({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="lesson-actions"
       className={cn(
-        "mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-2 px-4 sm:px-6 *:w-full [&_[data-slot=button]]:h-12 [&_[data-slot=button]]:w-full",
+        "mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-2 px-4 sm:px-6 *:w-full [&_[data-slot=button]]:h-14 [&_[data-slot=button]]:w-full [&_[data-slot=button]]:text-base [&_[data-slot=button]]:font-bold",
         className
       )}
       {...props}
@@ -223,7 +223,7 @@ function LessonFeedbackActions({
     <div
       data-slot="lesson-feedback-actions"
       className={cn(
-        "flex w-full min-w-0 items-stretch gap-2 [&_[data-slot=button]]:h-12 [&_[data-slot=button]:last-child]:min-w-0 [&_[data-slot=button]:last-child]:flex-1",
+        "flex w-full min-w-0 items-stretch gap-2 [&_[data-slot=button]]:h-14 [&_[data-slot=button]]:text-base [&_[data-slot=button]]:font-bold [&_[data-slot=button]:last-child]:min-w-0 [&_[data-slot=button]:last-child]:flex-1",
         className
       )}
       {...props}
@@ -239,7 +239,7 @@ function LessonFeedbackRetryButton({
     <Button
       aria-label="다시 시도"
       className={cn(
-        "shrink-0 border-warning/30 bg-warning/10 text-warning hover:bg-warning/16 dark:bg-warning/18 dark:hover:bg-warning/26",
+        "size-14 shrink-0 border-warning/30 bg-warning/10 text-warning hover:bg-warning/16 dark:bg-warning/18 dark:hover:bg-warning/26",
         className
       )}
       size="icon-lg"
@@ -261,7 +261,7 @@ function LessonFeedbackContinueButton({
 }) {
   return (
     <Button
-      className={cn("w-full", className)}
+      className={cn("h-14 w-full text-base font-bold", className)}
       size="lg"
       type="button"
       variant={tone === "correct" ? "success" : "warning"}
