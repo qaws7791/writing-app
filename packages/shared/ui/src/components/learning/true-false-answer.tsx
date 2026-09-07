@@ -22,16 +22,20 @@ export function TrueFalseAnswer({
   checked = false,
   correctAnswer,
   defaultSelected = null,
+  falseLabel,
   onSelect,
   prompt,
   statement,
+  trueLabel,
 }: {
   readonly checked?: LessonStepCheckedVisual
   readonly correctAnswer: TrueFalseValue
   readonly defaultSelected?: TrueFalseValue | null
+  readonly falseLabel?: string
   readonly onSelect?: (value: TrueFalseValue) => void
   readonly prompt?: string
   readonly statement: string
+  readonly trueLabel?: string
 }) {
   const [selected, setSelected] = useState<TrueFalseValue | null>(
     defaultSelected
@@ -65,6 +69,7 @@ export function TrueFalseAnswer({
                 <VerdictOption
                   key={option.kind}
                   kind={option.kind}
+                  label={option.kind === "true" ? trueLabel : falseLabel}
                   onClick={() => {
                     if (checked === false) {
                       setSelected(option.value)

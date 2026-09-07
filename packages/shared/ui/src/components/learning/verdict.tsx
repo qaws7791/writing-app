@@ -33,7 +33,7 @@ function VerdictClaim({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 const verdictOptionVariants = cva(
-  "relative flex min-h-32 w-full items-center justify-center rounded-4xl border px-4 py-6 transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-98 disabled:pointer-events-none disabled:opacity-45",
+  "group/verdict-option relative flex aspect-[1.2] min-h-36 w-full flex-col items-center justify-center gap-2 rounded-4xl border px-4 py-6 transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-98 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       state: {
@@ -57,16 +57,20 @@ const verdictOptionVariants = cva(
 function VerdictOption({
   className,
   kind,
+  label,
   selected = false,
   state = "idle",
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof verdictOptionVariants> & {
     kind: VerdictKind
+    label?: React.ReactNode
     selected?: boolean
     state?: VerdictState
   }) {
   const resolvedState = state === "idle" && selected ? "selected" : state
+  const resolvedLabel =
+    label !== undefined ? label : kind === "true" ? "맞아요" : "틀려요"
 
   return (
     <button
@@ -80,40 +84,53 @@ function VerdictOption({
       disabled={resolvedState === "locked"}
       className={cn(verdictOptionVariants({ state: resolvedState }), className)}
       {...props}
-      aria-label={kind === "true" ? "참" : "거짓"}
+      aria-label={
+        props["aria-label"] ??
+        (kind === "true"
+          ? `참${typeof resolvedLabel === "string" ? `, ${resolvedLabel}` : ""}`
+          : `거짓${typeof resolvedLabel === "string" ? `, ${resolvedLabel}` : ""}`)
+      }
     >
       <span aria-hidden data-slot="verdict-mark" data-kind={kind}>
         {kind === "true" ? <TrueMarkGlyph /> : <FalseMarkGlyph />}
       </span>
+      {resolvedLabel ? (
+        <span
+          data-slot="verdict-label"
+          className="text-sm font-medium tracking-[-0.01em] text-muted-foreground transition-colors group-data-[state=selected]/verdict-option:text-foreground group-data-[state=correct]/verdict-option:text-success group-data-[state=incorrect]/verdict-option:text-destructive group-hover/verdict-option:text-foreground"
+        >
+          {resolvedLabel}
+        </span>
+      ) : null}
     </button>
   )
 }
 
-function TrueMarkGlyph() {
+function TrueMarkGlyph({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 48 48"
-      className="size-12"
+      className={cn("size-14 sm:size-16", className)}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="24" cy="24" r="15" stroke="currentColor" strokeWidth="3.5" />
+      <circle cx="24" cy="24" r="17" stroke="currentColor" strokeWidth="4.5" />
     </svg>
   )
 }
 
-function FalseMarkGlyph() {
+function FalseMarkGlyph({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 48 48"
-      className="size-12"
+      className={cn("size-14 sm:size-16", className)}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M13 13 L35 35 M35 13 L13 35"
+        d="M12 12 L36 36 M36 12 L12 36"
         stroke="currentColor"
-        strokeWidth="3.5"
+        strokeWidth="4.5"
         strokeLinecap="round"
       />
     </svg>
