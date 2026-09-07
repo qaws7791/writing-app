@@ -42,14 +42,15 @@ const segmentVariants = cva(
   {
     variants: {
       layout: {
-        inline: "inline rounded-lg border px-1.5 py-0.5 text-left font-normal",
+        inline:
+          "inline rounded-lg border-2 px-1.5 py-0.5 text-left font-normal",
         block:
-          "flex w-full rounded-3xl border px-4 py-3.5 text-left text-sm leading-6 font-normal",
+          "flex w-full rounded-3xl border-2 px-4 py-3.5 text-left text-sm leading-6 font-normal",
       },
       state: {
         idle: "border-border/70 bg-card text-foreground shadow-2xs hover:border-border hover:bg-accent/50",
         selected:
-          "border-info/45 bg-info/15 text-foreground font-medium shadow-xs ring-1 ring-info/30 hover:border-info/55 hover:bg-info/20",
+          "border-info/65 bg-info/15 text-foreground font-medium shadow-xs ring-1 ring-info/30 hover:border-info/75 hover:bg-info/20",
         correct:
           "border-success/35 bg-success/12 text-success font-medium shadow-none hover:bg-success/16",
         incorrect:
@@ -69,19 +70,19 @@ const segmentVariants = cva(
       {
         layout: "inline",
         state: "selected",
-        class: "border-info/40",
+        class: "border-info/60",
       },
       {
         intent: "fault",
         state: "selected",
         class:
-          "border-warning/45 bg-warning/15 text-foreground font-medium shadow-xs ring-1 ring-warning/30 hover:border-warning/55 hover:bg-warning/20",
+          "border-warning/65 bg-warning/15 text-foreground font-medium shadow-xs ring-1 ring-warning/30 hover:border-warning/75 hover:bg-warning/20",
       },
       {
         layout: "inline",
         intent: "fault",
         state: "selected",
-        class: "border-warning/40",
+        class: "border-warning/60",
       },
       {
         layout: "inline",

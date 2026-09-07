@@ -101,7 +101,7 @@ export function FillBlankAnswer<TId extends string>({
                     onClick={() => handleRemoveChoice(index)}
                     state={state}
                   >
-                    {selectedChoiceText ?? "___"}
+                    {selectedChoiceText ?? "?"}
                   </TokenSlot>
                 ) : null}
               </span>

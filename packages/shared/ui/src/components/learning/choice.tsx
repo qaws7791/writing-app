@@ -32,13 +32,13 @@ function ChoiceGroup({
 }
 
 const choiceVariants = cva(
-  "relative flex w-full items-start rounded-3xl border px-5 py-5 text-left text-base transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-98 disabled:pointer-events-none disabled:opacity-45",
+  "relative flex w-full items-start rounded-3xl border-2 px-5 py-5 text-left text-base transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-98 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       state: {
         idle: "border-border/80 bg-card text-foreground shadow-xs hover:border-border hover:bg-accent/40",
         selected:
-          "border-info/35 bg-info/10 text-foreground shadow-xs ring-1 ring-info/15",
+          "border-info/60 bg-info/10 text-foreground shadow-xs ring-1 ring-info/20",
         correct:
           "border-success/30 bg-success/10 text-success shadow-none dark:bg-success/12",
         incorrect:

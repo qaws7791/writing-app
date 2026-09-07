@@ -275,7 +275,7 @@ export function FillBlank() {
   return (
     <div className="flex w-full max-w-md flex-col gap-6">
       <TokenSentence>
-        좋은 반박은<TokenSlot state="empty">빈칸</TokenSlot>을 먼저 드러낸다.
+        좋은 반박은<TokenSlot state="empty">?</TokenSlot>을 먼저 드러낸다.
       </TokenSentence>
       <TokenBank>
         <Token>약한 고리</Token>

@@ -572,7 +572,7 @@ function TokenDemo() {
               }
               onClick={() => clearSlot(0)}
             >
-              {slots[0] ? TOKEN_WORDS.find((word) => word.id === slots[0])?.label : "빈칸"}
+              {slots[0] ? TOKEN_WORDS.find((word) => word.id === slots[0])?.label : "?"}
             </TokenSlot>
             을 먼저 드러낸다.
           </TokenSentence>
@@ -1615,7 +1615,7 @@ function FlowToken({
               }
               onClick={() => phase === "answering" && setSlot(null)}
             >
-              {slot ? TOKEN_WORDS.find((word) => word.id === slot)?.label : "빈칸"}
+              {slot ? TOKEN_WORDS.find((word) => word.id === slot)?.label : "?"}
             </TokenSlot>
             을 먼저 드러낸다.
           </TokenSentence>

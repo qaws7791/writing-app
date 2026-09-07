@@ -67,13 +67,13 @@ function PairColumn({
 }
 
 const pairItemVariants = cva(
-  "group/pair-item flex w-full items-center gap-3 rounded-3xl border px-4 py-3.5 text-left text-sm font-medium tracking-[-0.01em] transition-[background-color,border-color,box-shadow,color] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
+  "group/pair-item flex w-full items-center gap-3 rounded-3xl border-2 px-4 py-3.5 text-left text-sm font-medium tracking-[-0.01em] transition-[background-color,border-color,box-shadow,color] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       state: {
         idle: "border-border/80 bg-card text-foreground shadow-xs hover:bg-accent/40",
         active:
-          "border-info/35 bg-info/10 text-foreground shadow-xs ring-1 ring-info/15",
+          "border-info/60 bg-info/10 text-foreground shadow-xs ring-1 ring-info/20",
         paired: "border-border bg-surface/80 text-foreground shadow-xs",
         correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",

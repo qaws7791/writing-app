@@ -201,7 +201,7 @@ function SortableItem({
         data-drop-target={isDropTarget || undefined}
         data-disabled={isDisabled || undefined}
         className={cn(
-          "flex items-center gap-3 rounded-3xl border px-4 py-4 text-base transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none sm:px-5",
+          "flex items-center gap-3 rounded-3xl border-2 px-4 py-4 text-base transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none sm:px-5",
           state === "idle" &&
             "border-border/80 bg-card text-foreground shadow-xs hover:border-border",
           state === "correct" && "border-success/30 bg-success/10 text-success",
@@ -210,10 +210,7 @@ function SortableItem({
           state === "locked" &&
             "border-border/60 bg-muted/40 text-muted-foreground",
           isDragging &&
-            "z-20 opacity-90 shadow-lg scale-[1.01] border-foreground/20",
-          isDropTarget &&
-            !isDragging &&
-            "border-primary/40 bg-accent/50 ring-2 ring-primary/10",
+            "z-20 opacity-90 shadow-lg scale-[1.01] border-foreground/30",
           className
         )}
         {...props}

@@ -315,8 +315,8 @@ function ClassifyPool({
         data-slot="classify-pool"
         data-drop-target={isDropTarget || undefined}
         className={cn(
-          "flex flex-col gap-2 rounded-3xl border border-dashed border-border/70 bg-surface/40 p-3 transition-[background-color,border-color] duration-150 motion-reduce:transition-none",
-          isReturnTarget && "border-info/40 bg-info/10",
+          "flex flex-col gap-2 rounded-3xl border-2 border-dashed border-border/70 bg-surface/40 p-3 transition-[background-color,border-color] duration-150 motion-reduce:transition-none",
+          isReturnTarget && "border-info/60 bg-info/10",
           isDropTarget && "border-foreground/35 bg-accent/40",
           className
         )}
@@ -424,14 +424,14 @@ function ClassifyBasket({
         data-state={isLocked ? "locked" : isActive ? "active" : "idle"}
         data-drop-target={isDropTarget || undefined}
         className={cn(
-          "flex min-h-28 flex-col gap-2 rounded-3xl border p-3 transition-[background-color,border-color] duration-150 motion-reduce:transition-none",
+          "flex min-h-28 flex-col gap-2 rounded-3xl border-2 p-3 transition-[background-color,border-color] duration-150 motion-reduce:transition-none",
           isLocked && "border-border/60 bg-muted/30",
           !isLocked &&
             isEmpty &&
             "border-dashed border-border/70 bg-surface/40",
           !isLocked && !isEmpty && "border-border/80 bg-card",
-          isAwaitingItem && !isActive && "border-info/35",
-          isActive && "border-solid border-info/40 bg-info/10",
+          isAwaitingItem && !isActive && "border-info/45",
+          isActive && "border-solid border-info/60 bg-info/10",
           isDropTarget &&
             !isLocked &&
             "border-solid border-foreground/35 bg-accent/40",
@@ -472,7 +472,7 @@ function ClassifyBasket({
 }
 
 const classifyItemVariants = cva(
-  "group/classify-item flex items-start gap-3 border text-left text-sm transition-[background-color,border-color,box-shadow,color,opacity,transform] duration-150 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45 motion-reduce:transition-none",
+  "group/classify-item flex items-start gap-3 border-2 text-left text-sm transition-[background-color,border-color,box-shadow,color,opacity,transform] duration-150 outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45 motion-reduce:transition-none",
   {
     variants: {
       surface: {
@@ -481,7 +481,8 @@ const classifyItemVariants = cva(
       },
       state: {
         idle: "border-border/80 bg-card text-foreground hover:bg-accent/40",
-        active: "border-info/35 bg-info/10 text-foreground shadow-xs",
+        active:
+          "border-info/60 bg-info/10 text-foreground shadow-xs ring-1 ring-info/20",
         placed: "border-border bg-card text-foreground",
         correct: "border-success/30 bg-success/10 text-success",
         incorrect: "border-destructive/30 bg-destructive/6 text-destructive",

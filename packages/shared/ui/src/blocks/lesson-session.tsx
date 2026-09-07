@@ -485,9 +485,7 @@ function TokenStep({
               }
               onClick={() => phase === "answering" && setSlot(null)}
             >
-              {slot
-                ? TOKEN_WORDS.find((word) => word.id === slot)?.label
-                : "빈칸"}
+              {slot ? TOKEN_WORDS.find((word) => word.id === slot)?.label : "?"}
             </TokenSlot>
             을 먼저 드러낸다.
           </TokenSentence>
