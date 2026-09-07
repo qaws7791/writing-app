@@ -33,7 +33,7 @@ function VerdictClaim({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 const verdictOptionVariants = cva(
-  "group/verdict-option relative flex aspect-[1.2] min-h-36 w-full flex-col items-center justify-center gap-2 rounded-4xl border px-4 py-6 transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-98 disabled:pointer-events-none disabled:opacity-45",
+  "group/verdict-option relative flex aspect-[1.2] min-h-36 w-full flex-col items-center justify-center gap-4 sm:gap-5 rounded-4xl border px-4 py-6 transition-[background-color,border-color,box-shadow,color,scale] duration-125 ease-press outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 active:scale-98 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       state: {
