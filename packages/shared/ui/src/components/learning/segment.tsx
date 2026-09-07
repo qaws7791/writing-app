@@ -38,23 +38,26 @@ function SegmentGroup({
 }
 
 const segmentVariants = cva(
-  "transition-[background-color,border-color,color,box-shadow] outline-none focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
+  "transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out outline-none select-none active:scale-[0.98] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       layout: {
-        inline:
-          "inline rounded-lg border border-border/60 bg-card px-1.5 py-0.5 text-left shadow-2xs hover:border-border hover:bg-accent/55 focus-visible:border-ring",
+        inline: "inline rounded-lg border px-1.5 py-0.5 text-left font-normal",
         block:
-          "flex w-full rounded-3xl border border-border/80 bg-card px-4 py-3.5 text-left text-sm leading-6 shadow-xs hover:bg-accent/40 focus-visible:border-ring",
+          "flex w-full rounded-3xl border px-4 py-3.5 text-left text-sm leading-6 font-normal",
       },
       state: {
-        idle: "",
-        selected: "border-info/35 bg-info/12 shadow-xs",
-        correct: "border-success/30 bg-success/10 text-success",
-        incorrect: "border-destructive/30 bg-destructive/6 text-destructive",
+        idle: "border-border/70 bg-card text-foreground shadow-2xs hover:border-border hover:bg-accent/50",
+        selected:
+          "border-info/45 bg-info/15 text-foreground font-medium shadow-xs ring-1 ring-info/30 hover:border-info/55 hover:bg-info/20",
+        correct:
+          "border-success/35 bg-success/12 text-success font-medium shadow-none hover:bg-success/16",
+        incorrect:
+          "border-destructive/35 bg-destructive/8 text-destructive font-medium shadow-none hover:bg-destructive/12",
         missed:
-          "border-dashed border-border/80 bg-transparent text-muted-foreground",
-        locked: "border-border/60 bg-muted/40 text-muted-foreground",
+          "border-dashed border-border/80 bg-transparent text-muted-foreground shadow-none",
+        locked:
+          "border-border/60 bg-muted/40 text-muted-foreground shadow-none",
       },
       intent: {
         choice: "",
@@ -66,28 +69,29 @@ const segmentVariants = cva(
       {
         layout: "inline",
         state: "selected",
-        class: "border-info/30",
+        class: "border-info/40",
       },
       {
         intent: "fault",
         state: "selected",
-        class: "border-warning/35 bg-warning/12 text-foreground shadow-xs",
+        class:
+          "border-warning/45 bg-warning/15 text-foreground font-medium shadow-xs ring-1 ring-warning/30 hover:border-warning/55 hover:bg-warning/20",
       },
       {
         layout: "inline",
         intent: "fault",
         state: "selected",
-        class: "border-warning/30",
+        class: "border-warning/40",
       },
       {
         layout: "inline",
         state: "correct",
-        class: "border-success/25",
+        class: "border-success/30",
       },
       {
         layout: "inline",
         state: "incorrect",
-        class: "border-destructive/25",
+        class: "border-destructive/30",
       },
     ],
     defaultVariants: {
