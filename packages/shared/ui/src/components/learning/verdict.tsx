@@ -13,7 +13,10 @@ function Verdict({ className, ...props }: React.ComponentProps<"div">) {
     <div
       role="radiogroup"
       data-slot="verdict"
-      className={cn("grid w-full grid-cols-2 gap-3", className)}
+      className={cn(
+        "grid w-full max-w-md mx-auto grid-cols-2 gap-3 sm:gap-4",
+        className
+      )}
       {...props}
     />
   )
