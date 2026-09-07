@@ -201,15 +201,19 @@ function SortableItem({
         data-drop-target={isDropTarget || undefined}
         data-disabled={isDisabled || undefined}
         className={cn(
-          "flex items-center gap-2 rounded-3xl border px-2 py-1.5 text-sm transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none",
-          state === "idle" && "border-border/80 bg-card shadow-xs",
+          "flex items-center gap-3 rounded-3xl border px-4 py-4 text-base transition-[background-color,border-color,box-shadow,opacity,transform] duration-150 outline-none motion-reduce:transition-none sm:px-5",
+          state === "idle" &&
+            "border-border/80 bg-card text-foreground shadow-xs hover:border-border",
           state === "correct" && "border-success/30 bg-success/10 text-success",
           state === "incorrect" &&
             "border-destructive/30 bg-destructive/6 text-destructive",
           state === "locked" &&
             "border-border/60 bg-muted/40 text-muted-foreground",
-          isDragging && "z-10 opacity-55 shadow-md",
-          isDropTarget && !isDragging && "border-foreground/35 bg-accent/45",
+          isDragging &&
+            "z-20 opacity-90 shadow-lg scale-[1.01] border-foreground/20",
+          isDropTarget &&
+            !isDragging &&
+            "border-primary/40 bg-accent/50 ring-2 ring-primary/10",
           className
         )}
         {...props}
@@ -245,12 +249,12 @@ function SortableHandle({
       aria-roledescription={ariaRoleDescription}
       disabled={isDisabled}
       className={cn(
-        "flex size-9 shrink-0 touch-none cursor-grab items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:bg-accent/70 hover:text-foreground active:cursor-grabbing focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:cursor-default disabled:opacity-45",
+        "flex size-9 shrink-0 touch-none cursor-grab items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:bg-accent/80 active:bg-accent active:cursor-grabbing focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:cursor-default disabled:opacity-45",
         className
       )}
       {...props}
     >
-      <GripVerticalIcon aria-hidden="true" className="size-4" />
+      <GripVerticalIcon aria-hidden="true" className="size-4.5" />
     </button>
   )
 }
@@ -259,7 +263,10 @@ function SortableContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sortable-content"
-      className={cn("min-w-0 flex-1 px-2 leading-6 font-medium", className)}
+      className={cn(
+        "min-w-0 flex-1 px-1 text-base leading-7 font-medium tracking-[-0.01em]",
+        className
+      )}
       {...props}
     />
   )
