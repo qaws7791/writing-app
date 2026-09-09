@@ -37,7 +37,7 @@ function StepTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="step-title"
       className={cn(
-        "font-heading text-2xl font-semibold text-balance sm:text-[1.75rem]",
+        "font-heading text-2xl font-bold text-balance sm:text-[1.75rem]",
         className
       )}
       {...props}
