@@ -1,0 +1,181 @@
+[
+  {
+    "type": "compare",
+    "title": "서연의 칼럼, 설명문과 통념 전복 오프닝 대조",
+    "analysis": "누구나 아는 상식 대신 통념을 깨는 질문으로 열면 호기심이 폭발해요.",
+    "versions": [
+      {
+        "label": "상투적 설명",
+        "mark": "마음의 양식이자",
+        "text": "독서는 현대인에게 마음의 양식이자 매우 유익한 습관 중 하나예요."
+      },
+      {
+        "label": "통념 전복",
+        "mark": "통장 잔고가 그대로인",
+        "text": "책을 100권 읽어도 통장 잔고가 그대로인 이유는 무엇일까요?"
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장을 후킹 오프닝으로 쓸 수 있나요?",
+    "statement": "독서는 현대인에게 마음의 양식이자 매우 유익한 습관이에요.",
+    "correct": false,
+    "explanation": "도덕 교과서 같은 당연한 소리는 독자의 스크롤을 즉시 멈추게 해요."
+  },
+  {
+    "type": "match",
+    "title": "4대 오프닝 패턴과 예문 짝짓기",
+    "pairs": [
+      {
+        "left": "질문형",
+        "leftId": "p1-l",
+        "right": "통장 잔고는 왜?",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "충격사실형",
+        "leftId": "p2-l",
+        "right": "성인 60% 미완독",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "통념전복형",
+        "leftId": "p3-l",
+        "right": "줄 긋기가 망쳐요",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "글의 성격에 맞춰 독자의 관심을 끄는 최적의 오프닝을 선택해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "충격 사실형 패턴에 해당하는 첫 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "성인 10명 중 6명은 지난 1년간 단 한 권도 완독하지 못했어요."
+      },
+      {
+        "id": "opt-2",
+        "text": "많은 직장인이 바쁜 일상 속에서도 책을 읽으려고 노력해요."
+      },
+      {
+        "id": "opt-3",
+        "text": "다양한 분야의 책을 골고루 읽는 것이 바람직한 태도예요."
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "성인 60% 미완독이라는 구체적 통계 수치가 독자에게 경각심을 줘요."
+  },
+  {
+    "type": "select",
+    "question": "문장에서 기존 상식을 깨는 통념 전복 구간은?",
+    "segments": [
+      "처음부터 끝까지 ",
+      "모든 쪽을 다 읽어야 한다는 강박이 ",
+      "오히려 독서 습관을 ",
+      "철저히 망쳐요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s2"],
+    "explanation": "완독 강박이 나쁘다는 도발적 주장이 통념을 깨며 시선을 붙잡아요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 감각 장면형 오프닝에 맞나요?",
+    "statement": "새벽 2시, 다 읽은 책을 덮자마자 머릿속이 하얗게 비어 있었어요.",
+    "correct": true,
+    "explanation": "시간과 책을 덮는 행동, 머릿속 백지 상태를 감각적으로 묘사했어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "독서 칼럼의 가장 날카로운 질문형 오프닝은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "독서의 필요성에 대해서는 다들 잘 알고 계시죠?"
+      },
+      {
+        "id": "opt-b",
+        "text": "왜 주말마다 서점으로 향하는 직장인은 번아웃에 걸릴까요?"
+      },
+      {
+        "id": "opt-c",
+        "text": "출퇴근길 지하철에서 책 읽는 분들을 보면 어떤가요?"
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "서점 방문과 번아웃이라는 상반된 단어를 엮어 강한 의문을 품게 해요."
+  },
+  {
+    "type": "categorize",
+    "title": "오프닝 유형 분류하기",
+    "categories": [
+      {
+        "id": "cat-quest",
+        "label": "질문과 충격"
+      },
+      {
+        "id": "cat-cliche",
+        "label": "상투적 나열"
+      }
+    ],
+    "items": [
+      {
+        "id": "it-1",
+        "text": "왜 그대로일까요?",
+        "categoryId": "cat-quest"
+      },
+      {
+        "id": "it-2",
+        "text": "마음의 양식이에요",
+        "categoryId": "cat-cliche"
+      },
+      {
+        "id": "it-3",
+        "text": "60%는 안 읽었어요",
+        "categoryId": "cat-quest"
+      },
+      {
+        "id": "it-4",
+        "text": "골고루 읽어야 해요",
+        "categoryId": "cat-cliche"
+      }
+    ],
+    "explanation": "독자의 반응을 유도하는 유형과 지루한 유형을 명확히 갈라내요."
+  },
+  {
+    "type": "error_correct",
+    "question": "평이한 권유형을 감각 장면형으로 고치세요.",
+    "segments": [
+      "마음에 와닿는 구절을 발견하면 ",
+      "수첩에 메모를 남기는 편이 ",
+      "나중에 활용하기에 참 좋아요."
+    ],
+    "segmentIds": ["c1", "c2", "c3"],
+    "correctSegment": "c3",
+    "fixes": [
+      "잉크가 손에 번졌어요.",
+      "노트 정리에 유익해요.",
+      "지혜를 쌓는 길이에요."
+    ],
+    "fixIds": ["f1", "f2", "f3"],
+    "correctFix": "f1",
+    "explanation": "잉크가 번졌다는 손끝 감각을 제시해야 장면이 눈앞에 그려져요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "서연의 칼럼 첫머리를 통념 전복형으로 조립하세요.",
+    "tiles": [
+      "처음부터 끝까지 ",
+      "다 읽어야 한다는 강박이 ",
+      "독서 습관을 ",
+      "망쳐요."
+    ],
+    "tileIds": ["t1", "t2", "t3", "t4"],
+    "correct": ["t1", "t2", "t3", "t4"],
+    "explanation": "상식을 깨뜨리는 단호한 문장으로 독자의 스크롤을 붙잡아요."
+  }
+]

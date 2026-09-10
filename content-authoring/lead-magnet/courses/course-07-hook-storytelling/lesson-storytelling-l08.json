@@ -1,0 +1,176 @@
+[
+  {
+    "type": "compare",
+    "title": "민우의 어시장 에세이, 정적 형용사와 능동 동사 대조",
+    "analysis": "활기찼다는 형용사 대신 궤짝을 바닥에 내리꽂는 동사를 쓰면 생생해요.",
+    "versions": [
+      {
+        "label": "정적 형용사",
+        "mark": "활기차고 생명력이",
+        "text": "새벽 어시장의 풍경은 대단히 활기차고 생명력이 넘치는 모습이었어요."
+      },
+      {
+        "label": "능동 동사",
+        "mark": "궤짝을 바닥에 쾅",
+        "text": "장화 신은 상인들이 은빛 갈치 궤짝을 바닥에 쾅 내리꽂았어요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 살아있는 동작이 담긴 문장인가요?",
+    "statement": "부둣가의 밤바다는 참으로 고요하고 평화로운 분위기였어요.",
+    "correct": false,
+    "explanation": "고요하고 평화롭다는 형용사는 정지된 풍경 사진처럼 멈춰 있어요."
+  },
+  {
+    "type": "match",
+    "title": "정적 서술과 능동 동사 서술 짝짓기",
+    "pairs": [
+      {
+        "left": "생명력이 넘쳤어요",
+        "leftId": "p1-l",
+        "right": "궤짝을 내리꽂았어요",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "밤바다가 고요했어요",
+        "leftId": "p2-l",
+        "right": "배 옆구리를 때렸어요",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "복잡하고 번잡했어요",
+        "leftId": "p3-l",
+        "right": "손가락을 치켜세웠어요",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "정적 형용사를 움직임이 살아있는 구체적 동사로 1:1 교체해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "물리적 움직임과 역동성이 살아 있는 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "깨진 얼음 파편들이 생선 비늘 사이로 날카롭게 튀어 올랐어요."
+      },
+      {
+        "id": "opt-2",
+        "text": "얼음 조각들이 햇살 아래 반짝거리며 무척 아름답게 보였어요."
+      },
+      {
+        "id": "opt-3",
+        "text": "새벽 어시장은 온갖 사람들로 붐벼서 무척 활발한 분위기였어요."
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "얼음 파편이 튀어 오른다는 동작이 장면의 촉각적 운동성을 살려요."
+  },
+  {
+    "type": "select",
+    "question": "문장에서 사물의 움직임을 표현한 능동 동사 구간은?",
+    "segments": [
+      "검은 바닷물이 ",
+      "밧줄에 묶인 배의 옆구리를 ",
+      "끊임없이 찰싹 때리며 ",
+      "물보라를 일으켰어요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s3"],
+    "explanation": "배 옆구리를 때린다는 타격 동사가 파도의 거친 힘을 드러내요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 정적 상태를 벗어난 문장인가요?",
+    "statement": "연탄불 위에서 기름이 끓어오르며 하얀 연기를 뿜어냈어요.",
+    "correct": true,
+    "explanation": "끓어오르고 뿜어낸다는 연속 동사가 후각과 시각을 생생히 깨워요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "에디터가 동사 전환을 권고할 정적인 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "붉은 고무장갑을 낀 손이 굵은 그물을 힘껏 잡아당겼어요."
+      },
+      {
+        "id": "opt-b",
+        "text": "안개가 가로등 불빛을 삼키며 골목으로 밀려들었어요."
+      },
+      {
+        "id": "opt-c",
+        "text": "새벽 안개가 자욱하게 끼어 있어 신비로운 운치를 더했어요."
+      }
+    ],
+    "correct": "opt-c",
+    "explanation": "신비로운 운치를 더했다는 품평은 움직임이 없어 글의 맥을 끊어요."
+  },
+  {
+    "type": "categorize",
+    "title": "서술의 에너지 수준 분류하기",
+    "categories": [
+      {
+        "id": "cat-static",
+        "label": "정적 서술"
+      },
+      {
+        "id": "cat-dynamic",
+        "label": "능동 동사"
+      }
+    ],
+    "items": [
+      {
+        "id": "it-1",
+        "text": "풍경이 아름다웠어요",
+        "categoryId": "cat-static"
+      },
+      {
+        "id": "it-2",
+        "text": "연기를 뿜어냈어요",
+        "categoryId": "cat-dynamic"
+      },
+      {
+        "id": "it-3",
+        "text": "분위기가 좋았어요",
+        "categoryId": "cat-static"
+      },
+      {
+        "id": "it-4",
+        "text": "그물을 잡아당겼어요",
+        "categoryId": "cat-dynamic"
+      }
+    ],
+    "explanation": "풍경을 박제하는 형용사와 장면을 굴리는 능동 동사를 명확히 갈라요."
+  },
+  {
+    "type": "error_correct",
+    "question": "정적 형용사 문장을 역동적인 동사 문장으로 고치세요.",
+    "segments": [
+      "어시장 경매장의 분위기는 ",
+      "상인들의 열기로 인해 ",
+      "대단히 열정적이고 뜨거웠어요."
+    ],
+    "segmentIds": ["c1", "c2", "c3"],
+    "correctSegment": "c3",
+    "fixes": [
+      "손가락이 쉴 새 없이 오갔어요.",
+      "아주 인상적이었어요.",
+      "무척 경이로운 광경이었어요."
+    ],
+    "fixIds": ["f1", "f2", "f3"],
+    "correctFix": "f1",
+    "explanation": "뜨거웠다는 해설 대신 손가락이 오가는 경매 동작으로 장면을 열어요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "민우의 어시장 에세이 문장을 조립하세요.",
+    "tiles": ["상인들이 ", "은빛 갈치 궤짝을 ", "바닥에 쾅 ", "내리꽂았어요."],
+    "tileIds": ["t1", "t2", "t3", "t4"],
+    "correct": ["t1", "t2", "t3", "t4"],
+    "explanation": "궤짝을 내리꽂는 힘찬 동사로 새벽 어시장의 활기를 완성해요."
+  }
+]
