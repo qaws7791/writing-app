@@ -10,10 +10,12 @@ import {
   writingTaskIdSchema,
   writingTaskPublicationIdSchema,
 } from "#contracts/writing/writing"
+import { createIndexedSubstringQuerySchema } from "#contracts/shared/indexed-substring-query"
 
-const defaultPage = 1
 const defaultPageSize = 20
 const maxPageSize = 100
+
+const indexedSubstringQuery = createIndexedSubstringQuerySchema(100)
 
 const positiveIntegerQuery = (fallback: number, max?: number) => {
   const schema = z.coerce.number().int().positive()
@@ -41,10 +43,11 @@ export const adminWritingTaskDraftFieldsSchema = z.strictObject({
 })
 
 export const adminWritingTasksQuerySchema = z.object({
+  cursor: writingTaskIdSchema.optional(),
+  direction: z.enum(["next", "previous"]).optional().default("next"),
   domain: writingDomainSchema.optional(),
-  page: positiveIntegerQuery(defaultPage),
   pageSize: positiveIntegerQuery(defaultPageSize, maxPageSize),
-  query: z.string().trim().max(100).optional().default(""),
+  query: indexedSubstringQuery.optional().default(""),
   status: adminWritingTaskStatusFilterSchema.optional().default("all"),
 })
 
@@ -71,10 +74,9 @@ export const adminWritingTaskListItemSchema = z.strictObject({
 export const adminWritingTaskListDtoSchema = z.strictObject({
   items: z.array(adminWritingTaskListItemSchema),
   pagination: z.strictObject({
-    page: positiveIntegerSchema,
+    nextCursor: writingTaskIdSchema.nullable(),
     pageSize: positiveIntegerSchema,
-    totalItems: nonNegativeIntegerSchema,
-    totalPages: positiveIntegerSchema,
+    previousCursor: writingTaskIdSchema.nullable(),
   }),
 })
 

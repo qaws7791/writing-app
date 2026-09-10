@@ -1,4 +1,16 @@
-import { and, asc, count, desc, eq, gte, inArray, lt, lte } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  lt,
+  lte,
+  or,
+} from "drizzle-orm"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { err, ok } from "@workspace/kernel/result"
 import type {
@@ -125,17 +137,30 @@ export function createAuditEventDrizzleRepository(
     },
     async listEvents(input) {
       try {
-        return ok(
-          database
-            .select()
-            .from(auditEvents)
-            .where(createAuditEventFilterCondition(input))
-            .orderBy(desc(auditEvents.createdAt), desc(auditEvents.id))
-            .limit(input.limit)
-            .offset(input.offset)
-            .all()
-            .map(toAuditEvent)
+        const condition = and(
+          createAuditEventFilterCondition(input),
+          createAuditCursorCondition(input.cursor ?? null)
         )
+        const rows =
+          input.cursor?.direction === "newer"
+            ? database
+                .select()
+                .from(auditEvents)
+                .where(condition)
+                .orderBy(asc(auditEvents.createdAt), asc(auditEvents.id))
+                .limit(input.limit)
+                .all()
+                .reverse()
+            : database
+                .select()
+                .from(auditEvents)
+                .where(condition)
+                .orderBy(desc(auditEvents.createdAt), desc(auditEvents.id))
+                .limit(input.limit)
+                .offset(input.cursor == null ? input.offset : 0)
+                .all()
+
+        return ok(rows.map(toAuditEvent))
       } catch (cause) {
         return persistenceFailed(cause, "list-events")
       }
@@ -161,6 +186,30 @@ export function createAuditEventDrizzleRepository(
       }
     },
   }
+}
+
+function createAuditCursorCondition(
+  cursor:
+    | import("#operations/application/ports/audit-event-repository").AuditEventCursor
+    | null
+) {
+  if (cursor === null) return undefined
+
+  return cursor.direction === "older"
+    ? or(
+        lt(auditEvents.createdAt, cursor.createdAt),
+        and(
+          eq(auditEvents.createdAt, cursor.createdAt),
+          lt(auditEvents.id, cursor.id)
+        )
+      )
+    : or(
+        gt(auditEvents.createdAt, cursor.createdAt),
+        and(
+          eq(auditEvents.createdAt, cursor.createdAt),
+          gt(auditEvents.id, cursor.id)
+        )
+      )
 }
 
 function createAuditEventFilterCondition(filter: AuditEventFilter) {

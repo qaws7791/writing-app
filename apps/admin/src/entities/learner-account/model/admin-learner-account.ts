@@ -6,7 +6,8 @@ import type {
 
 export type AdminUserStatus = "active" | "deleted" | "suspended"
 export type ReadAdminUsersInput = {
-  readonly page: number
+  readonly cursor: string | undefined
+  readonly direction: "next" | "previous"
   readonly pageSize: number
   readonly query: string
   readonly sort: "joined" | "lastActive" | "lessonsDone" | "streak"

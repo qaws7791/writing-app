@@ -54,6 +54,8 @@
 - API 소비자는 generated client를 endpoint 경계로 사용하고 수동 URL, 앱별 response parser와 feature HTTP Port를 복제하지 않는다. base URL·cookie·canonical 오류 처리만 공통 mutator 경계에 남긴다.
 - process liveness와 DB readiness는 서로 다른 운영 계약이다. readiness 실패 응답은 learner domain 오류 정규화 대상이 아니며 learner·admin 표면은 같은 DB probe를 공유한다.
 - 쓰기 저장은 expected version을 요구한다. 충돌 응답은 서버 글을 변경하지 않으며 client가 로컬 입력과 최신 서버 글을 구분해 복구할 수 있는 안정된 오류 code를 제공한다.
+- 관리자 사용자 목록은 필터와 정렬에 결합된 서명 cursor를 사용한다.
+- 관리자 사용자 목록 응답은 exact total 대신 `hasNextPage`와 `nextCursor`를 반환한다.
 
 ## 운영 Reporting 계약
 

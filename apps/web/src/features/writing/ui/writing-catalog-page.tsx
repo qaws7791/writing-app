@@ -1,11 +1,15 @@
 "use client"
 
 import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { writingDomainValues } from "@workspace/contracts/writing/writing"
 import { createWriting } from "@workspace/http-client/learner"
 import { Badge } from "@workspace/ui/components/primitives/badge"
-import { Button } from "@workspace/ui/components/primitives/button"
+import {
+  Button,
+  buttonVariants,
+} from "@workspace/ui/components/primitives/button"
 import {
   Empty,
   EmptyDescription,
@@ -30,12 +34,20 @@ import { cn } from "@workspace/ui/lib/utils"
 import {
   settleLearnerApiRequest,
   type LearnerWritingCatalogItemDto,
+  type LearnerWritingCatalogPageDto,
 } from "@/shared/http/learner-api-client"
 
 export function WritingCatalogPage({
+  filters,
   initialTasks,
+  pagination,
 }: {
+  readonly filters: Readonly<{
+    domain: string | undefined
+    typeName: string | undefined
+  }>
   readonly initialTasks: readonly LearnerWritingCatalogItemDto[]
+  readonly pagination: LearnerWritingCatalogPageDto["pagination"]
 }) {
   const router = useRouter()
   const interactive = useSyncExternalStore(
@@ -43,31 +55,25 @@ export function WritingCatalogPage({
     readHydrated,
     readNotHydrated
   )
-  const [domain, setDomain] = useState<string | null>(null)
-  const [typeName, setTypeName] = useState<string | null>(null)
   const [previewId, setPreviewId] = useState<string | null>(null)
   const [startingTaskId, setStartingTaskId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const isMobile = useIsMobile()
 
-  const domainsWithTasks = writingDomainValues.filter((item) =>
-    initialTasks.some((task) => task.domain === item)
-  )
-  const visibleTasks = initialTasks.filter((task) => {
-    if (domain !== null && task.domain !== domain) return false
-    if (typeName !== null && task.typeName !== typeName) return false
-    return true
-  })
+  const domain = filters.domain ?? null
+  const typeName = filters.typeName ?? null
+  const domainsWithTasks = writingDomainValues
   const typeNames = useMemo(() => {
     if (domain === null) return []
     return [
-      ...new Set(
-        initialTasks
+      ...new Set([
+        ...(typeName === null ? [] : [typeName]),
+        ...initialTasks
           .filter((task) => task.domain === domain)
-          .map((task) => task.typeName)
-      ),
+          .map((task) => task.typeName),
+      ]),
     ]
-  }, [domain, initialTasks])
+  }, [domain, initialTasks, typeName])
   const preview = initialTasks.find((task) => task.taskId === previewId) ?? null
 
   const handleStart = async (taskId: string) => {
@@ -105,22 +111,13 @@ export function WritingCatalogPage({
           className="flex flex-wrap gap-2"
           role="toolbar"
         >
-          <FilterChip
-            onPressed={() => {
-              setDomain(null)
-              setTypeName(null)
-            }}
-            pressed={domain === null}
-          >
+          <FilterChip href="/app/writing/catalog" pressed={domain === null}>
             전체
           </FilterChip>
           {domainsWithTasks.map((item) => (
             <FilterChip
+              href={createCatalogHref({ domain: item })}
               key={item}
-              onPressed={() => {
-                setDomain(item)
-                setTypeName(null)
-              }}
               pressed={domain === item}
             >
               {item}
@@ -135,10 +132,11 @@ export function WritingCatalogPage({
           >
             {typeNames.map((item) => (
               <FilterChip
+                href={createCatalogHref({
+                  domain,
+                  ...(typeName === item ? {} : { typeName: item }),
+                })}
                 key={item}
-                onPressed={() =>
-                  setTypeName((current) => (current === item ? null : item))
-                }
                 pressed={typeName === item}
               >
                 {item}
@@ -148,9 +146,9 @@ export function WritingCatalogPage({
         ) : null}
       </div>
 
-      {visibleTasks.length > 0 ? (
+      {initialTasks.length > 0 ? (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {visibleTasks.map((task) => (
+          {initialTasks.map((task) => (
             <li key={task.taskId}>
               <button
                 className="flex h-full w-full flex-col gap-3 rounded-[1.75rem] border border-border/70 bg-card px-4 py-4 text-left shadow-2xs outline-none transition-colors hover:bg-accent/40 focus-visible:ring-3 focus-visible:ring-ring/40"
@@ -186,6 +184,24 @@ export function WritingCatalogPage({
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
+      )}
+
+      {pagination.previousCursor === null &&
+      pagination.nextCursor === null ? null : (
+        <nav aria-label="과제 목록 페이지" className="flex justify-end gap-2">
+          <CatalogPageLink
+            cursor={pagination.previousCursor}
+            direction="previous"
+            filters={filters}
+            label="이전 과제"
+          />
+          <CatalogPageLink
+            cursor={pagination.nextCursor}
+            direction="next"
+            filters={filters}
+            label="다음 과제"
+          />
+        </nav>
       )}
 
       <Sheet
@@ -238,27 +254,83 @@ export function WritingCatalogPage({
 
 function FilterChip({
   children,
-  onPressed,
+  href,
   pressed,
 }: {
   readonly children: ReactNode
-  readonly onPressed: () => void
+  readonly href: string
   readonly pressed: boolean
 }) {
   return (
-    <button
-      aria-pressed={pressed}
+    <Link
+      aria-current={pressed ? "page" : undefined}
       className={cn(
         "rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
         pressed
           ? "border-foreground/15 bg-foreground text-background"
           : "border-border/80 bg-card text-muted-foreground hover:bg-accent/60 hover:text-foreground"
       )}
-      onClick={onPressed}
-      type="button"
+      href={href}
     >
       {children}
-    </button>
+    </Link>
+  )
+}
+
+function createCatalogHref(input: {
+  readonly cursor?: string
+  readonly direction?: "next" | "previous"
+  readonly domain?: string | null
+  readonly typeName?: string
+}) {
+  const params = new URLSearchParams()
+  if (input.cursor !== undefined) params.set("cursor", input.cursor)
+  if (input.direction !== undefined) params.set("direction", input.direction)
+  if (input.domain !== undefined && input.domain !== null) {
+    params.set("domain", input.domain)
+  }
+  if (input.typeName !== undefined) params.set("typeName", input.typeName)
+  const query = params.toString()
+  return query.length === 0
+    ? "/app/writing/catalog"
+    : `/app/writing/catalog?${query}`
+}
+
+function CatalogPageLink({
+  cursor,
+  direction,
+  filters,
+  label,
+}: {
+  readonly cursor: string | null
+  readonly direction: "next" | "previous"
+  readonly filters: Readonly<{
+    domain: string | undefined
+    typeName: string | undefined
+  }>
+  readonly label: string
+}) {
+  if (cursor === null) {
+    return (
+      <Button disabled variant="outline">
+        {label}
+      </Button>
+    )
+  }
+  return (
+    <Link
+      className={buttonVariants({ variant: "outline" })}
+      href={createCatalogHref({
+        cursor,
+        direction,
+        ...(filters.domain === undefined ? {} : { domain: filters.domain }),
+        ...(filters.typeName === undefined
+          ? {}
+          : { typeName: filters.typeName }),
+      })}
+    >
+      {label}
+    </Link>
   )
 }
 

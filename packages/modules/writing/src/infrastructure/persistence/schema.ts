@@ -66,7 +66,40 @@ export const writingTasks = sqliteTable(
       sql`json_valid(${table.requiredElementsJson}) AND json_type(${table.requiredElementsJson}) = 'array'`
     ),
     index("writing_tasks_updated_idx").on(table.updatedAt, table.id),
+    index("writing_tasks_latest_publication_idx").on(
+      table.latestPublicationId,
+      table.id
+    ),
+    index("writing_tasks_domain_updated_idx").on(
+      table.domain,
+      table.updatedAt,
+      table.id
+    ),
+    index("writing_tasks_draft_updated_idx")
+      .on(table.updatedAt, table.id)
+      .where(sql`${table.latestPublicationId} IS NULL`),
+    index("writing_tasks_draft_domain_updated_idx")
+      .on(table.domain, table.updatedAt, table.id)
+      .where(sql`${table.latestPublicationId} IS NULL`),
+    index("writing_tasks_published_updated_idx")
+      .on(table.updatedAt, table.id)
+      .where(sql`${table.latestPublicationId} IS NOT NULL`),
+    index("writing_tasks_published_domain_updated_idx")
+      .on(table.domain, table.updatedAt, table.id)
+      .where(sql`${table.latestPublicationId} IS NOT NULL`),
   ]
+)
+
+export const writingTaskTitleSearchDocuments = sqliteTable(
+  "writing_task_title_search_documents",
+  {
+    rowId: integer("rowid").primaryKey({ autoIncrement: true }),
+    taskId: text("task_id")
+      .notNull()
+      .unique()
+      .references(() => writingTasks.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+  }
 )
 
 export const writingTaskPublications = sqliteTable(
@@ -113,6 +146,30 @@ export const writingTaskPublications = sqliteTable(
     index("writing_task_publications_task_idx").on(
       table.taskId,
       table.publishedAt,
+      table.id
+    ),
+    index("writing_task_publications_published_idx").on(
+      table.publishedAt,
+      table.taskId,
+      table.id
+    ),
+    index("writing_task_publications_domain_published_idx").on(
+      table.domain,
+      table.publishedAt,
+      table.taskId,
+      table.id
+    ),
+    index("writing_task_publications_type_published_idx").on(
+      table.typeName,
+      table.publishedAt,
+      table.taskId,
+      table.id
+    ),
+    index("writing_task_publications_domain_type_published_idx").on(
+      table.domain,
+      table.typeName,
+      table.publishedAt,
+      table.taskId,
       table.id
     ),
   ]

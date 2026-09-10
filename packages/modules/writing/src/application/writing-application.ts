@@ -100,8 +100,8 @@ export function createWritingApplication(input: {
     get(command) {
       return readSession(input, command)
     },
-    list(learnerId) {
-      return input.repository.listPiecesByLearner(learnerId)
+    list(query) {
+      return input.repository.listPiecesByLearner(query)
     },
     listCatalog(filter) {
       return input.repository.listCatalog(filter)

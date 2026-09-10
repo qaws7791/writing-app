@@ -1,5 +1,6 @@
 import { and, asc, inArray, lte } from "drizzle-orm"
 import { adminAuthSessions, authSessions } from "@workspace/auth/schema"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { Failure } from "@workspace/kernel/failure"
 import { err, ok, type Result } from "@workspace/kernel/result"
@@ -59,32 +60,36 @@ export function createExpiredSessionMaintenance(
             const adminIds = candidates.flatMap((candidate) =>
               candidate.type === "admin" ? [candidate.id] : []
             )
-            const deletedLearnerSessions =
-              learnerIds.length === 0
-                ? []
-                : transaction
-                    .delete(authSessions)
-                    .where(
-                      and(
-                        inArray(authSessions.id, learnerIds),
-                        lte(authSessions.expiresAt, input.cutoff)
-                      )
-                    )
-                    .returning({ id: authSessions.id })
-                    .all()
-            const deletedAdminSessions =
-              adminIds.length === 0
-                ? []
-                : transaction
-                    .delete(adminAuthSessions)
-                    .where(
-                      and(
-                        inArray(adminAuthSessions.id, adminIds),
-                        lte(adminAuthSessions.expiresAt, input.cutoff)
-                      )
-                    )
-                    .returning({ id: adminAuthSessions.id })
-                    .all()
+            const deletedLearnerSessions = chunkByBoundParameters(learnerIds, {
+              fixedParameters: 1,
+              parametersPerItem: 1,
+            }).flatMap((sessionIdChunk) =>
+              transaction
+                .delete(authSessions)
+                .where(
+                  and(
+                    inArray(authSessions.id, sessionIdChunk),
+                    lte(authSessions.expiresAt, input.cutoff)
+                  )
+                )
+                .returning({ id: authSessions.id })
+                .all()
+            )
+            const deletedAdminSessions = chunkByBoundParameters(adminIds, {
+              fixedParameters: 1,
+              parametersPerItem: 1,
+            }).flatMap((sessionIdChunk) =>
+              transaction
+                .delete(adminAuthSessions)
+                .where(
+                  and(
+                    inArray(adminAuthSessions.id, sessionIdChunk),
+                    lte(adminAuthSessions.expiresAt, input.cutoff)
+                  )
+                )
+                .returning({ id: adminAuthSessions.id })
+                .all()
+            )
             return deletedLearnerSessions.length + deletedAdminSessions.length
           },
           { behavior: "immediate" }

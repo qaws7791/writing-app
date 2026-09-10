@@ -25,8 +25,14 @@ export default async function AdminCoursesRoute({
       : await settleAdminApiRequest(
           getAdminCourses(
             {
-              ...filters,
+              ...(filters.cursor === undefined
+                ? {}
+                : { cursor: filters.cursor }),
               category: filters.category === "all" ? "" : filters.category,
+              direction: filters.direction,
+              pageSize: filters.pageSize,
+              query: filters.query,
+              status: filters.status,
             },
             requestOptions
           )

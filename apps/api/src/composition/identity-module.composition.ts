@@ -5,6 +5,7 @@ import {
   type IdentityModule,
 } from "@workspace/identity/module"
 import type { IdentityLearningReportPort } from "@workspace/identity/ports"
+import type { AdminUserPagePort } from "@workspace/identity/ports"
 import type { LearnerDeletionMarkerStorePort } from "@workspace/identity/ports"
 import type { Clock } from "@workspace/kernel/clock"
 
@@ -14,14 +15,18 @@ import { createInMemoryDeletionMarkerStore } from "@/adapters/identity/deletion-
 import { learnerDataPurgePorts } from "@/privacy/learner-data-purge"
 
 export function composeIdentityModule(input: {
+  readonly adminUserPage: AdminUserPagePort
   readonly clock: Clock
+  readonly cursorSigningSecret: string
   readonly database: WritingAppDatabase
   readonly deletedLearnerRetentionDays: number
   readonly deletionMarkerStore?: LearnerDeletionMarkerStorePort
   readonly learningReport: IdentityLearningReportPort
 }): IdentityModule {
   return createIdentityModule({
+    adminUserPage: input.adminUserPage,
     clock: input.clock,
+    cursorSigningSecret: input.cursorSigningSecret,
     database: input.database,
     deletedLearnerRetentionDays: input.deletedLearnerRetentionDays,
     deletionMarkerStore:

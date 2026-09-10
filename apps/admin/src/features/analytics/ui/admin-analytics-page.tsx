@@ -23,7 +23,6 @@ import {
 } from "@workspace/ui/components/primitives/alert"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -218,14 +217,6 @@ function LessonAnalyticsTable({
   readonly page: AdminLessonAnalyticsPage
 }) {
   const { pagination } = page
-  const firstItem =
-    pagination.totalItems === 0
-      ? 0
-      : (pagination.page - 1) * pagination.pageSize + 1
-  const lastItem = Math.min(
-    pagination.page * pagination.pageSize,
-    pagination.totalItems
-  )
 
   return (
     <Card>
@@ -236,11 +227,6 @@ function LessonAnalyticsTable({
         <CardDescription>
           시작·완료·완료율·이탈률을 서버 집계로 조회합니다.
         </CardDescription>
-        <CardAction>
-          <span className="text-sm font-semibold text-muted-foreground">
-            {formatCount(pagination.totalItems)}개
-          </span>
-        </CardAction>
       </CardHeader>
       <CardContent>
         <LessonAnalyticsFilter filters={filters} />
@@ -305,32 +291,30 @@ function LessonAnalyticsTable({
             </tbody>
           </table>
         </div>
-        {pagination.totalPages === 0 ? null : (
+        {!pagination.hasNextPage && !pagination.hasPreviousPage ? null : (
           <nav
             aria-label="레슨 분석 페이지"
             className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4"
           >
             <span className="text-sm font-medium text-muted-foreground">
-              {formatCount(pagination.totalItems)}개 중 {formatCount(firstItem)}
-              –{formatCount(lastItem)}
+              {pagination.page}페이지
             </span>
             <div className="flex items-center gap-2">
               <PaginationLink
-                disabled={pagination.page <= 1}
+                disabled={!pagination.hasPreviousPage}
                 href={createAnalyticsHref(filters, {
+                  cursor: pagination.previousCursor ?? "",
                   page: Math.max(1, pagination.page - 1),
                 })}
                 label="이전 페이지"
               >
                 <ChevronLeftIcon aria-hidden="true" size={16} />
               </PaginationLink>
-              <span className="min-w-20 text-center text-sm font-semibold">
-                {pagination.page} / {pagination.totalPages}
-              </span>
               <PaginationLink
-                disabled={pagination.page >= pagination.totalPages}
+                disabled={!pagination.hasNextPage}
                 href={createAnalyticsHref(filters, {
-                  page: Math.min(pagination.totalPages, pagination.page + 1),
+                  cursor: pagination.nextCursor ?? "",
+                  page: pagination.page + 1,
                 })}
                 label="다음 페이지"
               >
@@ -372,6 +356,7 @@ function LessonAnalyticsFilter({
           className="pl-10 font-semibold"
           defaultValue={filters.query}
           id="lesson-analytics-query"
+          minLength={3}
           name="query"
           placeholder="검색어 입력"
         />
@@ -525,8 +510,13 @@ function createAnalyticsHref(
   filters: AdminAnalyticsFilters,
   overrides: Readonly<Record<string, string | number>> = {}
 ): string {
+  const keepsCursor =
+    overrides["direction"] === undefined && overrides["sort"] === undefined
   return createGetFilterHref(
     [
+      ...(keepsCursor && filters.cursor !== undefined
+        ? [["cursor", filters.cursor] as const]
+        : []),
       ["direction", filters.direction],
       ["page", filters.page],
       ["pageSize", filters.pageSize],

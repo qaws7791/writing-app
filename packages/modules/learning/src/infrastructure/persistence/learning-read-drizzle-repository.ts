@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm"
+import { and, asc, desc, eq, gt, lt, or } from "drizzle-orm"
 import { createHmac } from "node:crypto"
 
 import {
@@ -70,42 +70,43 @@ async function listCourses(
   query: LearnerCourseReadQuery
 ) {
   const normalizedCategory = query.category?.normalize("NFC")
-  const publishedCourses = await content.listPublishedCourses()
+  const cursor = resolveLearnerCourseCursorCondition(query.after)
+  if (cursor.kind === "invalid-primary") {
+    return projectLearnerCoursePage({ limit: query.limit, rows: [] })
+  }
+  const publishedCourses = await content.listPublishedCourses({
+    after:
+      cursor.kind === "after"
+        ? { courseId: cursor.courseId as CourseId, sortOrder: cursor.primary }
+        : undefined,
+    category: normalizedCategory,
+    limit: query.limit + 1,
+  })
   const assetReferencesById = await resolveAssetReferencesById(
     content,
-    publishedCourses.flatMap((course) =>
-      course.coverAssetId === null ? [] : [course.coverAssetId]
-    )
+    publishedCourses
+      .slice(0, query.limit)
+      .flatMap((course) =>
+        course.coverAssetId === null ? [] : [course.coverAssetId]
+      )
   )
-  const rows = publishedCourses
-    .filter(
-      (course) =>
-        normalizedCategory === undefined ||
-        course.category.normalize("NFC") === normalizedCategory
-    )
-    .map((course) => ({
-      category: course.category,
-      contentStatus: "active" as const,
-      cover: resolveCoverReference(assetReferencesById, course.coverAssetId),
-      description: course.description,
-      id: course.courseId,
-      lessonCount: course.lessonCount,
-      revision: course.revision,
-      sortOrder: course.sortOrder,
-      title: course.title,
-      versionId: course.versionId,
-      visualKey: course.visualKey,
-    }))
-    .sort(
-      (left, right) =>
-        left.sortOrder - right.sortOrder || left.id.localeCompare(right.id)
-    )
-  const cursor = resolveLearnerCourseCursorCondition(query.after)
-  const afterRows = rows.filter((row) => isCourseAfterCursor(row, cursor))
+  const rows = publishedCourses.map((course) => ({
+    category: course.category,
+    contentStatus: "active" as const,
+    cover: resolveCoverReference(assetReferencesById, course.coverAssetId),
+    description: course.description,
+    id: course.courseId,
+    lessonCount: course.lessonCount,
+    revision: course.revision,
+    sortOrder: course.sortOrder,
+    title: course.title,
+    versionId: course.versionId,
+    visualKey: course.visualKey,
+  }))
 
   return projectLearnerCoursePage({
     limit: query.limit,
-    rows: afterRows.slice(0, query.limit + 1),
+    rows,
   })
 }
 
@@ -393,6 +394,12 @@ async function listProgress(
   content: LearningContentQueryPort,
   query: LearnerProgressReadQuery
 ) {
+  const cursor = resolveLearnerProgressCursorCondition(query.after)
+  if (cursor.kind === "invalid-primary") {
+    return { items: [], nextPosition: null }
+  }
+  const cursorDate =
+    cursor.kind === "after" ? new Date(cursor.primary) : undefined
   const rows = database
     .select({
       courseId: learnerCourseProgress.courseId,
@@ -404,22 +411,30 @@ async function listProgress(
         eq(learnerCourseProgress.userId, query.userId),
         query.status === undefined
           ? undefined
-          : eq(learnerCourseProgress.status, query.status)
+          : eq(learnerCourseProgress.status, query.status),
+        cursor.kind === "after" && cursorDate !== undefined
+          ? or(
+              lt(learnerCourseProgress.lastActivityAt, cursorDate),
+              and(
+                eq(learnerCourseProgress.lastActivityAt, cursorDate),
+                gt(learnerCourseProgress.courseId, cursor.courseId)
+              )
+            )
+          : undefined
       )
     )
     .orderBy(
       desc(learnerCourseProgress.lastActivityAt),
       asc(learnerCourseProgress.courseId)
     )
+    .limit(query.limit + 1)
     .all()
     .map((row) => ({
       courseId: courseIdSchema.parse(row.courseId),
       lastActivityAt: row.lastActivityAt,
     }))
-  const cursor = resolveLearnerProgressCursorCondition(query.after)
-  const afterRows = rows.filter((row) => isProgressAfterCursor(row, cursor))
   const { nextPosition, pageRows } = projectLearnerProgressPageWindow(
-    afterRows.slice(0, query.limit + 1),
+    rows,
     query.limit
   )
   const items = await Promise.all(
@@ -436,34 +451,4 @@ async function listProgress(
   )
 
   return { items, nextPosition }
-}
-
-type CourseRow = Readonly<{
-  id: CourseId
-  sortOrder: number
-}>
-
-function isCourseAfterCursor(
-  row: CourseRow,
-  cursor: ReturnType<typeof resolveLearnerCourseCursorCondition>
-): boolean {
-  if (cursor.kind === "first-page") return true
-  if (cursor.kind === "invalid-primary") return false
-  return (
-    row.sortOrder > cursor.primary ||
-    (row.sortOrder === cursor.primary && row.id > cursor.courseId)
-  )
-}
-
-function isProgressAfterCursor(
-  row: Readonly<{ courseId: CourseId; lastActivityAt: Date }>,
-  cursor: ReturnType<typeof resolveLearnerProgressCursorCondition>
-): boolean {
-  if (cursor.kind === "first-page") return true
-  if (cursor.kind === "invalid-primary") return false
-  const primary = row.lastActivityAt.getTime()
-  return (
-    primary < cursor.primary ||
-    (primary === cursor.primary && row.courseId > cursor.courseId)
-  )
 }

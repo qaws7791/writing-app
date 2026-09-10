@@ -12,8 +12,9 @@ import type {
 import type { AdminRequestError } from "@/shared/http/admin-api-client"
 
 export type ReadAdminWritingTasksInput = {
+  readonly cursor: string | undefined
+  readonly direction: "next" | "previous"
   readonly domain: "all" | (typeof writingDomainValues)[number]
-  readonly page: number
   readonly pageSize: number
   readonly query: string
   readonly status: "all" | "draft" | "published"

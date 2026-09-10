@@ -1,5 +1,6 @@
 import { and, asc, eq, inArray, isNotNull, lte } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
   CourseId,
@@ -62,18 +63,27 @@ export function readActiveAssetsByIds(
 ): readonly ContentAsset[] {
   if (assetIds.length === 0) return []
 
-  return database
-    .select()
-    .from(contentAssets)
-    .where(
-      and(
-        inArray(contentAssets.id, assetIds),
-        eq(contentAssets.status, "active")
-      )
+  const uniqueAssetIds = [...new Set(assetIds)]
+  return chunkByBoundParameters(uniqueAssetIds, {
+    fixedParameters: 1,
+    parametersPerItem: 1,
+  })
+    .flatMap((assetIdChunk) =>
+      database
+        .select()
+        .from(contentAssets)
+        .where(
+          and(
+            inArray(contentAssets.id, assetIdChunk),
+            eq(contentAssets.status, "active")
+          )
+        )
+        .all()
+        .map(toContentAsset)
     )
-    .orderBy(asc(contentAssets.id))
-    .all()
-    .map(toContentAsset)
+    .sort((left, right) =>
+      left.id === right.id ? 0 : left.id < right.id ? -1 : 1
+    )
 }
 
 export function listOrphanedAssetCandidates(
@@ -120,19 +130,27 @@ export function deleteOrphanedAssetCandidates(
   if (input.assetIds.length === 0) return ok(0)
 
   try {
-    const deleted = database
-      .delete(contentAssets)
-      .where(
-        and(
-          inArray(contentAssets.id, input.assetIds),
-          eq(contentAssets.status, "orphaned"),
-          isNotNull(contentAssets.orphanedAt),
-          lte(contentAssets.orphanedAt, input.cutoff)
-        )
-      )
-      .returning({ id: contentAssets.id })
-      .all()
-    return ok(deleted.length)
+    const deletedCount = database.transaction((transaction) =>
+      chunkByBoundParameters(input.assetIds, {
+        fixedParameters: 2,
+        parametersPerItem: 1,
+      }).reduce((total, assetIdChunk) => {
+        const deleted = transaction
+          .delete(contentAssets)
+          .where(
+            and(
+              inArray(contentAssets.id, assetIdChunk),
+              eq(contentAssets.status, "orphaned"),
+              isNotNull(contentAssets.orphanedAt),
+              lte(contentAssets.orphanedAt, input.cutoff)
+            )
+          )
+          .returning({ id: contentAssets.id })
+          .all()
+        return total + deleted.length
+      }, 0)
+    )
+    return ok(deletedCount)
   } catch (cause) {
     return err({ cause, kind: "content-asset-persistence-failed" } as const)
   }

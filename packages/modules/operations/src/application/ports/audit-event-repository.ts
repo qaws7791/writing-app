@@ -23,6 +23,12 @@ export type AuditEventFilter = Readonly<{
   createdFrom: Date | null
 }>
 
+export type AuditEventCursor = Readonly<{
+  createdAt: Date
+  direction: "newer" | "older"
+  id: AuditEventId
+}>
+
 export type AuditEventRepositoryError =
   | Failure<"audit-event-conflict">
   | Failure<"audit-event-persistence-failed">
@@ -57,6 +63,7 @@ export type AuditEventRepository = Readonly<{
   listEvents: (
     input: AuditEventFilter &
       Readonly<{
+        cursor?: AuditEventCursor | null
         limit: number
         offset: number
       }>

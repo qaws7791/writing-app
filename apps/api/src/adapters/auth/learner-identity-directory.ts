@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { authUsers } from "@workspace/auth/schema"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -19,14 +19,6 @@ export function createLearnerIdentityDirectory(
         .get()
 
       return row === undefined ? null : toLearnerIdentity(row)
-    },
-    async listLearnerIdentities() {
-      return database
-        .select()
-        .from(authUsers)
-        .orderBy(asc(authUsers.id))
-        .all()
-        .map(toLearnerIdentity)
     },
   }
 }

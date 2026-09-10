@@ -55,6 +55,7 @@ export function registerOperationsAuditRoutes<TEnv extends OperationsHonoEnv>(
     const result = await input.auditTrail.readEvents({
       actor: context.var.operationsActor,
       category: query.category ?? null,
+      cursor: query.cursor ?? null,
       from: query.from ?? null,
       page: query.page,
       pageSize: query.pageSize,

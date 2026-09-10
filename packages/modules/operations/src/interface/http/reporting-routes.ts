@@ -114,6 +114,9 @@ function registerLessonAnalyticsRoute<TEnv extends OperationsHonoEnv>(
           adminLessonAnalyticsPageDtoSchema
         )
       ),
+      400: operationsErrorResponse(
+        "레슨별 분석 조회 조건이 올바르지 않습니다."
+      ),
       503: operationsErrorResponse("운영 보고 데이터를 사용할 수 없습니다."),
     },
     summary: "어드민 레슨별 분석 조회",

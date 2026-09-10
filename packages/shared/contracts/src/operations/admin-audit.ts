@@ -65,6 +65,7 @@ export const adminAuditEventDtoSchema = z
 /** 기간은 플랫폼 날짜 경계를 따르는 논리 날짜이며 `from`과 `to` 모두 포함이다. */
 export const adminAuditEventsQuerySchema = z.object({
   category: adminAuditCategorySchema.optional(),
+  cursor: z.string().min(1).max(400).optional(),
   from: z.iso.date().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   pageSize: z.coerce.number().int().positive().max(100).optional().default(50),
@@ -75,10 +76,14 @@ export const adminAuditEventsDtoSchema = z
   .object({
     items: z.array(adminAuditEventDtoSchema),
     pagination: z.strictObject({
+      hasNextPage: z.boolean(),
+      hasPreviousPage: z.boolean(),
+      nextCursor: z.string().nullable(),
       page: positiveIntegerSchema,
       pageSize: positiveIntegerSchema,
-      totalItems: nonNegativeIntegerSchema,
-      totalPages: positiveIntegerSchema,
+      previousCursor: z.string().nullable(),
+      totalItems: nonNegativeIntegerSchema.optional(),
+      totalPages: positiveIntegerSchema.optional(),
     }),
   })
   .strict()
@@ -91,10 +96,14 @@ export const adminMcpAuditEventsDtoSchema = z
   .object({
     items: z.array(adminMcpAuditEventDtoSchema),
     pagination: z.strictObject({
+      hasNextPage: z.boolean(),
+      hasPreviousPage: z.boolean(),
+      nextCursor: z.string().nullable(),
       page: positiveIntegerSchema,
       pageSize: positiveIntegerSchema,
-      totalItems: nonNegativeIntegerSchema,
-      totalPages: positiveIntegerSchema,
+      previousCursor: z.string().nullable(),
+      totalItems: nonNegativeIntegerSchema.optional(),
+      totalPages: positiveIntegerSchema.optional(),
     }),
   })
   .strict()

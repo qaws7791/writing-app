@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { getWritingTaskCatalog } from "@workspace/http-client/learner"
+import { writingCatalogQuerySchema } from "@workspace/contracts/writing/writing"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import { WritingCatalogPage } from "@/features/writing/ui/writing-catalog-page"
@@ -10,7 +11,12 @@ import {
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
-export default async function WritingCatalogRoute() {
+export default async function WritingCatalogRoute({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const query = writingCatalogQuerySchema.parse(await searchParams)
   const requestOptions = await getServerLearnerRequestOptions({
     cache: "no-store",
   })
@@ -20,7 +26,16 @@ export default async function WritingCatalogRoute() {
   }
 
   const result = await settleLearnerApiRequest(
-    getWritingTaskCatalog({}, requestOptions)
+    getWritingTaskCatalog(
+      {
+        direction: query.direction,
+        pageSize: query.pageSize,
+        ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+        ...(query.domain === undefined ? {} : { domain: query.domain }),
+        ...(query.typeName === undefined ? {} : { typeName: query.typeName }),
+      },
+      requestOptions
+    )
   )
   if (result.status === "error") {
     if (isLearnerApiAuthenticationError(result.error)) {
@@ -37,5 +52,11 @@ export default async function WritingCatalogRoute() {
     )
   }
 
-  return <WritingCatalogPage initialTasks={result.value.items} />
+  return (
+    <WritingCatalogPage
+      filters={{ domain: query.domain, typeName: query.typeName }}
+      initialTasks={result.value.items}
+      pagination={result.value.pagination}
+    />
+  )
 }

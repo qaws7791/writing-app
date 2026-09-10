@@ -12,6 +12,12 @@ const auditFiltersSchema = z.object({
       z.union([z.literal(""), adminAuditCategorySchema])
     )
     .catch(""),
+  cursor: z
+    .preprocess(
+      (value) => (typeof value === "string" ? value : ""),
+      z.string().max(400)
+    )
+    .catch(""),
   from: dayKey(),
   page: positiveInteger(1),
   pageSize: positiveInteger(50),
@@ -28,6 +34,7 @@ export function parseAdminAuditFilters(
 export function toAdminAuditEventsQuery(filters: ReadAdminAuditEventsInput) {
   return {
     ...(filters.category === "" ? {} : { category: filters.category }),
+    ...(filters.cursor === "" ? {} : { cursor: filters.cursor }),
     ...(filters.from === "" ? {} : { from: filters.from }),
     page: filters.page,
     pageSize: filters.pageSize,

@@ -73,8 +73,17 @@ export const writingParamsSchema = z.strictObject({
   writingId: writingIdSchema,
 })
 
+export const writingListQuerySchema = z.strictObject({
+  cursor: writingIdSchema.optional(),
+  direction: z.enum(["next", "previous"]).optional().default("next"),
+  pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
+})
+
 export const writingCatalogQuerySchema = z.strictObject({
+  cursor: writingTaskPublicationIdSchema.optional(),
+  direction: z.enum(["next", "previous"]).optional().default("next"),
   domain: writingDomainSchema.optional(),
+  pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
   typeName: z.string().trim().min(1).max(100).optional(),
 })
 
@@ -92,6 +101,11 @@ export const writingCatalogItemSchema = z.strictObject({
 
 export const writingCatalogResponseSchema = z.strictObject({
   items: z.array(writingCatalogItemSchema),
+  pagination: z.strictObject({
+    nextCursor: writingTaskPublicationIdSchema.nullable(),
+    pageSize: positiveIntegerSchema,
+    previousCursor: writingTaskPublicationIdSchema.nullable(),
+  }),
 })
 
 export const writingSummarySchema = z.strictObject({
@@ -122,6 +136,11 @@ export const writingDetailSchema = z.strictObject({
 
 export const writingListResponseSchema = z.strictObject({
   items: z.array(writingSummarySchema),
+  pagination: z.strictObject({
+    nextCursor: writingIdSchema.nullable(),
+    pageSize: positiveIntegerSchema,
+    previousCursor: writingIdSchema.nullable(),
+  }),
 })
 
 export const createWritingBodySchema = z.strictObject({

@@ -64,21 +64,20 @@ function registerListWritingTasksRoute<TEnv extends WritingAdminHonoEnv>(
   app.openapi(route, async (context) => {
     const query = context.req.valid("query")
     const page = await application.listTasks({
-      page: query.page,
+      cursor: query.cursor,
+      direction: query.direction,
       pageSize: query.pageSize,
       query: query.query,
       status: query.status,
       ...(query.domain === undefined ? {} : { domain: query.domain }),
     })
-    const totalPages = Math.max(1, Math.ceil(page.totalItems / page.pageSize))
     return context.json(
       adminWritingTaskListDtoSchema.parse({
         items: page.items.map(presentWritingTaskListItem),
         pagination: {
-          page: page.page,
+          nextCursor: page.nextCursor,
           pageSize: page.pageSize,
-          totalItems: page.totalItems,
-          totalPages,
+          previousCursor: page.previousCursor,
         },
       }),
       200

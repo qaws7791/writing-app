@@ -1,10 +1,13 @@
 import { err, ok, type Result } from "@workspace/kernel/result"
 import { toPlatformDayKey } from "@workspace/kernel/day-boundary"
+import type { LessonId } from "@workspace/types/ids"
 
 import type { OperationsError } from "#operations/domain/operations-error"
 import type {
   OperationsAnalytics,
   OperationsDashboard,
+  OperationsLessonAnalyticsCursor,
+  OperationsLessonAnalyticsItem,
   OperationsLessonAnalyticsPage,
   OperationsLessonAnalyticsSort,
   OperationsReportingRepository,
@@ -33,6 +36,7 @@ export type OperationsReportingQueries = Readonly<{
   ) => Promise<Result<OperationsDashboard, OperationsError>>
   readLessonAnalytics: (
     input: Readonly<{
+      cursor?: string
       direction: OperationsSortDirection
       page: number
       pageSize: number
@@ -68,10 +72,135 @@ export function createOperationsReportingQueries(input: {
       )
     },
     readLessonAnalytics(query) {
+      const cursor = decodeLessonAnalyticsCursor(
+        query.cursor ?? null,
+        query.sort,
+        query.direction
+      )
+      if (query.cursor !== undefined && cursor === null) {
+        return Promise.resolve(
+          err({
+            kind: "invalid-reporting-query",
+            query: "lesson-analytics",
+          })
+        )
+      }
       return executeReportingQuery(input, "lesson-analytics", () =>
-        input.repository.readLessonAnalytics(query)
+        addLessonAnalyticsCursors(
+          input.repository.readLessonAnalytics({ ...query, cursor }),
+          query.sort,
+          query.direction
+        )
       )
     },
+  }
+}
+
+function addLessonAnalyticsCursors(
+  page: OperationsLessonAnalyticsPage,
+  sort: OperationsLessonAnalyticsSort,
+  direction: OperationsSortDirection
+): OperationsLessonAnalyticsPage {
+  return {
+    ...page,
+    nextCursor:
+      page.hasNextPage === true
+        ? encodeLessonAnalyticsCursor(
+            page.items.at(-1),
+            "older",
+            sort,
+            direction
+          )
+        : null,
+    previousCursor:
+      page.hasPreviousPage === true
+        ? encodeLessonAnalyticsCursor(page.items[0], "newer", sort, direction)
+        : null,
+  }
+}
+
+function encodeLessonAnalyticsCursor(
+  item: OperationsLessonAnalyticsItem | undefined,
+  navigation: OperationsLessonAnalyticsCursor["direction"],
+  sort: OperationsLessonAnalyticsSort,
+  direction: OperationsSortDirection
+): string | null {
+  if (item === undefined) return null
+  const primary = readLessonAnalyticsPrimary(item, sort)
+  return Buffer.from(
+    JSON.stringify([
+      navigation,
+      sort,
+      direction,
+      primary,
+      item.courseTitle,
+      item.lessonTitle,
+      item.lessonId,
+    ]),
+    "utf8"
+  ).toString("base64url")
+}
+
+function decodeLessonAnalyticsCursor(
+  value: string | null,
+  sort: OperationsLessonAnalyticsSort,
+  direction: OperationsSortDirection
+): OperationsLessonAnalyticsCursor | null {
+  if (value === null) return null
+  try {
+    const decoded: unknown = JSON.parse(
+      Buffer.from(value, "base64url").toString("utf8")
+    )
+    if (
+      !Array.isArray(decoded) ||
+      decoded.length !== 7 ||
+      (decoded[0] !== "newer" && decoded[0] !== "older") ||
+      decoded[1] !== sort ||
+      decoded[2] !== direction ||
+      !isValidLessonAnalyticsPrimary(decoded[3], sort) ||
+      typeof decoded[4] !== "string" ||
+      decoded[4].length === 0 ||
+      typeof decoded[5] !== "string" ||
+      decoded[5].length === 0 ||
+      typeof decoded[6] !== "string" ||
+      decoded[6].length === 0
+    ) {
+      return null
+    }
+    return {
+      courseTitle: decoded[4],
+      direction: decoded[0],
+      lessonId: decoded[6] as LessonId,
+      lessonTitle: decoded[5],
+      primary: decoded[3],
+    }
+  } catch {
+    return null
+  }
+}
+
+function isValidLessonAnalyticsPrimary(
+  value: unknown,
+  sort: OperationsLessonAnalyticsSort
+): value is number | string {
+  return sort === "course" || sort === "lesson"
+    ? typeof value === "string" && value.length > 0
+    : typeof value === "number" && Number.isFinite(value)
+}
+
+function readLessonAnalyticsPrimary(
+  item: OperationsLessonAnalyticsItem,
+  sort: OperationsLessonAnalyticsSort
+): number | string {
+  switch (sort) {
+    case "completionRate":
+      return item.completionRate
+    case "course":
+      return item.courseTitle
+    case "dropOff":
+      return item.dropOffRate
+    case "lesson":
+      return item.lessonTitle
   }
 }
 

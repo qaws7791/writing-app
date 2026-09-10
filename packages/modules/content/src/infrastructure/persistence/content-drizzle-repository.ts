@@ -60,8 +60,8 @@ export function createDrizzleContentRepository(
     async findDraft(courseId) {
       return readDraft(database, courseId)
     },
-    async listPublishedCourseSummaries() {
-      return listPublishedCourseSummaries(database)
+    async listPublishedCourseSummaries(query) {
+      return listPublishedCourseSummaries(database, query)
     },
     async listActiveAssetsForCourse(courseId) {
       return listActiveAssetsForCourse(database, courseId)

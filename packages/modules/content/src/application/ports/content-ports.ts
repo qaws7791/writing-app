@@ -20,6 +20,7 @@ import type {
   Course,
   CurriculumDraft,
   PublishedCourseSummary,
+  PublishedCourseSummaryQuery,
   PublishedCurriculumRevision,
   PublishedLessonReference,
 } from "#content/domain/content-model"
@@ -80,23 +81,31 @@ type ContentCourseListRow = Omit<ContentCourseListItem, "cover"> &
 
 export type ContentCourseRowPage = Readonly<{
   items: readonly ContentCourseListRow[]
-  page: number
+  nextCursor: CourseId | null
   pageSize: number
-  totalItems: number
-  totalPages: number
+  previousCursor: CourseId | null
 }>
 
 export type ContentCoursePage = Readonly<{
   items: readonly ContentCourseListItem[]
-  page: number
   pageSize: number
-  totalItems: number
-  totalPages: number
-}>
+}> &
+  (
+    | Readonly<{
+        nextCursor: CourseId | null
+        previousCursor: CourseId | null
+      }>
+    | Readonly<{
+        page: number
+        totalItems: number
+        totalPages: number
+      }>
+  )
 
 export type ReadContentCoursesInput = Readonly<{
   category: string
-  page: number
+  cursor?: CourseId
+  direction: "next" | "previous"
   pageSize: number
   query: string
   status: "active" | "all" | "archived"
@@ -164,7 +173,9 @@ export type ContentRepository = Readonly<{
   findDraft: (
     courseId: CourseId
   ) => Promise<Result<CurriculumDraft | null, ContentError>>
-  listPublishedCourseSummaries: () => Promise<readonly PublishedCourseSummary[]>
+  listPublishedCourseSummaries: (
+    query?: PublishedCourseSummaryQuery
+  ) => Promise<readonly PublishedCourseSummary[]>
   listActiveAssetsForCourse: (
     courseId: CourseId
   ) => Promise<readonly ContentAsset[]>

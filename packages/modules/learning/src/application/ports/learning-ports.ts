@@ -33,7 +33,14 @@ export type LearningContentQueryPort = Readonly<{
     readonly curriculumVersionId?: CurriculumVersionId
     readonly lessonId: LessonId
   }) => Promise<LearningCurriculum | null>
-  listPublishedCourses: () => Promise<readonly LearningCourseSummary[]>
+  listPublishedCourses: (input?: {
+    readonly after?: Readonly<{
+      courseId: CourseId
+      sortOrder: number
+    }>
+    readonly category?: string
+    readonly limit: number
+  }) => Promise<readonly LearningCourseSummary[]>
   resolveAssetReferences: (
     assetIds: readonly ContentAssetId[]
   ) => Promise<readonly LearnerContentAssetReference[]>

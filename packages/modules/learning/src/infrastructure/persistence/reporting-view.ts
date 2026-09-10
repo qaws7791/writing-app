@@ -24,3 +24,13 @@ export const learningReportingActivityDays = sqliteView(
     userId: text("user_id").notNull(),
   }
 ).existing()
+
+export const learningReportingLearnerSummaries = sqliteView(
+  "learning_reporting_learner_summaries",
+  {
+    completedLessons: integer("completed_lessons").notNull(),
+    lastActive: text("last_active"),
+    streakDaysAtLastActivity: integer("streak_days_at_last_activity").notNull(),
+    userId: text("user_id").notNull(),
+  }
+).existing()

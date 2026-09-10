@@ -17,6 +17,8 @@ import dropAiFeedbackSql from "../../drizzle/0007-drop-ai-feedback.sql" with { t
 import purposeWritingTasksSql from "../../drizzle/0008-purpose-writing-tasks.sql" with { type: "text" }
 import removeWritingCompleteSql from "../../drizzle/0009-remove-writing-complete.sql" with { type: "text" }
 import lessonCompletedStepIdsSql from "../../drizzle/0010-lesson-completed-step-ids.sql" with { type: "text" }
+import queryReadEfficiencySql from "../../drizzle/0011-query-read-efficiency.sql" with { type: "text" }
+import operationsReportingRollupsSql from "../../drizzle/0012-operations-reporting-rollups.sql" with { type: "text" }
 import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
 const migrationSqlByFileName = {
@@ -32,6 +34,8 @@ const migrationSqlByFileName = {
   "0008-purpose-writing-tasks.sql": purposeWritingTasksSql,
   "0009-remove-writing-complete.sql": removeWritingCompleteSql,
   "0010-lesson-completed-step-ids.sql": lessonCompletedStepIdsSql,
+  "0011-query-read-efficiency.sql": queryReadEfficiencySql,
+  "0012-operations-reporting-rollups.sql": operationsReportingRollupsSql,
 } as const
 
 const migrationSources = applicationMigrationManifest.map((migration) => ({

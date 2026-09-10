@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm"
+import { asc, desc, sql } from "drizzle-orm"
 import { authUsers } from "@workspace/auth/schema"
 import {
   courseCurriculumVersions,
@@ -56,6 +56,43 @@ export const learnerActivityDays = sqliteTable(
   ]
 )
 
+export const learnerReportingSummaries = sqliteTable(
+  "learner_reporting_summaries",
+  {
+    completedLessons: integer("completed_lessons").notNull().default(0),
+    lastActive: text("last_active"),
+    streakDaysAtLastActivity: integer("streak_days_at_last_activity")
+      .notNull()
+      .default(0),
+    userId: text("user_id")
+      .primaryKey()
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    check(
+      "learner_reporting_summaries_completed_lessons_check",
+      sql`${table.completedLessons} >= 0`
+    ),
+    check(
+      "learner_reporting_summaries_streak_days_check",
+      sql`${table.streakDaysAtLastActivity} >= 0`
+    ),
+    index("learner_reporting_summaries_last_active_idx").on(
+      desc(table.lastActive),
+      asc(table.userId)
+    ),
+    index("learner_reporting_summaries_completed_lessons_idx").on(
+      desc(table.completedLessons),
+      asc(table.userId)
+    ),
+    index("learner_reporting_summaries_streak_idx").on(
+      desc(table.streakDaysAtLastActivity),
+      asc(table.userId)
+    ),
+  ]
+)
+
 export const learnerCourseProgress = sqliteTable(
   "learner_course_progress",
   {
@@ -98,8 +135,14 @@ export const learnerCourseProgress = sqliteTable(
     ),
     index("learner_course_progress_activity_idx").on(
       table.userId,
-      table.lastActivityAt,
-      table.courseId
+      desc(table.lastActivityAt),
+      asc(table.courseId)
+    ),
+    index("learner_course_progress_status_activity_idx").on(
+      table.userId,
+      table.status,
+      desc(table.lastActivityAt),
+      asc(table.courseId)
     ),
   ]
 )
@@ -160,6 +203,10 @@ export const learnerLessonProgress = sqliteTable(
     index("learner_lesson_progress_user_course_idx").on(
       table.userId,
       table.courseId
+    ),
+    index("learner_lesson_progress_user_lesson_idx").on(
+      table.userId,
+      table.lessonId
     ),
   ]
 )

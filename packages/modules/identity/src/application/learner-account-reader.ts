@@ -4,7 +4,7 @@ import {
   createLearnerProfile,
   deletedLearnerDisplayName,
 } from "#identity/domain/learner-profile"
-import { userStatuses, type UserStatus } from "#identity/domain/user-status"
+import { userStatuses } from "#identity/domain/user-status"
 import type {
   AuthenticatedLearnerIdentity,
   IdentityRepository,
@@ -28,33 +28,6 @@ export async function findLearnerAccount(
   ])
 
   return identity === null ? null : toLearnerAccount(identity, profile)
-}
-
-export async function listLearnerAccounts(
-  dependencies: LearnerAccountReaderDependencies,
-  input: Readonly<{
-    query: string
-    status: UserStatus | "all"
-  }>
-): Promise<readonly LearnerAccount[]> {
-  const [identities, profiles] = await Promise.all([
-    dependencies.learnerIdentityDirectory.listLearnerIdentities(),
-    dependencies.repository.listLearnerProfiles(),
-  ])
-  const profilesByUserId = new Map(
-    profiles.map((profile) => [profile.userId, profile])
-  )
-  const query = input.query.trim().toLowerCase()
-
-  return identities
-    .map((identity) =>
-      toLearnerAccount(identity, profilesByUserId.get(identity.id) ?? null)
-    )
-    .filter(
-      (account) =>
-        matchesStatus(account, input.status) && matchesQuery(account, query)
-    )
-    .sort((left, right) => left.id.localeCompare(right.id))
 }
 
 function toLearnerAccount(
@@ -84,21 +57,4 @@ function toLearnerAccount(
       version: record?.version ?? null,
     },
   }
-}
-
-function matchesStatus(
-  account: LearnerAccount,
-  status: UserStatus | "all"
-): boolean {
-  return status === "all"
-    ? account.profile.profile.status !== userStatuses.deleted
-    : account.profile.profile.status === status
-}
-
-function matchesQuery(account: LearnerAccount, query: string): boolean {
-  return (
-    query.length === 0 ||
-    account.email.toLowerCase().includes(query) ||
-    account.profile.profile.displayName.toLowerCase().includes(query)
-  )
 }

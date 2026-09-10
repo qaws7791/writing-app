@@ -131,6 +131,15 @@ export type PublishedCourseSummary = Readonly<{
   visualKey: CourseVisualKey
 }>
 
+export type PublishedCourseSummaryQuery = Readonly<{
+  after?: Readonly<{
+    courseId: CourseId
+    sortOrder: number
+  }>
+  category?: string
+  limit: number
+}>
+
 export type PublishedLessonReference = Readonly<{
   courseId: CourseId
   curriculumVersionId: CurriculumVersionId

@@ -1,4 +1,5 @@
 import { inArray } from "drizzle-orm"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 
 import { learnerProfiles } from "#identity/infrastructure/persistence/schema"
@@ -9,9 +10,14 @@ export const identityLearnerDataPurge: LearnerDataPurgePort = {
   purge(transaction, userIds) {
     if (userIds.length === 0) return
 
-    transaction
-      .delete(learnerProfiles)
-      .where(inArray(learnerProfiles.userId, userIds))
-      .run()
+    for (const userIdChunk of chunkByBoundParameters(userIds, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    })) {
+      transaction
+        .delete(learnerProfiles)
+        .where(inArray(learnerProfiles.userId, userIdChunk))
+        .run()
+    }
   },
 }

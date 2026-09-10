@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 export const adminAuthUsers = sqliteTable("admin_user", {
   id: text("id").primaryKey().notNull(),
@@ -12,49 +12,73 @@ export const adminAuthUsers = sqliteTable("admin_user", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })
 
-export const adminAuthSessions = sqliteTable("admin_session", {
-  id: text("id").primaryKey().notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-})
+export const adminAuthSessions = sqliteTable(
+  "admin_session",
+  {
+    id: text("id").primaryKey().notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
+    token: text("token").notNull().unique(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("admin_session_expiry_idx").on(table.expiresAt, table.id),
+    index("admin_session_user_idx").on(table.userId),
+  ]
+)
 
-export const adminAuthAccounts = sqliteTable("admin_account", {
-  id: text("id").primaryKey().notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-  accountId: text("account_id").notNull(),
-  providerId: text("provider_id").notNull(),
-  accessToken: text("access_token"),
-  refreshToken: text("refresh_token"),
-  accessTokenExpiresAt: integer("access_token_expires_at", {
-    mode: "timestamp_ms",
-  }),
-  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
-    mode: "timestamp_ms",
-  }),
-  scope: text("scope"),
-  idToken: text("id_token"),
-  password: text("password"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-})
+export const adminAuthAccounts = sqliteTable(
+  "admin_account",
+  {
+    id: text("id").primaryKey().notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    accessTokenExpiresAt: integer("access_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    scope: text("scope"),
+    idToken: text("id_token"),
+    password: text("password"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("admin_account_provider_idx").on(table.accountId, table.providerId),
+    index("admin_account_user_idx").on(table.userId),
+  ]
+)
 
-export const adminAuthVerifications = sqliteTable("admin_verification", {
-  id: text("id").primaryKey().notNull(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
-})
+export const adminAuthVerifications = sqliteTable(
+  "admin_verification",
+  {
+    id: text("id").primaryKey().notNull(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    index("admin_verification_identifier_created_idx").on(
+      table.identifier,
+      table.createdAt
+    ),
+    index("admin_verification_expiry_idx").on(table.expiresAt),
+  ]
+)
 
 export const adminAuthRateLimits = sqliteTable("admin_auth_rate_limit", {
   key: text("key").primaryKey().notNull(),

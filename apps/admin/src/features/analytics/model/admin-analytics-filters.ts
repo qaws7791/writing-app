@@ -5,6 +5,7 @@ import {
 } from "@workspace/contracts/operations/analytics-query"
 
 export type AdminAnalyticsFilters = Readonly<{
+  cursor?: string
   direction: AdminSortDirection
   page: number
   pageSize: number
@@ -20,7 +21,11 @@ export const analyticsWindowDays = 30
 export function parseAdminAnalyticsFilters(
   searchParams: Record<string, string | string[] | undefined>
 ): AdminAnalyticsFilters {
+  const cursor = adminLessonAnalyticsQuerySchema.shape.cursor
+    .catch(undefined)
+    .parse(readString(searchParams["cursor"]))
   return {
+    ...(cursor === undefined ? {} : { cursor }),
     direction: adminLessonAnalyticsQuerySchema.shape.direction
       .catch(defaultFilters.direction)
       .parse(readString(searchParams["direction"])),

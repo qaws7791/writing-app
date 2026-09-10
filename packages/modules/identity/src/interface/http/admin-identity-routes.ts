@@ -25,6 +25,8 @@ import {
   type IdentityAdminHonoEnv,
 } from "#identity/interface/http/admin-auth"
 import { mapIdentityError } from "#identity/interface/http/identity-http-errors"
+import { InvalidAdminUserCursorError } from "#identity/application/identity-queries"
+import { AppError } from "@workspace/http-platform/errors"
 
 export type AdminIdentityRouteDependencies = Readonly<{
   sessionResolver: AdminSessionResolver
@@ -51,9 +53,12 @@ function registerListUsersRoute<TEnv extends IdentityAdminHonoEnv>(
     operationId: "getAdminUsers",
     path: "/users",
     request: { query: adminUsersQuerySchema },
-    responses: authenticatedResponses(
-      jsonResponse("어드민 사용자 목록입니다.", adminUserListDtoSchema)
-    ),
+    responses: {
+      ...authenticatedResponses(
+        jsonResponse("어드민 사용자 목록입니다.", adminUserListDtoSchema)
+      ),
+      400: errorJsonResponse("유효하지 않은 cursor입니다."),
+    },
     summary: "어드민 사용자 목록 조회",
     ...adminSessionRouteOptions(sessionResolver),
   } satisfies RouteConfig
@@ -61,7 +66,16 @@ function registerListUsersRoute<TEnv extends IdentityAdminHonoEnv>(
 
   app.openapi(route, async (context) => {
     const query = context.req.valid("query")
-    const result = await userReader.readUsers(query)
+    const result = await userReader.readUsers(query).catch((error: unknown) => {
+      if (error instanceof InvalidAdminUserCursorError) {
+        throw new AppError({
+          code: "INVALID_CURSOR",
+          message: "cursor가 유효하지 않습니다.",
+          status: 400,
+        })
+      }
+      throw error
+    })
     return context.json(toAdminUserListResponse(result), 200)
   })
 }
@@ -195,10 +209,11 @@ function toAdminUserListResponse(result: ReadAdminUsersResult) {
   return adminUserListDtoSchema.parse({
     items: result.items,
     pagination: {
-      page: result.page,
+      hasNextPage: result.hasNextPage,
+      hasPreviousPage: result.hasPreviousPage,
+      nextCursor: result.nextCursor,
       pageSize: result.pageSize,
-      totalItems: result.totalItems,
-      totalPages: result.totalPages,
+      previousCursor: result.previousCursor,
     },
   })
 }

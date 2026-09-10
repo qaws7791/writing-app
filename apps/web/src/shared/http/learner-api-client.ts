@@ -83,12 +83,16 @@ export type LearnerSaveStepDraftBodyDto = Parameters<
   typeof saveLearnerStepDraft
 >[2]
 export type LearnerWritingDetailDto = Awaited<ReturnType<typeof getWriting>>
+export type LearnerWritingPageDto = Awaited<ReturnType<typeof getWritings>>
 export type LearnerWritingSummaryDto = Awaited<
   ReturnType<typeof getWritings>
 >["items"][number]
 export type LearnerWritingCatalogItemDto = Awaited<
   ReturnType<typeof getWritingTaskCatalog>
 >["items"][number]
+export type LearnerWritingCatalogPageDto = Awaited<
+  ReturnType<typeof getWritingTaskCatalog>
+>
 export type LearnerSaveWritingBodyDto = Parameters<typeof saveWriting>[1]
 export type LearnerSaveWritingResultDto = Awaited<
   ReturnType<typeof saveWriting>

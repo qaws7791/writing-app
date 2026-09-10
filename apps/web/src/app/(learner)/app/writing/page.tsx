@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { getWritings } from "@workspace/http-client/learner"
+import { writingListQuerySchema } from "@workspace/contracts/writing/writing"
 
 import { createLoginPagePath } from "@/features/authentication/model/auth-navigation"
 import { WritingHomePage } from "@/features/writing/ui/writing-home-page"
@@ -10,7 +11,12 @@ import {
 import { AppRouteNotice } from "@/shared/ui/app-route-notice"
 import { getServerLearnerRequestOptions } from "@/server/http/learner-api-client"
 
-export default async function WritingHomeRoute() {
+export default async function WritingHomeRoute({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const query = writingListQuerySchema.parse(await searchParams)
   const requestOptions = await getServerLearnerRequestOptions({
     cache: "no-store",
   })
@@ -19,7 +25,16 @@ export default async function WritingHomeRoute() {
     redirect(createLoginPagePath("/app/writing"))
   }
 
-  const result = await settleLearnerApiRequest(getWritings(requestOptions))
+  const result = await settleLearnerApiRequest(
+    getWritings(
+      {
+        direction: query.direction,
+        pageSize: query.pageSize,
+        ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+      },
+      requestOptions
+    )
+  )
   if (result.status === "error") {
     if (isLearnerApiAuthenticationError(result.error)) {
       redirect(createLoginPagePath("/app/writing"))
@@ -35,5 +50,10 @@ export default async function WritingHomeRoute() {
     )
   }
 
-  return <WritingHomePage initialWritings={result.value.items} />
+  return (
+    <WritingHomePage
+      initialWritings={result.value.items}
+      pagination={result.value.pagination}
+    />
+  )
 }

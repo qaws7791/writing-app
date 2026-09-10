@@ -7,6 +7,7 @@ export type AdminAuditEvent = AdminAuditEvents["items"][number]
 /** 빈 문자열은 해당 조건을 두지 않는다는 뜻이며 GET form이 왕복시키는 표현이다. */
 export type ReadAdminAuditEventsInput = Readonly<{
   category: AdminAuditCategory | ""
+  cursor: string
   from: string
   page: number
   pageSize: number

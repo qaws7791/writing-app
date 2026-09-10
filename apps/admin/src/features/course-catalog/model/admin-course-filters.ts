@@ -8,7 +8,8 @@ const courseFiltersSchema = z.object({
     (value) => (typeof value === "string" && value.length > 0 ? value : "all"),
     z.string()
   ),
-  page: positiveInteger(1),
+  cursor: stringValue("").transform((value) => value || undefined),
+  direction: z.enum(["next", "previous"]).catch("next"),
   pageSize: positiveInteger(20),
   query: stringValue(""),
   status: z

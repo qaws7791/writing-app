@@ -1,19 +1,18 @@
 import { z } from "zod"
 import { userIdSchema } from "#contracts/identity/admin-ids"
 import { learnerAccountStatusSchema } from "#contracts/identity/status"
-import {
-  nonNegativeIntegerSchema as adminNonNegativeIntegerSchema,
-  positiveIntegerSchema as adminPositiveIntegerSchema,
-} from "#contracts/shared/integer"
+import { nonNegativeIntegerSchema as adminNonNegativeIntegerSchema } from "#contracts/shared/integer"
 import {
   adminUserListStatusFilterSchema,
   adminUserSortSchema,
 } from "#contracts/identity/status"
+import { createIndexedSubstringQuerySchema } from "#contracts/shared/indexed-substring-query"
 
 export const adminUsersQuerySchema = z.object({
-  page: z.coerce.number().int().positive().optional().default(1),
+  cursor: z.string().min(1).max(2_048).optional(),
+  direction: z.enum(["next", "previous"]).optional().default("next"),
   pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
-  query: z.string().optional().default(""),
+  query: createIndexedSubstringQuerySchema(100).optional().default(""),
   sort: adminUserSortSchema.optional().default("lastActive"),
   status: adminUserListStatusFilterSchema.optional().default("all"),
 })
@@ -36,10 +35,11 @@ export const adminUserListItemDtoSchema = z.strictObject({
 export const adminUserListDtoSchema = z.strictObject({
   items: z.array(adminUserListItemDtoSchema),
   pagination: z.strictObject({
-    page: adminPositiveIntegerSchema,
-    pageSize: adminPositiveIntegerSchema,
-    totalItems: adminNonNegativeIntegerSchema,
-    totalPages: adminPositiveIntegerSchema,
+    hasNextPage: z.boolean(),
+    hasPreviousPage: z.boolean(),
+    nextCursor: z.string().min(1).nullable(),
+    pageSize: z.number().int().positive().max(100),
+    previousCursor: z.string().min(1).nullable(),
   }),
 })
 

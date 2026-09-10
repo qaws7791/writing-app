@@ -10,6 +10,8 @@ import {
 } from "#identity/application/identity-queries"
 import type {
   AdminAuthenticationPort,
+  AdminUserCursorCodec,
+  AdminUserPagePort,
   AuthenticatedLearnerIdentity,
   DeletedLearnerPurgeRepository,
   IdentityApplicationDependencies,
@@ -31,6 +33,7 @@ import {
   type SessionResolver,
 } from "#identity/application/identity-sessions"
 import { createDrizzleIdentityRepository } from "#identity/infrastructure/persistence/identity-drizzle-repository"
+import { createAdminUserCursorCodec } from "#identity/infrastructure/persistence/admin-user-cursor"
 
 export type IdentityModule = Readonly<{
   adminUserMutation: AdminUserMutationUseCase
@@ -51,6 +54,8 @@ export type IdentityModule = Readonly<{
 
 export function createIdentityModule(
   input: Omit<IdentityApplicationDependencies, "repository"> & {
+    readonly adminUserPage?: AdminUserPagePort
+    readonly cursorSigningSecret?: string
     readonly database: WritingAppDatabase
     readonly deletedLearnerPurgeRepository: DeletedLearnerPurgeRepository
     readonly deletedLearnerRetentionDays: number
@@ -60,6 +65,11 @@ export function createIdentityModule(
   const repository = createDrizzleIdentityRepository(input.database)
   const application = createIdentityApplication({ ...input, repository })
   const adminUserReader = createAdminUserReader({
+    adminUserPage: input.adminUserPage ?? unconfiguredAdminUserPage,
+    cursor:
+      input.cursorSigningSecret === undefined
+        ? unconfiguredAdminUserCursor
+        : createAdminUserCursorCodec(input.cursorSigningSecret),
     learningReport: input.learningReport,
     learnerIdentityDirectory: input.learnerIdentityDirectory,
     repository,
@@ -98,6 +108,24 @@ export function createIdentityModule(
     },
   }
 }
+
+const unconfiguredAdminUserPage: AdminUserPagePort = {
+  async readPage() {
+    throw new Error("관리자 사용자 목록 repository가 구성되지 않았습니다.")
+  },
+}
+
+const unconfiguredAdminUserCursor = {
+  createFingerprint(): never {
+    throw new Error("관리자 사용자 cursor codec이 구성되지 않았습니다.")
+  },
+  decode(): never {
+    throw new Error("관리자 사용자 cursor codec이 구성되지 않았습니다.")
+  },
+  encode(): never {
+    throw new Error("관리자 사용자 cursor codec이 구성되지 않았습니다.")
+  },
+} satisfies AdminUserCursorCodec
 
 export { createDeletedLearnerPurgeCommand } from "#identity/application/deleted-learner-purge"
 export { createDeletedLearnerPurgeRepository } from "#identity/infrastructure/persistence/deleted-learner-purge-repository"

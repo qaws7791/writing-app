@@ -31,7 +31,6 @@ export type LearnerAccount = Readonly<{
 
 export type IdentityRepository = Readonly<{
   findLearnerProfile: (userId: UserId) => Promise<LearnerProfileRecord | null>
-  listLearnerProfiles: () => Promise<readonly LearnerProfileRecord[]>
   provisionLearnerProfile: (input: {
     readonly profile: LearnerProfile
   }) => Promise<LearnerProfileSnapshot>
@@ -53,7 +52,55 @@ export type LearnerIdentityDirectoryPort = Readonly<{
   findLearnerIdentity: (
     userId: UserId
   ) => Promise<AuthenticatedLearnerIdentity | null>
-  listLearnerIdentities: () => Promise<readonly AuthenticatedLearnerIdentity[]>
+}>
+
+export type AdminUserSort = "joined" | "lastActive" | "lessonsDone" | "streak"
+export type AdminUserStatusFilter = UserStatus | "all"
+
+export type AdminUserPagePosition = Readonly<{
+  primary: number | string | null
+  userId: UserId
+}>
+
+export type AdminUserPageRow = Readonly<{
+  email: string
+  joinedAt: Date
+  lastActive: string | null
+  lessonsDone: number
+  name: string
+  status: UserStatus
+  streak: number
+  userId: UserId
+}>
+
+export type AdminUserPagePort = Readonly<{
+  readPage: (
+    input: Readonly<{
+      after?: AdminUserPagePosition
+      direction: "next" | "previous"
+      limit: number
+      query: string
+      sort: AdminUserSort
+      status: AdminUserStatusFilter
+    }>
+  ) => Promise<readonly AdminUserPageRow[]>
+}>
+
+export type AdminUserCursorCodec = Readonly<{
+  createFingerprint: (
+    input: Readonly<{
+      query: string
+      sort: AdminUserSort
+      status: AdminUserStatusFilter
+    }>
+  ) => string
+  decode: (cursor: string, fingerprint: string) => AdminUserPagePosition | null
+  encode: (
+    input: Readonly<{
+      fingerprint: string
+      position: AdminUserPagePosition
+    }>
+  ) => string
 }>
 
 export type AuthenticatedAdminIdentity = Readonly<{

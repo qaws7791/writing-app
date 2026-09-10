@@ -56,11 +56,15 @@ export type OperationsAnalytics = Readonly<{
 }>
 
 export type OperationsLessonAnalyticsPage = Readonly<{
+  hasNextPage?: boolean
+  hasPreviousPage?: boolean
   items: readonly OperationsLessonAnalyticsItem[]
+  nextCursor?: string | null
   page: number
   pageSize: number
-  totalItems: number
-  totalPages: number
+  previousCursor?: string | null
+  totalItems?: number
+  totalPages?: number
 }>
 
 export type OperationsLessonAnalyticsSort =
@@ -70,6 +74,14 @@ export type OperationsLessonAnalyticsSort =
   | "lesson"
 
 export type OperationsSortDirection = "asc" | "desc"
+
+export type OperationsLessonAnalyticsCursor = Readonly<{
+  courseTitle: string
+  direction: "newer" | "older"
+  lessonId: LessonId
+  lessonTitle: string
+  primary: number | string
+}>
 
 export type OperationsReportingRepository = Readonly<{
   readAnalytics: (input: {
@@ -83,6 +95,7 @@ export type OperationsReportingRepository = Readonly<{
     readonly reportDate: string
   }) => OperationsDashboard
   readLessonAnalytics: (input: {
+    readonly cursor?: OperationsLessonAnalyticsCursor | null
     readonly direction: OperationsSortDirection
     readonly page: number
     readonly pageSize: number

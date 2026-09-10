@@ -1,6 +1,7 @@
-import { and, asc, count, eq, like, sql } from "drizzle-orm"
+import { and, asc, desc, eq, gt, lt, or, sql } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import { createFts5Phrase } from "@workspace/db/fts5"
 import type { ContentAssetId, CourseId } from "@workspace/types/ids"
 
 import type { ContentError } from "#content/domain/content-error"
@@ -151,7 +152,7 @@ export function readCourseChangeTarget(
       courseCurriculumVersions,
       and(
         eq(courseCurriculumVersions.courseId, courses.id),
-        eq(courseCurriculumVersions.status, "draft")
+        sql`${courseCurriculumVersions.status} = 'draft'`
       )
     )
     .where(eq(courses.id, courseId))
@@ -195,28 +196,29 @@ export function readCourses(
   database: WritingAppDatabase,
   input: ReadContentCoursesInput
 ): ContentCourseRowPage {
+  const direction = input.cursor === undefined ? "next" : input.direction
   const category = input.category.trim()
   const whereCondition = createReadCoursesWhereCondition({
     category,
     query: input.query.trim(),
     status: input.status,
   })
-  const totalItems =
-    database
-      .select({ value: count() })
-      .from(courses)
-      .innerJoin(
-        courseCurriculumVersions,
-        and(
-          eq(courseCurriculumVersions.courseId, courses.id),
-          eq(courseCurriculumVersions.status, "draft")
-        )
-      )
-      .where(whereCondition)
-      .get()?.value ?? 0
-  const pagination = createPageBounds(input, totalItems)
-  const unitCountExpression = sql<number>`count(distinct ${courseUnitVersions.id})`
-  const lessonCountExpression = sql<number>`count(distinct ${lessonVersions.id})`
+  const cursorCondition = createCourseCursorCondition({
+    cursor: input.cursor,
+    direction,
+  })
+  const unitCountExpression = sql<number>`(
+    SELECT count(*)
+    FROM ${courseUnitVersions}
+    WHERE ${courseUnitVersions.curriculumVersionId} = ${courseCurriculumVersions.id}
+      AND ${courseUnitVersions.status} = 'active'
+  )`
+  const lessonCountExpression = sql<number>`(
+    SELECT count(*)
+    FROM ${lessonVersions}
+    WHERE ${lessonVersions.curriculumVersionId} = ${courseCurriculumVersions.id}
+      AND ${lessonVersions.status} = 'active'
+  )`
   const rows = database
     .select({
       category: courseCurriculumVersions.category,
@@ -234,43 +236,69 @@ export function readCourses(
       courseCurriculumVersions,
       and(
         eq(courseCurriculumVersions.courseId, courses.id),
-        eq(courseCurriculumVersions.status, "draft")
+        sql`${courseCurriculumVersions.status} = 'draft'`
       )
     )
-    .leftJoin(
-      courseUnitVersions,
-      and(
-        eq(courseUnitVersions.curriculumVersionId, courseCurriculumVersions.id),
-        eq(courseUnitVersions.status, activeStatus)
-      )
+    .where(and(whereCondition, cursorCondition))
+    .orderBy(
+      direction === "previous"
+        ? desc(courses.sortOrder)
+        : asc(courses.sortOrder),
+      direction === "previous" ? desc(courses.id) : asc(courses.id)
     )
-    .leftJoin(
-      lessonVersions,
-      and(
-        eq(lessonVersions.curriculumVersionId, courseCurriculumVersions.id),
-        eq(lessonVersions.status, activeStatus)
-      )
-    )
-    .where(whereCondition)
-    .groupBy(courses.id, courseCurriculumVersions.id)
-    .orderBy(asc(courses.sortOrder))
-    .limit(pagination.pageSize)
-    .offset(pagination.offset)
+    .limit(input.pageSize + 1)
     .all()
 
+  const hasMore = rows.length > input.pageSize
+  const pageRows = rows.slice(0, input.pageSize)
+  if (direction === "previous") pageRows.reverse()
+  const first = pageRows.at(0)
+  const last = pageRows.at(-1)
+
   return {
-    items: rows.map(({ coverAssetId, ...row }) => ({
+    items: pageRows.map(({ coverAssetId, ...row }) => ({
       ...row,
       coverAssetId:
         coverAssetId === null ? null : (coverAssetId as ContentAssetId),
       id: createCourseId(row.id),
       visualKey: readCourseVisualKey(row.visualKey),
     })),
-    page: pagination.page,
-    pageSize: pagination.pageSize,
-    totalItems: pagination.totalItems,
-    totalPages: pagination.totalPages,
+    nextCursor:
+      last === undefined ||
+      (direction === "next" && !hasMore) ||
+      (direction === "previous" && input.cursor === undefined)
+        ? null
+        : createCourseId(last.id),
+    pageSize: input.pageSize,
+    previousCursor:
+      first === undefined ||
+      (direction === "previous" && !hasMore) ||
+      (direction === "next" && input.cursor === undefined)
+        ? null
+        : createCourseId(first.id),
   }
+}
+
+function createCourseCursorCondition(input: {
+  readonly cursor?: CourseId
+  readonly direction: "next" | "previous"
+}) {
+  if (input.cursor === undefined) return undefined
+
+  const cursorSortOrder = sql<number>`(
+    SELECT ${courses.sortOrder}
+    FROM ${courses}
+    WHERE ${courses.id} = ${input.cursor}
+  )`
+  const compareSortOrder = input.direction === "previous" ? lt : gt
+  const compareId = input.direction === "previous" ? lt : gt
+  return or(
+    compareSortOrder(courses.sortOrder, cursorSortOrder),
+    and(
+      eq(courses.sortOrder, cursorSortOrder),
+      compareId(courses.id, input.cursor)
+    )
+  )
 }
 
 function createReadCoursesWhereCondition({
@@ -291,14 +319,15 @@ function createReadCoursesWhereCondition({
   const titleCondition =
     query.length === 0
       ? undefined
-      : like(courseCurriculumVersions.title, `%${escapeLikePattern(query)}%`)
+      : sql`${courseCurriculumVersions.id} IN (
+          SELECT document.curriculum_version_id
+          FROM course_curriculum_version_title_fts
+          INNER JOIN course_curriculum_version_title_search_documents AS document
+            ON document.rowid = course_curriculum_version_title_fts.rowid
+          WHERE course_curriculum_version_title_fts MATCH ${createFts5Phrase(query)}
+        )`
 
   return and(statusCondition, categoryCondition, titleCondition)
-}
-
-/** `LIKE` 와일드카드를 포함한 검색어가 조건을 넓히지 않도록 escape한다. */
-function escapeLikePattern(value: string): string {
-  return value.replace(/[%_\\]/gu, (match) => `\\${match}`)
 }
 
 function readNextCourseSortOrder(database: CourseReadDatabase): number {
@@ -310,21 +339,6 @@ function readNextCourseSortOrder(database: CourseReadDatabase): number {
       .from(courses)
       .get()?.value ?? 1
   )
-}
-
-function createPageBounds(
-  input: { readonly page: number; readonly pageSize: number },
-  totalItems: number
-) {
-  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
-  const page = Math.min(input.page, totalPages)
-  return {
-    offset: (page - 1) * input.pageSize,
-    page,
-    pageSize: input.pageSize,
-    totalItems,
-    totalPages,
-  }
 }
 
 export function toCourseEditorDocument(

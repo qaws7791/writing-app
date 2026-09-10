@@ -21,7 +21,21 @@ export default async function AdminUsersRoute({
   const usersResult =
     requestOptions === null
       ? unauthenticatedAdminRequestFailure()
-      : await settleAdminApiRequest(getAdminUsers(filters, requestOptions))
+      : await settleAdminApiRequest(
+          getAdminUsers(
+            {
+              ...(filters.cursor === undefined
+                ? {}
+                : { cursor: filters.cursor }),
+              direction: filters.direction,
+              pageSize: filters.pageSize,
+              query: filters.query,
+              sort: filters.sort,
+              status: filters.status,
+            },
+            requestOptions
+          )
+        )
 
   return (
     <AdminUsersPage

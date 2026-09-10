@@ -384,6 +384,7 @@ export function createAdminMcpServer(
           const result = await dependencies.auditTrail.readEvents({
             actor: { id: adminId },
             category: query.category ?? null,
+            cursor: query.cursor ?? null,
             from: query.from ?? null,
             page: query.page,
             pageSize: query.pageSize,

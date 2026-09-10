@@ -29,8 +29,8 @@ export function createLearningContentQueryPort(
       })
       return curriculum === null ? null : mapPublishedCurriculum(curriculum)
     },
-    async listPublishedCourses() {
-      const courses = await content.listPublishedCourses()
+    async listPublishedCourses(query) {
+      const courses = await content.listPublishedCourses(query)
       return courses.map((course) => ({ ...course }))
     },
     resolveAssetReferences: (assetIds) =>

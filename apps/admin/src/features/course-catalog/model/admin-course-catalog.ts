@@ -9,7 +9,8 @@ type AdminCourseListQuery = NonNullable<Parameters<typeof getAdminCourses>[0]>
 type AdminCourseStatus = NonNullable<AdminCourseListQuery["status"]>
 export type ReadAdminCoursesInput = {
   readonly category: string
-  readonly page: number
+  readonly cursor: string | undefined
+  readonly direction: "next" | "previous"
   readonly pageSize: number
   readonly query: string
   readonly status: AdminCourseStatus

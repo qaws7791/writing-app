@@ -12,8 +12,6 @@ import {
   BookOpenIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
   SearchIcon,
 } from "@workspace/ui/components/icons"
 import type { AdminRequestResult } from "@/shared/http/admin-api-client"
@@ -71,6 +69,7 @@ import {
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
 import { cn } from "@workspace/ui/lib/utils"
+import { isIndexedSearchQueryValid } from "@/shared/navigation/indexed-search-query"
 import {
   InputGroup,
   InputGroupAddon,
@@ -141,13 +140,15 @@ export function AdminCoursesPage({
 
   useEffect(() => {
     if (queryInput === filters.query) return
+    if (!isIndexedSearchQueryValid(queryInput)) return
 
     const timeoutId = window.setTimeout(() => {
       if (formRef.current === null) return
       router.push(
         createGetFilterHref(readGetFormFields(formRef.current), {
           query: queryInput,
-          page: 1,
+          cursor: "",
+          direction: "next",
         })
       )
     }, QUERY_SEARCH_DEBOUNCE_MS)
@@ -197,11 +198,9 @@ export function AdminCoursesPage({
   }
 
   const courses = coursesResult.value
-  const { page, pageSize, totalItems, totalPages } = courses.pagination
-  const rangeStart = totalItems === 0 ? 0 : (page - 1) * pageSize + 1
-  const rangeEnd = Math.min(page * pageSize, totalItems)
+  const { nextCursor, pageSize, previousCursor } = courses.pagination
 
-  const createPageLink = (pageNumber: number) => {
+  const createCursorLink = (cursor: string, direction: "next" | "previous") => {
     return createGetFilterHref(
       [
         ["query", filters.query],
@@ -209,7 +208,7 @@ export function AdminCoursesPage({
         ["status", filters.status],
         ["pageSize", filters.pageSize],
       ],
-      { page: pageNumber }
+      { cursor, direction }
     )
   }
 
@@ -218,7 +217,8 @@ export function AdminCoursesPage({
     router.push(
       createGetFilterHref(readGetFormFields(formRef.current), {
         [name]: value,
-        page: 1,
+        cursor: "",
+        direction: "next",
       })
     )
   }
@@ -252,7 +252,6 @@ export function AdminCoursesPage({
         method="get"
         className="flex flex-col gap-4 w-full"
       >
-        <input name="page" type="hidden" value="1" />
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <div className="relative">
             <Field className="gap-0">
@@ -264,6 +263,7 @@ export function AdminCoursesPage({
                 </InputGroupAddon>
                 <InputGroupInput
                   aria-label="강의명 검색"
+                  minLength={3}
                   name="query"
                   onChange={(event) => setQueryInput(event.target.value)}
                   placeholder="강의명"
@@ -271,6 +271,11 @@ export function AdminCoursesPage({
                   value={queryInput}
                 />
               </InputGroup>
+              {isIndexedSearchQueryValid(queryInput) ? null : (
+                <p className="mt-1 text-xs text-muted-foreground" role="status">
+                  검색어는 3자 이상 입력하세요.
+                </p>
+              )}
             </Field>
           </div>
           <div className="flex gap-3">
@@ -524,32 +529,12 @@ export function AdminCoursesPage({
 
             <div className="flex flex-wrap items-center justify-end gap-3">
               <p className="text-xs tabular-nums text-muted-foreground sm:text-sm">
-                전체 {totalItems}개 중 {rangeStart} - {rangeEnd}
+                현재 최대 {pageSize}개
               </p>
               <div className="flex items-center gap-1">
-                {page > 1 ? (
+                {previousCursor !== null ? (
                   <Link
-                    href={createPageLink(1)}
-                    aria-label="첫 페이지"
-                    className={paginationButtonClassName}
-                  >
-                    <ChevronsLeftIcon size={16} />
-                  </Link>
-                ) : (
-                  <Button
-                    aria-label="첫 페이지"
-                    className="rounded-xl"
-                    disabled
-                    size="icon-sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    <ChevronsLeftIcon size={16} />
-                  </Button>
-                )}
-                {page > 1 ? (
-                  <Link
-                    href={createPageLink(page - 1)}
+                    href={createCursorLink(previousCursor, "previous")}
                     aria-label="이전 페이지"
                     className={paginationButtonClassName}
                   >
@@ -567,12 +552,9 @@ export function AdminCoursesPage({
                     <ChevronLeftIcon size={16} />
                   </Button>
                 )}
-                <span className="px-3 font-bold text-foreground text-sm">
-                  {page} / {totalPages}
-                </span>
-                {page < totalPages ? (
+                {nextCursor !== null ? (
                   <Link
-                    href={createPageLink(page + 1)}
+                    href={createCursorLink(nextCursor, "next")}
                     aria-label="다음 페이지"
                     className={paginationButtonClassName}
                   >
@@ -588,26 +570,6 @@ export function AdminCoursesPage({
                     variant="outline"
                   >
                     <ChevronRightIcon size={16} />
-                  </Button>
-                )}
-                {page < totalPages ? (
-                  <Link
-                    href={createPageLink(totalPages)}
-                    aria-label="마지막 페이지"
-                    className={paginationButtonClassName}
-                  >
-                    <ChevronsRightIcon size={16} />
-                  </Link>
-                ) : (
-                  <Button
-                    aria-label="마지막 페이지"
-                    className="rounded-xl"
-                    disabled
-                    size="icon-sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    <ChevronsRightIcon size={16} />
                   </Button>
                 )}
               </div>

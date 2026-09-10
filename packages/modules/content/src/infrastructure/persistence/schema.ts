@@ -154,6 +154,12 @@ export const courses = sqliteTable(
       sql`${table.status} IN ('active', 'archived')`
     ),
     check("courses_sort_order_check", sql`${table.sortOrder} > 0`),
+    index("courses_sort_order_idx").on(table.sortOrder, table.id),
+    index("courses_status_sort_order_idx").on(
+      table.status,
+      table.sortOrder,
+      table.id
+    ),
   ]
 )
 
@@ -213,7 +219,25 @@ export const courseCurriculumVersions = sqliteTable(
       table.courseId,
       table.status
     ),
+    index("course_curriculum_versions_draft_category_idx")
+      .on(table.category, table.courseId)
+      .where(sql`${table.status} = 'draft'`),
+    index("course_curriculum_versions_published_category_idx")
+      .on(table.category, table.id)
+      .where(sql`${table.status} = 'published'`),
   ]
+)
+
+export const courseCurriculumVersionTitleSearchDocuments = sqliteTable(
+  "course_curriculum_version_title_search_documents",
+  {
+    curriculumVersionId: text("curriculum_version_id")
+      .notNull()
+      .unique()
+      .references(() => courseCurriculumVersions.id, { onDelete: "cascade" }),
+    rowId: integer("rowid").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+  }
 )
 
 export const contentAssets = sqliteTable(
@@ -283,6 +307,11 @@ export const contentAssets = sqliteTable(
       table.curriculumVersionId,
       table.status
     ),
+    index("content_assets_orphan_purge_idx")
+      .on(table.orphanedAt, table.id)
+      .where(
+        sql`${table.status} = 'orphaned' AND ${table.orphanedAt} IS NOT NULL`
+      ),
   ]
 )
 
@@ -310,6 +339,9 @@ export const courseUnitVersions = sqliteTable(
       table.curriculumVersionId,
       table.sortOrder
     ),
+    index("course_unit_versions_active_curriculum_idx")
+      .on(table.curriculumVersionId)
+      .where(sql`${table.status} = 'active'`),
   ]
 )
 
@@ -359,6 +391,9 @@ export const lessonVersions = sqliteTable(
       table.curriculumVersionId,
       table.id
     ),
+    index("lesson_versions_active_curriculum_idx")
+      .on(table.curriculumVersionId)
+      .where(sql`${table.status} = 'active'`),
   ]
 )
 

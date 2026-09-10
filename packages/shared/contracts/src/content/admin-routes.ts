@@ -2,10 +2,12 @@ import { z } from "zod"
 
 import { courseIdSchema } from "#contracts/content/ids"
 import { adminCourseListStatusFilterSchema } from "#contracts/content/status"
+import { createIndexedSubstringQuerySchema } from "#contracts/shared/indexed-substring-query"
 
-const defaultPage = 1
 const defaultPageSize = 20
 const maxPageSize = 100
+
+const indexedSubstringQuery = createIndexedSubstringQuerySchema(100)
 
 const positiveIntegerQuery = (fallback: number, max?: number) => {
   const schema = z.coerce.number().int().positive()
@@ -16,9 +18,10 @@ const positiveIntegerQuery = (fallback: number, max?: number) => {
 
 export const adminCoursesQuerySchema = z.object({
   category: z.string().optional().default(""),
-  page: positiveIntegerQuery(defaultPage),
+  cursor: courseIdSchema.optional(),
+  direction: z.enum(["next", "previous"]).optional().default("next"),
   pageSize: positiveIntegerQuery(defaultPageSize, maxPageSize),
-  query: z.string().trim().max(100).optional().default(""),
+  query: indexedSubstringQuery.optional().default(""),
   status: adminCourseListStatusFilterSchema.optional().default("all"),
 })
 

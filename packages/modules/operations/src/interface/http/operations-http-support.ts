@@ -18,6 +18,13 @@ export function operationsAuthenticatedResponses(
 }
 
 export function mapOperationsError(error: OperationsError): AppError {
+  if (error.kind === "invalid-reporting-query") {
+    return new AppError({
+      code: "OPERATIONS_REPORTING_QUERY_INVALID",
+      message: `${error.query} reporting query is invalid`,
+      status: 400,
+    })
+  }
   return new AppError({
     cause: error,
     code: "OPERATIONS_REPORTING_UNAVAILABLE",

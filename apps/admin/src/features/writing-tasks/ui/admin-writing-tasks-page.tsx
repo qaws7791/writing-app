@@ -13,8 +13,6 @@ import { useRouter } from "next/navigation"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
   PlusIcon,
   SearchIcon,
 } from "@workspace/ui/components/icons"
@@ -56,6 +54,7 @@ import {
   readGetFormFields,
 } from "@/shared/navigation/get-filter-url"
 import { cn } from "@workspace/ui/lib/utils"
+import { isIndexedSearchQueryValid } from "@/shared/navigation/indexed-search-query"
 import {
   InputGroup,
   InputGroupAddon,
@@ -106,13 +105,15 @@ export function AdminWritingTasksPage({
 
   useEffect(() => {
     if (queryInput === filters.query) return
+    if (!isIndexedSearchQueryValid(queryInput)) return
 
     const timeoutId = window.setTimeout(() => {
       if (formRef.current === null) return
       router.push(
         createGetFilterHref(readGetFormFields(formRef.current), {
           query: queryInput,
-          page: 1,
+          cursor: "",
+          direction: "next",
         })
       )
     }, QUERY_SEARCH_DEBOUNCE_MS)
@@ -155,11 +156,9 @@ export function AdminWritingTasksPage({
   }
 
   const tasks = tasksResult.value
-  const { page, pageSize, totalItems, totalPages } = tasks.pagination
-  const rangeStart = totalItems === 0 ? 0 : (page - 1) * pageSize + 1
-  const rangeEnd = Math.min(page * pageSize, totalItems)
+  const { nextCursor, pageSize, previousCursor } = tasks.pagination
 
-  const createPageLink = (pageNumber: number) => {
+  const createCursorLink = (cursor: string, direction: "next" | "previous") => {
     return createGetFilterHref(
       [
         ["query", filters.query],
@@ -167,7 +166,7 @@ export function AdminWritingTasksPage({
         ["status", filters.status],
         ["pageSize", filters.pageSize],
       ],
-      { page: pageNumber }
+      { cursor, direction }
     )
   }
 
@@ -176,7 +175,8 @@ export function AdminWritingTasksPage({
     router.push(
       createGetFilterHref(readGetFormFields(formRef.current), {
         [name]: value,
-        page: 1,
+        cursor: "",
+        direction: "next",
       })
     )
   }
@@ -208,7 +208,6 @@ export function AdminWritingTasksPage({
         method="get"
         ref={formRef}
       >
-        <input name="page" type="hidden" value="1" />
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <Field className="gap-0">
             <FieldLabel className="sr-only">과제 검색</FieldLabel>
@@ -218,13 +217,19 @@ export function AdminWritingTasksPage({
               </InputGroupAddon>
               <InputGroupInput
                 aria-label="과제 검색"
+                minLength={3}
                 name="query"
                 onChange={(event) => setQueryInput(event.target.value)}
-                placeholder="제목, 유형, ID"
+                placeholder="과제 제목"
                 type="search"
                 value={queryInput}
               />
             </InputGroup>
+            {isIndexedSearchQueryValid(queryInput) ? null : (
+              <p className="mt-1 text-xs text-muted-foreground" role="status">
+                검색어는 3자 이상 입력하세요.
+              </p>
+            )}
           </Field>
           <div className="flex gap-3">
             <Field className="gap-0">
@@ -366,40 +371,24 @@ export function AdminWritingTasksPage({
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
           <p className="text-xs tabular-nums text-muted-foreground sm:text-sm">
-            전체 {totalItems}개 중 {rangeStart} - {rangeEnd}
+            현재 최대 {pageSize}개
           </p>
           <div className="flex items-center gap-1">
             <PaginationLink
               className={paginationButtonClassName}
-              disabled={page <= 1}
-              href={createPageLink(1)}
-              label="첫 페이지"
-            >
-              <ChevronsLeftIcon size={16} />
-            </PaginationLink>
-            <PaginationLink
-              className={paginationButtonClassName}
-              disabled={page <= 1}
-              href={createPageLink(page - 1)}
+              disabled={previousCursor === null}
+              href={createCursorLink(previousCursor ?? "", "previous")}
               label="이전 페이지"
             >
               <ChevronLeftIcon size={16} />
             </PaginationLink>
             <PaginationLink
               className={paginationButtonClassName}
-              disabled={page >= totalPages}
-              href={createPageLink(page + 1)}
+              disabled={nextCursor === null}
+              href={createCursorLink(nextCursor ?? "", "next")}
               label="다음 페이지"
             >
               <ChevronRightIcon size={16} />
-            </PaginationLink>
-            <PaginationLink
-              className={paginationButtonClassName}
-              disabled={page >= totalPages}
-              href={createPageLink(totalPages)}
-              label="마지막 페이지"
-            >
-              <ChevronsRightIcon size={16} />
             </PaginationLink>
           </div>
         </div>

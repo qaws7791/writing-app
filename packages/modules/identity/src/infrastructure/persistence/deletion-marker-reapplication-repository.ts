@@ -1,5 +1,6 @@
 import { eq, inArray } from "drizzle-orm"
 import { authSessions, authUsers } from "@workspace/auth/schema"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 import { err, ok } from "@workspace/kernel/result"
@@ -24,20 +25,30 @@ export function createDeletionMarkerReapplicationRepository(input: {
             (transaction) => {
               const userIds = command.markers.map(({ userId }) => userId)
               const existingUserIds = new Set(
-                transaction
-                  .select({ id: authUsers.id })
-                  .from(authUsers)
-                  .where(inArray(authUsers.id, userIds))
-                  .all()
-                  .map(({ id }) => id)
+                chunkByBoundParameters(userIds, {
+                  fixedParameters: 0,
+                  parametersPerItem: 1,
+                }).flatMap((userIdChunk) =>
+                  transaction
+                    .select({ id: authUsers.id })
+                    .from(authUsers)
+                    .where(inArray(authUsers.id, userIdChunk))
+                    .all()
+                    .map(({ id }) => id)
+                )
               )
               const profilesByUserId = new Map(
-                transaction
-                  .select()
-                  .from(learnerProfiles)
-                  .where(inArray(learnerProfiles.userId, userIds))
-                  .all()
-                  .map((profile) => [profile.userId, profile])
+                chunkByBoundParameters(userIds, {
+                  fixedParameters: 0,
+                  parametersPerItem: 1,
+                }).flatMap((userIdChunk) =>
+                  transaction
+                    .select()
+                    .from(learnerProfiles)
+                    .where(inArray(learnerProfiles.userId, userIdChunk))
+                    .all()
+                    .map((profile) => [profile.userId, profile] as const)
+                )
               )
               const result = classifyMarkers({
                 existingUserIds,
@@ -87,10 +98,13 @@ export function createDeletionMarkerReapplicationRepository(input: {
                     existingUserIds.has(userId) &&
                     !result.purgeUserIds.includes(userId)
                 )
-              if (retainedUserIds.length > 0) {
+              for (const userIdChunk of chunkByBoundParameters(
+                retainedUserIds,
+                { fixedParameters: 0, parametersPerItem: 1 }
+              )) {
                 transaction
                   .delete(authSessions)
-                  .where(inArray(authSessions.userId, retainedUserIds))
+                  .where(inArray(authSessions.userId, userIdChunk))
                   .run()
               }
 

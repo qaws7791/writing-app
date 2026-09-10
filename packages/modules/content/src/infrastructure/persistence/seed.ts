@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
 import {
@@ -135,27 +136,36 @@ function insertVersionContent(
   const lessonIds = new Set(lessons.map((lesson) => lesson.id))
   const steps = rows.steps.filter((step) => lessonIds.has(step.lessonId))
 
-  if (units.length > 0) {
+  for (const unitChunk of chunkByBoundParameters(units, {
+    fixedParameters: 0,
+    parametersPerItem: 5,
+  })) {
     transaction
       .insert(courseUnitVersions)
-      .values(units.map((unit) => ({ ...unit, curriculumVersionId })))
+      .values(unitChunk.map((unit) => ({ ...unit, curriculumVersionId })))
       .run()
   }
-  if (lessons.length > 0) {
+  for (const lessonChunk of chunkByBoundParameters(lessons, {
+    fixedParameters: 0,
+    parametersPerItem: 10,
+  })) {
     transaction
       .insert(lessonVersions)
       .values(
-        lessons.map(({ courseId: _courseId, ...lesson }) => ({
+        lessonChunk.map(({ courseId: _courseId, ...lesson }) => ({
           ...lesson,
           curriculumVersionId,
         }))
       )
       .run()
   }
-  if (steps.length > 0) {
+  for (const stepChunk of chunkByBoundParameters(steps, {
+    fixedParameters: 0,
+    parametersPerItem: 7,
+  })) {
     transaction
       .insert(lessonStepVersions)
-      .values(steps.map((step) => ({ ...step, curriculumVersionId })))
+      .values(stepChunk.map((step) => ({ ...step, curriculumVersionId })))
       .run()
   }
 }

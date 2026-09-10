@@ -10,7 +10,8 @@ const adminUserSortSchema = z.enum([
   "streak",
 ])
 const userFiltersSchema = z.object({
-  page: positiveInteger(1),
+  cursor: z.string().min(1).max(2_048).optional(),
+  direction: z.enum(["next", "previous"]).catch("next"),
   pageSize: positiveInteger(20),
   query: stringValue(""),
   sort: z
@@ -30,7 +31,8 @@ const userFiltersSchema = z.object({
 export function parseAdminUserFilters(
   searchParams: Record<string, string | string[] | undefined>
 ): ReadAdminUsersInput {
-  return userFiltersSchema.parse(searchParams)
+  const parsed = userFiltersSchema.parse(searchParams)
+  return { ...parsed, cursor: parsed.cursor }
 }
 
 function stringValue(fallback: string) {

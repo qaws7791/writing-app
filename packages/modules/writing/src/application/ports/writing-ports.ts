@@ -65,9 +65,17 @@ export type WritingCatalogItem = Readonly<{
   typeName: string
 }>
 
+type WritingCatalogPage = Readonly<{
+  items: readonly WritingCatalogItem[]
+  nextCursor: WritingTaskPublicationId | null
+  pageSize: number
+  previousCursor: WritingTaskPublicationId | null
+}>
+
 type WritingTaskListFilter = Readonly<{
+  cursor?: WritingTaskId
+  direction: "next" | "previous"
   domain?: WritingDomain
-  page: number
   pageSize: number
   query: string
   status: "all" | "draft" | "published"
@@ -75,9 +83,16 @@ type WritingTaskListFilter = Readonly<{
 
 type WritingTaskListPage = Readonly<{
   items: readonly WritingTaskDraft[]
-  page: number
+  nextCursor: WritingTaskId | null
   pageSize: number
-  totalItems: number
+  previousCursor: WritingTaskId | null
+}>
+
+type WritingSummaryPage = Readonly<{
+  items: readonly WritingSummaryRecord[]
+  nextCursor: WritingId | null
+  pageSize: number
+  previousCursor: WritingId | null
 }>
 
 export type WritingCheckProvider = Readonly<{
@@ -140,12 +155,18 @@ export type WritingRepository = Readonly<{
   hasAcknowledgedAiNotice: (learnerId: LearnerId) => Promise<boolean>
   hasSucceededCheck: (writingId: WritingId) => Promise<boolean>
   listCatalog: (input: {
+    readonly cursor?: WritingTaskPublicationId
+    readonly direction?: "next" | "previous"
     readonly domain?: WritingDomain
+    readonly pageSize?: number
     readonly typeName?: string
-  }) => Promise<readonly WritingCatalogItem[]>
-  listPiecesByLearner: (
-    learnerId: LearnerId
-  ) => Promise<readonly WritingSummaryRecord[]>
+  }) => Promise<WritingCatalogPage>
+  listPiecesByLearner: (input: {
+    readonly cursor?: WritingId
+    readonly direction: "next" | "previous"
+    readonly learnerId: LearnerId
+    readonly pageSize: number
+  }) => Promise<WritingSummaryPage>
   listTasks: (filter: WritingTaskListFilter) => Promise<WritingTaskListPage>
   publishTask: (input: {
     readonly draft: WritingTaskDraft
@@ -182,11 +203,19 @@ export type WritingApplication = Readonly<{
     readonly learnerId: LearnerId
     readonly writingId: WritingId
   }) => Promise<Result<WritingSession, WritingApplicationError>>
-  list: (learnerId: LearnerId) => Promise<readonly WritingSummaryRecord[]>
+  list: (input: {
+    readonly cursor?: WritingId
+    readonly direction: "next" | "previous"
+    readonly learnerId: LearnerId
+    readonly pageSize: number
+  }) => Promise<WritingSummaryPage>
   listCatalog: (input: {
+    readonly cursor?: WritingTaskPublicationId
+    readonly direction: "next" | "previous"
     readonly domain?: WritingDomain
+    readonly pageSize: number
     readonly typeName?: string
-  }) => Promise<readonly WritingCatalogItem[]>
+  }) => Promise<WritingCatalogPage>
   save: (input: {
     readonly body: string
     readonly expectedVersion: number

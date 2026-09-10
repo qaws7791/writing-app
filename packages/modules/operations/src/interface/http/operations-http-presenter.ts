@@ -30,7 +30,7 @@ export function toAdminLessonAnalyticsPageDto(
 ) {
   return adminLessonAnalyticsPageDtoSchema.parse({
     items: value.items,
-    pagination: toPagination(value),
+    pagination: toLessonAnalyticsPagination(value),
   })
 }
 
@@ -64,7 +64,7 @@ export function toAdminAuditEventsDto(value: AuditEventPage) {
       retentionUntil: event.retentionUntil.toISOString(),
       target: event.target,
     })),
-    pagination: toPagination(value),
+    pagination: toAuditPagination(value),
   })
 }
 
@@ -82,20 +82,34 @@ export function toAdminMcpAuditEventsDto(value: AuditEventPage) {
       retentionUntil: event.retentionUntil.toISOString(),
       target: event.target,
     })),
-    pagination: toPagination(value),
+    pagination: toAuditPagination(value),
   })
 }
 
-function toPagination(value: {
-  readonly page: number
-  readonly pageSize: number
-  readonly totalItems: number
-  readonly totalPages: number
-}) {
+function toLessonAnalyticsPagination(value: OperationsLessonAnalyticsPage) {
   return {
+    hasNextPage: value.hasNextPage ?? false,
+    hasPreviousPage: value.hasPreviousPage ?? value.page > 1,
+    nextCursor: value.nextCursor ?? null,
     page: value.page,
     pageSize: value.pageSize,
-    totalItems: value.totalItems,
-    totalPages: value.totalPages,
+    previousCursor: value.previousCursor ?? null,
+    ...(value.totalItems === undefined ? {} : { totalItems: value.totalItems }),
+    ...(value.totalPages === undefined ? {} : { totalPages: value.totalPages }),
+  }
+}
+
+function toAuditPagination(value: AuditEventPage) {
+  return {
+    hasNextPage:
+      value.hasNextPage ??
+      (value.totalPages !== undefined && value.page < value.totalPages),
+    hasPreviousPage: value.hasPreviousPage ?? value.page > 1,
+    nextCursor: value.nextCursor ?? null,
+    page: value.page,
+    pageSize: value.pageSize,
+    previousCursor: value.previousCursor ?? null,
+    ...(value.totalItems === undefined ? {} : { totalItems: value.totalItems }),
+    ...(value.totalPages === undefined ? {} : { totalPages: value.totalPages }),
   }
 }

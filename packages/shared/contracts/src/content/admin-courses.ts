@@ -86,10 +86,9 @@ export const adminCourseListItemDtoSchema = z.strictObject({
 export const adminCourseListDtoSchema = z.strictObject({
   items: z.array(adminCourseListItemDtoSchema),
   pagination: z.strictObject({
-    page: positiveIntegerSchema,
+    nextCursor: courseIdSchema.nullable(),
     pageSize: positiveIntegerSchema,
-    totalItems: nonNegativeIntegerSchema,
-    totalPages: positiveIntegerSchema,
+    previousCursor: courseIdSchema.nullable(),
   }),
 })
 

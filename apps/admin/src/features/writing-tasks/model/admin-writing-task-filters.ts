@@ -5,11 +5,12 @@ import { z } from "zod"
 import type { ReadAdminWritingTasksInput } from "@/features/writing-tasks/model/admin-writing-tasks"
 
 const writingTaskFiltersSchema = z.object({
+  cursor: stringValue("").transform((value) => value || undefined),
+  direction: z.enum(["next", "previous"]).catch("next"),
   domain: z.preprocess(
     (value) => (typeof value === "string" && value.length > 0 ? value : "all"),
     z.union([z.literal("all"), writingDomainSchema])
   ),
-  page: positiveInteger(1),
   pageSize: positiveInteger(20),
   query: stringValue(""),
   status: z

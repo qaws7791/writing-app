@@ -1,5 +1,6 @@
-import { inArray, or } from "drizzle-orm"
+import { inArray } from "drizzle-orm"
 import { authUsers, authVerifications } from "@workspace/auth/schema"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 import { identityLearnerDataPurge } from "@workspace/identity/module"
 import { learningLearnerDataPurge } from "@workspace/learning/module"
@@ -11,23 +12,40 @@ const authUserPurge: LearnerDataPurgePort = {
   purge(transaction, userIds) {
     if (userIds.length === 0) return
 
-    const userEmails = transaction
-      .select({ email: authUsers.email })
-      .from(authUsers)
-      .where(inArray(authUsers.id, userIds))
-      .all()
-      .map(({ email }) => email)
+    const userEmails = chunkByBoundParameters(userIds, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    }).flatMap((userIdChunk) =>
+      transaction
+        .select({ email: authUsers.email })
+        .from(authUsers)
+        .where(inArray(authUsers.id, userIdChunk))
+        .all()
+        .map(({ email }) => email)
+    )
 
-    transaction
-      .delete(authVerifications)
-      .where(
-        or(
-          inArray(authVerifications.identifier, userEmails),
-          inArray(authVerifications.value, userIds)
-        )
-      )
-      .run()
-    transaction.delete(authUsers).where(inArray(authUsers.id, userIds)).run()
+    for (const emailChunk of chunkByBoundParameters(userEmails, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    })) {
+      transaction
+        .delete(authVerifications)
+        .where(inArray(authVerifications.identifier, emailChunk))
+        .run()
+    }
+    for (const userIdChunk of chunkByBoundParameters(userIds, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    })) {
+      transaction
+        .delete(authVerifications)
+        .where(inArray(authVerifications.value, userIdChunk))
+        .run()
+      transaction
+        .delete(authUsers)
+        .where(inArray(authUsers.id, userIdChunk))
+        .run()
+    }
   },
 }
 

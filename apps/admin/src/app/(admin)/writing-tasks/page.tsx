@@ -21,7 +21,10 @@ export default async function AdminWritingTasksRoute({
       : await settleAdminApiRequest(
           getAdminWritingTasks(
             {
-              page: filters.page,
+              ...(filters.cursor === undefined
+                ? {}
+                : { cursor: filters.cursor }),
+              direction: filters.direction,
               pageSize: filters.pageSize,
               query: filters.query,
               status: filters.status,

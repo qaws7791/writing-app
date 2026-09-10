@@ -54,6 +54,7 @@ import {
 } from "#content/application/use-cases/save-course-editor"
 import type {
   PublishedCourseSummary,
+  PublishedCourseSummaryQuery,
   PublishedCurriculumRevision,
   PublishedLessonReference,
 } from "#content/domain/content-model"
@@ -125,7 +126,9 @@ export type ContentApplication = Readonly<{
     courseId: CourseId
   ) => Promise<CourseChangeTarget | null>
   getCourses: (query: ReadContentCoursesInput) => Promise<ContentCoursePage>
-  listPublishedCourses: () => Promise<readonly PublishedCourseSummary[]>
+  listPublishedCourses: (
+    query?: PublishedCourseSummaryQuery
+  ) => Promise<readonly PublishedCourseSummary[]>
   publishCourse: PublishCourseUseCase
   readCurriculum: (input: {
     readonly courseId: CourseId
@@ -288,8 +291,8 @@ export function createContentApplication(
         })),
       }
     },
-    listPublishedCourses: () =>
-      dependencies.repository.listPublishedCourseSummaries(),
+    listPublishedCourses: (query) =>
+      dependencies.repository.listPublishedCourseSummaries(query),
     publishCourse: createPublishCourseUseCase(dependencies),
     readCurriculum: (input) => dependencies.repository.readCurriculum(input),
     readApprovedMcpChangeReceipt: (binding) =>

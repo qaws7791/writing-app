@@ -64,5 +64,17 @@
     "fileName": "0010-lesson-completed-step-ids.sql",
     "foreignKeys": "on",
     "id": "0010-lesson-completed-step-ids"
+  },
+  {
+    "checksum": "0b7b837f4d2eb985771fefc65f337b4c25076a1acee5b2ec1b59f0ff13c0adf2",
+    "fileName": "0011-query-read-efficiency.sql",
+    "foreignKeys": "on",
+    "id": "0011-query-read-efficiency"
+  },
+  {
+    "checksum": "959645df51fd998a6eb5caa860da52593b9cf0be7c60077d8857cfa648b27490",
+    "fileName": "0012-operations-reporting-rollups.sql",
+    "foreignKeys": "on",
+    "id": "0012-operations-reporting-rollups"
   }
 ]

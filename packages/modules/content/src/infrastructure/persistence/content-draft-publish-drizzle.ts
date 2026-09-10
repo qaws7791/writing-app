@@ -1,5 +1,6 @@
 import { and, asc, eq, inArray } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type {
   CourseId,
@@ -351,29 +352,31 @@ function validateAndTransitionDraftAssetReferences(
       )
     ),
   ]
-  const assets =
-    allReferenceIds.length === 0
-      ? []
-      : transaction
-          .select({
-            courseId: contentAssets.courseId,
-            curriculumVersionId: contentAssets.curriculumVersionId,
-            id: contentAssets.id,
-            kind: contentAssets.kind,
-            orphanedAt: contentAssets.orphanedAt,
-            status: contentAssets.status,
-            versionStatus: courseCurriculumVersions.status,
-          })
-          .from(contentAssets)
-          .innerJoin(
-            courseCurriculumVersions,
-            and(
-              eq(courseCurriculumVersions.courseId, contentAssets.courseId),
-              eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
-            )
-          )
-          .where(inArray(contentAssets.id, allReferenceIds))
-          .all()
+  const assets = chunkByBoundParameters(allReferenceIds, {
+    fixedParameters: 0,
+    parametersPerItem: 1,
+  }).flatMap((referenceIdChunk) =>
+    transaction
+      .select({
+        courseId: contentAssets.courseId,
+        curriculumVersionId: contentAssets.curriculumVersionId,
+        id: contentAssets.id,
+        kind: contentAssets.kind,
+        orphanedAt: contentAssets.orphanedAt,
+        status: contentAssets.status,
+        versionStatus: courseCurriculumVersions.status,
+      })
+      .from(contentAssets)
+      .innerJoin(
+        courseCurriculumVersions,
+        and(
+          eq(courseCurriculumVersions.courseId, contentAssets.courseId),
+          eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
+        )
+      )
+      .where(inArray(contentAssets.id, referenceIdChunk))
+      .all()
+  )
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]))
   const reactivationCutoff = new Date(
     input.now.getTime() - contentAssetOrphanRetentionMs
@@ -414,7 +417,10 @@ function validateAndTransitionDraftAssetReferences(
       : []
   })
 
-  if (reactivatedIds.length > 0) {
+  for (const assetIdChunk of chunkByBoundParameters(reactivatedIds, {
+    fixedParameters: 5,
+    parametersPerItem: 1,
+  })) {
     transaction
       .update(contentAssets)
       .set({
@@ -424,14 +430,17 @@ function validateAndTransitionDraftAssetReferences(
       })
       .where(
         and(
-          inArray(contentAssets.id, reactivatedIds),
+          inArray(contentAssets.id, assetIdChunk),
           eq(contentAssets.curriculumVersionId, input.currentDraftId),
           eq(contentAssets.status, "orphaned")
         )
       )
       .run()
   }
-  if (orphanedIds.length > 0) {
+  for (const assetIdChunk of chunkByBoundParameters(orphanedIds, {
+    fixedParameters: 5,
+    parametersPerItem: 1,
+  })) {
     transaction
       .update(contentAssets)
       .set({
@@ -441,7 +450,7 @@ function validateAndTransitionDraftAssetReferences(
       })
       .where(
         and(
-          inArray(contentAssets.id, orphanedIds),
+          inArray(contentAssets.id, assetIdChunk),
           eq(contentAssets.curriculumVersionId, input.currentDraftId),
           eq(contentAssets.status, "active")
         )
@@ -651,14 +660,32 @@ function insertCurriculumContent(
     )
   )
 
-  if (unitRows.length > 0) {
-    transaction.insert(courseUnitVersions).values(unitRows).run()
+  for (const unitRowChunk of chunkByBoundParameters(unitRows, {
+    fixedParameters: 0,
+    parametersPerItem: 5,
+  })) {
+    transaction
+      .insert(courseUnitVersions)
+      .values([...unitRowChunk])
+      .run()
   }
-  if (lessonRows.length > 0) {
-    transaction.insert(lessonVersions).values(lessonRows).run()
+  for (const lessonRowChunk of chunkByBoundParameters(lessonRows, {
+    fixedParameters: 0,
+    parametersPerItem: 10,
+  })) {
+    transaction
+      .insert(lessonVersions)
+      .values([...lessonRowChunk])
+      .run()
   }
-  if (stepRows.length > 0) {
-    transaction.insert(lessonStepVersions).values(stepRows).run()
+  for (const stepRowChunk of chunkByBoundParameters(stepRows, {
+    fixedParameters: 0,
+    parametersPerItem: 7,
+  })) {
+    transaction
+      .insert(lessonStepVersions)
+      .values([...stepRowChunk])
+      .run()
   }
 }
 

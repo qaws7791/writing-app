@@ -7,19 +7,18 @@ import type { IdentityError } from "#identity/domain/identity-error"
 import type { UserStatus } from "#identity/domain/user-status"
 import { userStatuses } from "#identity/domain/user-status"
 import type {
+  AdminUserCursorCodec,
+  AdminUserPagePort,
+  AdminUserPageRow,
+  AdminUserSort,
+  AdminUserStatusFilter,
   IdentityLearningReportPort,
   IdentityRepository,
   LearnerAccount,
   LearnerIdentityDirectoryPort,
 } from "#identity/application/identity-ports"
 import type { IdentityApplication } from "#identity/application/identity-service"
-import {
-  findLearnerAccount,
-  listLearnerAccounts,
-} from "#identity/application/learner-account-reader"
-
-type AdminUserSort = "joined" | "lastActive" | "lessonsDone" | "streak"
-type AdminUserStatusFilter = UserStatus | "all"
+import { findLearnerAccount } from "#identity/application/learner-account-reader"
 
 type AdminUserListItem = Readonly<{
   email: string
@@ -39,7 +38,8 @@ type AdminUserDetail = AdminUserListItem &
   }>
 
 type ReadAdminUsersInput = Readonly<{
-  page: number
+  cursor?: string
+  direction: "next" | "previous"
   pageSize: number
   query: string
   sort: AdminUserSort
@@ -47,12 +47,20 @@ type ReadAdminUsersInput = Readonly<{
 }>
 
 export type ReadAdminUsersResult = Readonly<{
+  hasNextPage: boolean
+  hasPreviousPage: boolean
   items: readonly AdminUserListItem[]
-  page: number
+  nextCursor: string | null
   pageSize: number
-  totalItems: number
-  totalPages: number
+  previousCursor: string | null
 }>
+
+export class InvalidAdminUserCursorError extends Error {
+  constructor() {
+    super("관리자 사용자 목록 cursor가 유효하지 않습니다.")
+    this.name = "InvalidAdminUserCursorError"
+  }
+}
 
 export type AdminUserReader = Readonly<{
   readUser: (input: {
@@ -80,6 +88,8 @@ export type IdentityLearningQuery = Readonly<{
 }>
 
 export function createAdminUserReader(input: {
+  readonly adminUserPage: AdminUserPagePort
+  readonly cursor: AdminUserCursorCodec
   readonly learningReport: IdentityLearningReportPort
   readonly learnerIdentityDirectory: LearnerIdentityDirectoryPort
   readonly repository: IdentityRepository
@@ -103,33 +113,101 @@ export function createAdminUserReader(input: {
       }
     },
     async readUsers(query) {
-      const accounts = await listLearnerAccounts(input, {
-        query: query.query,
+      const normalizedQuery = query.query.trim().toLowerCase()
+      const fingerprint = input.cursor.createFingerprint({
+        query: normalizedQuery,
+        sort: query.sort,
         status: query.status,
       })
-      const reports = await input.learningReport.readLearnerReports(
-        accounts.map(({ id }) => id)
-      )
-      const reportsByUserId = new Map(
-        reports.map((report) => [report.userId, report])
-      )
-      const items = accounts
-        .map((account) =>
-          toAdminUserListItem(account, reportsByUserId.get(account.id))
-        )
-        .sort(createAdminUserComparator(query.sort))
-      const totalItems = items.length
-      const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize))
-      const page = Math.min(Math.max(1, query.page), totalPages)
+      const after =
+        query.cursor === undefined
+          ? undefined
+          : input.cursor.decode(query.cursor, fingerprint)
+      if (query.cursor !== undefined && after === null) {
+        throw new InvalidAdminUserCursorError()
+      }
+
+      const rows = await input.adminUserPage.readPage({
+        ...(after === undefined || after === null ? {} : { after }),
+        direction: query.direction,
+        limit: query.pageSize + 1,
+        query: normalizedQuery,
+        sort: query.sort,
+        status: query.status,
+      })
+      const hasMore = rows.length > query.pageSize
+      const pageRows = rows.slice(0, query.pageSize)
+      if (query.direction === "previous") pageRows.reverse()
+      const first = pageRows.at(0)
+      const last = pageRows.at(-1)
 
       return {
-        items: items.slice((page - 1) * query.pageSize, page * query.pageSize),
-        page,
+        hasNextPage:
+          query.direction === "previous"
+            ? after !== undefined && after !== null
+            : hasMore,
+        hasPreviousPage:
+          query.direction === "next"
+            ? after !== undefined && after !== null
+            : hasMore,
+        items: pageRows.map(toAdminUserPageItem),
+        nextCursor:
+          last !== undefined && (query.direction === "previous" || hasMore)
+            ? input.cursor.encode({
+                fingerprint,
+                position: {
+                  primary: readSortValue(last, query.sort),
+                  userId: last.userId,
+                },
+              })
+            : null,
         pageSize: query.pageSize,
-        totalItems,
-        totalPages,
+        previousCursor:
+          first !== undefined &&
+          (query.direction === "next"
+            ? after !== undefined && after !== null
+            : hasMore)
+            ? input.cursor.encode({
+                fingerprint,
+                position: {
+                  primary: readSortValue(first, query.sort),
+                  userId: first.userId,
+                },
+              })
+            : null,
       }
     },
+  }
+}
+
+function toAdminUserPageItem(row: AdminUserPageRow): AdminUserListItem {
+  const deleted = row.status === userStatuses.deleted
+
+  return {
+    email: deleted ? "deleted@example.invalid" : row.email,
+    id: row.userId,
+    joined: toPlatformDayKey(row.joinedAt),
+    lastActive: row.lastActive,
+    lessonsDone: row.lessonsDone,
+    name: row.name,
+    status: row.status,
+    streak: row.streak,
+  }
+}
+
+function readSortValue(
+  row: AdminUserPageRow,
+  sort: AdminUserSort
+): number | string | null {
+  switch (sort) {
+    case "joined":
+      return row.joinedAt.getTime()
+    case "lastActive":
+      return row.lastActive
+    case "lessonsDone":
+      return row.lessonsDone
+    case "streak":
+      return row.streak
   }
 }
 
@@ -191,30 +269,4 @@ function toAdminUserListItem(
     status: account.profile.profile.status,
     streak: report?.currentStreakDays ?? 0,
   }
-}
-
-function createAdminUserComparator(sort: AdminUserSort) {
-  return (left: AdminUserListItem, right: AdminUserListItem): number => {
-    switch (sort) {
-      case "joined":
-        return compareDescending(left.joined, right.joined) || compareName()
-      case "lastActive":
-        return (
-          compareDescending(left.lastActive ?? "", right.lastActive ?? "") ||
-          compareName()
-        )
-      case "lessonsDone":
-        return right.lessonsDone - left.lessonsDone || compareName()
-      case "streak":
-        return right.streak - left.streak || compareName()
-    }
-
-    function compareName(): number {
-      return left.name.localeCompare(right.name)
-    }
-  }
-}
-
-function compareDescending(left: string, right: string): number {
-  return right.localeCompare(left)
 }

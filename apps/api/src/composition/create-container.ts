@@ -86,6 +86,7 @@ import {
   createInMemoryDeletionMarkerStore,
   createS3DeletionMarkerStore,
 } from "@/adapters/identity/deletion-marker-store"
+import { createAdminUserPage } from "@/adapters/identity/admin-user-page"
 
 const defaultLocalAuthMailboxPath = fileURLToPath(
   new URL("../../../../data/local-auth-email.json", import.meta.url)
@@ -183,7 +184,9 @@ export async function createContainer(
       readIdentity: identityReference.read,
     })
     const identity = composeIdentityModule({
+      adminUserPage: createAdminUserPage(reportingDatabase.sqlite),
       clock,
+      cursorSigningSecret: env.cursorSigningSecret,
       database: database.db,
       deletedLearnerRetentionDays: env.deletedLearnerRetentionDays,
       deletionMarkerStore: createDeletionMarkerStore({

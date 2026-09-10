@@ -1,5 +1,6 @@
 import { and, count, eq, inArray } from "drizzle-orm"
 
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { UserId } from "@workspace/types/ids"
 
@@ -20,48 +21,64 @@ export function createDrizzleLearningReportingRepository(
   return {
     async readLearnerReports(userIds) {
       if (userIds.length === 0) return []
+      const uniqueUserIds = [...new Set(userIds)]
       const [completionRows, activityRows, courseCountRows] = await Promise.all(
         [
           Promise.resolve(
-            database
-              .select({
-                completedLessons: count(),
-                userId: learnerLessonProgress.userId,
-              })
-              .from(learnerLessonProgress)
-              .where(
-                and(
-                  inArray(learnerLessonProgress.userId, [...userIds]),
-                  eq(learnerLessonProgress.status, "completed")
+            chunkByBoundParameters(uniqueUserIds, {
+              fixedParameters: 1,
+              parametersPerItem: 1,
+            }).flatMap((userIdChunk) =>
+              database
+                .select({
+                  completedLessons: count(),
+                  userId: learnerLessonProgress.userId,
+                })
+                .from(learnerLessonProgress)
+                .where(
+                  and(
+                    inArray(learnerLessonProgress.userId, userIdChunk),
+                    eq(learnerLessonProgress.status, "completed")
+                  )
                 )
-              )
-              .groupBy(learnerLessonProgress.userId)
-              .all()
+                .groupBy(learnerLessonProgress.userId)
+                .all()
+            )
           ),
           Promise.resolve(
-            database
-              .select({
-                activityDate: learnerActivityDays.activityDate,
-                userId: learnerActivityDays.userId,
-              })
-              .from(learnerActivityDays)
-              .where(inArray(learnerActivityDays.userId, [...userIds]))
-              .all()
+            chunkByBoundParameters(uniqueUserIds, {
+              fixedParameters: 0,
+              parametersPerItem: 1,
+            }).flatMap((userIdChunk) =>
+              database
+                .select({
+                  activityDate: learnerActivityDays.activityDate,
+                  userId: learnerActivityDays.userId,
+                })
+                .from(learnerActivityDays)
+                .where(inArray(learnerActivityDays.userId, userIdChunk))
+                .all()
+            )
           ),
           Promise.resolve(
-            database
-              .select({
-                courseCount: count(),
-                status: learnerCourseProgress.status,
-                userId: learnerCourseProgress.userId,
-              })
-              .from(learnerCourseProgress)
-              .where(inArray(learnerCourseProgress.userId, [...userIds]))
-              .groupBy(
-                learnerCourseProgress.userId,
-                learnerCourseProgress.status
-              )
-              .all()
+            chunkByBoundParameters(uniqueUserIds, {
+              fixedParameters: 0,
+              parametersPerItem: 1,
+            }).flatMap((userIdChunk) =>
+              database
+                .select({
+                  courseCount: count(),
+                  status: learnerCourseProgress.status,
+                  userId: learnerCourseProgress.userId,
+                })
+                .from(learnerCourseProgress)
+                .where(inArray(learnerCourseProgress.userId, userIdChunk))
+                .groupBy(
+                  learnerCourseProgress.userId,
+                  learnerCourseProgress.status
+                )
+                .all()
+            )
           ),
         ]
       )

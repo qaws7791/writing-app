@@ -1,4 +1,10 @@
-import { and, count, desc, eq, gte, lt, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, gt, gte, lt, or, sql } from "drizzle-orm"
+import type {
+  LearnerId,
+  WritingId,
+  WritingTaskId,
+  WritingTaskPublicationId,
+} from "@workspace/types/ids"
 import {
   writingCheckResultSchema,
   writingDifficultySchema,
@@ -8,7 +14,9 @@ import {
   writingTaskPublicationIdSchema,
 } from "@workspace/contracts/writing/writing"
 import { learnerIdSchema } from "@workspace/contracts/learning/ids"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
+import { createFts5Phrase } from "@workspace/db/fts5"
 import { err, ok } from "@workspace/kernel/result"
 
 import type { WritingRepository } from "#writing/application/ports/writing-ports"
@@ -193,6 +201,13 @@ export function createDrizzleWritingRepository(
       )
     },
     async listCatalog(input) {
+      const direction =
+        input.cursor === undefined ? "next" : (input.direction ?? "next")
+      const pageSize = input.pageSize ?? 20
+      const cursorCondition = createWritingCatalogCursorCondition({
+        cursor: input.cursor,
+        direction,
+      })
       const rows = database
         .select({
           publication: writingTaskPublications,
@@ -210,16 +225,25 @@ export function createDrizzleWritingRepository(
               : eq(writingTaskPublications.domain, input.domain),
             input.typeName === undefined
               ? undefined
-              : eq(writingTaskPublications.typeName, input.typeName)
+              : eq(writingTaskPublications.typeName, input.typeName),
+            cursorCondition
           )
         )
         .orderBy(
-          desc(writingTaskPublications.publishedAt),
-          desc(writingTasks.id)
+          direction === "previous"
+            ? asc(writingTaskPublications.publishedAt)
+            : desc(writingTaskPublications.publishedAt),
+          direction === "previous"
+            ? asc(writingTasks.id)
+            : desc(writingTasks.id)
         )
+        .limit(pageSize + 1)
         .all()
 
-      return rows.map((row) => {
+      const hasMore = rows.length > pageSize
+      const pageRows = rows.slice(0, pageSize)
+      if (direction === "previous") pageRows.reverse()
+      const items = pageRows.map((row) => {
         const publication = toPublication(row.publication)
         return {
           audience: publication.audience,
@@ -233,8 +257,32 @@ export function createDrizzleWritingRepository(
           typeName: publication.typeName,
         }
       })
+      const first = items.at(0)
+      const last = items.at(-1)
+      return {
+        items,
+        nextCursor:
+          last === undefined ||
+          (direction === "next" && !hasMore) ||
+          (direction === "previous" && input.cursor === undefined)
+            ? null
+            : last.publicationId,
+        pageSize,
+        previousCursor:
+          first === undefined ||
+          (direction === "previous" && !hasMore) ||
+          (direction === "next" && input.cursor === undefined)
+            ? null
+            : first.publicationId,
+      }
     },
-    async listPiecesByLearner(learnerId) {
+    async listPiecesByLearner(input) {
+      const direction = input.cursor === undefined ? "next" : input.direction
+      const cursorCondition = createWritingCursorCondition({
+        cursor: input.cursor,
+        direction,
+        learnerId: input.learnerId,
+      })
       const rows = database
         .select({
           publication: writingTaskPublications,
@@ -245,11 +293,20 @@ export function createDrizzleWritingRepository(
           writingTaskPublications,
           eq(writings.publicationId, writingTaskPublications.id)
         )
-        .where(eq(writings.userId, learnerId))
-        .orderBy(desc(writings.updatedAt), desc(writings.id))
+        .where(and(eq(writings.userId, input.learnerId), cursorCondition))
+        .orderBy(
+          direction === "previous"
+            ? asc(writings.updatedAt)
+            : desc(writings.updatedAt),
+          direction === "previous" ? asc(writings.id) : desc(writings.id)
+        )
+        .limit(input.pageSize + 1)
         .all()
 
-      return rows.map((row) => ({
+      const hasMore = rows.length > input.pageSize
+      const pageRows = rows.slice(0, input.pageSize)
+      if (direction === "previous") pageRows.reverse()
+      const items = pageRows.map((row) => ({
         brief: {
           difficulty: writingDifficultySchema.parse(row.publication.difficulty),
           domain: writingDomainSchema.parse(row.publication.domain),
@@ -259,12 +316,37 @@ export function createDrizzleWritingRepository(
         },
         writing: toWriting(row.writing),
       }))
+      const first = items.at(0)
+      const last = items.at(-1)
+      return {
+        items,
+        nextCursor:
+          last === undefined ||
+          (direction === "next" && !hasMore) ||
+          (direction === "previous" && input.cursor === undefined)
+            ? null
+            : last.writing.id,
+        pageSize: input.pageSize,
+        previousCursor:
+          first === undefined ||
+          (direction === "previous" && !hasMore) ||
+          (direction === "next" && input.cursor === undefined)
+            ? null
+            : first.writing.id,
+      }
     },
     async listTasks(filter) {
+      const direction = filter.cursor === undefined ? "next" : filter.direction
       const conditions = [
         filter.query.length === 0
           ? undefined
-          : sql`instr(lower(${writingTasks.title}), lower(${filter.query})) > 0`,
+          : sql`${writingTasks.id} IN (
+              SELECT document.task_id
+              FROM writing_task_title_fts
+              INNER JOIN writing_task_title_search_documents AS document
+                ON document.rowid = writing_task_title_fts.rowid
+              WHERE writing_task_title_fts MATCH ${createFts5Phrase(filter.query)}
+            )`,
         filter.domain === undefined
           ? undefined
           : eq(writingTasks.domain, filter.domain),
@@ -275,26 +357,46 @@ export function createDrizzleWritingRepository(
             : undefined,
       ]
       const where = and(...conditions)
-      const total =
-        database
-          .select({ value: count() })
-          .from(writingTasks)
-          .where(where)
-          .get()?.value ?? 0
+      const cursorCondition = createWritingTaskCursorCondition({
+        cursor: filter.cursor,
+        direction,
+      })
       const rows = database
         .select()
         .from(writingTasks)
-        .where(where)
-        .orderBy(desc(writingTasks.updatedAt), desc(writingTasks.id))
-        .limit(filter.pageSize)
-        .offset((filter.page - 1) * filter.pageSize)
+        .where(and(where, cursorCondition))
+        .orderBy(
+          direction === "previous"
+            ? asc(writingTasks.updatedAt)
+            : desc(writingTasks.updatedAt),
+          direction === "previous"
+            ? asc(writingTasks.id)
+            : desc(writingTasks.id)
+        )
+        .limit(filter.pageSize + 1)
         .all()
 
+      const hasMore = rows.length > filter.pageSize
+      const pageRows = rows.slice(0, filter.pageSize)
+      if (direction === "previous") pageRows.reverse()
+      const first = pageRows.at(0)
+      const last = pageRows.at(-1)
+
       return {
-        items: rows.map(toTask),
-        page: filter.page,
+        items: pageRows.map(toTask),
+        nextCursor:
+          last === undefined ||
+          (direction === "next" && !hasMore) ||
+          (direction === "previous" && filter.cursor === undefined)
+            ? null
+            : writingTaskIdSchema.parse(last.id),
         pageSize: filter.pageSize,
-        totalItems: total,
+        previousCursor:
+          first === undefined ||
+          (direction === "previous" && !hasMore) ||
+          (direction === "next" && filter.cursor === undefined)
+            ? null
+            : writingTaskIdSchema.parse(first.id),
       }
     },
     async publishTask(input) {
@@ -387,18 +489,23 @@ function insertEvents(
 ): void {
   if (eventTypes.length === 0) return
 
-  database
-    .insert(writingEvents)
-    .values(
-      eventTypes.map((eventType) => ({
-        eventType,
-        recordedAt,
-        userId: writing.learnerId,
-        writingId: writing.id,
-      }))
-    )
-    .onConflictDoNothing()
-    .run()
+  for (const eventTypeChunk of chunkByBoundParameters(eventTypes, {
+    fixedParameters: 0,
+    parametersPerItem: 4,
+  })) {
+    database
+      .insert(writingEvents)
+      .values(
+        eventTypeChunk.map((eventType) => ({
+          eventType,
+          recordedAt,
+          userId: writing.learnerId,
+          writingId: writing.id,
+        }))
+      )
+      .onConflictDoNothing()
+      .run()
+  }
 }
 
 function writingExists(
@@ -451,6 +558,79 @@ function toWriting(row: typeof writings.$inferSelect): WritingPiece {
     updatedAt: row.updatedAt,
     version: row.version,
   }
+}
+
+function createWritingCursorCondition(input: {
+  readonly cursor?: WritingId
+  readonly direction: "next" | "previous"
+  readonly learnerId: LearnerId
+}) {
+  if (input.cursor === undefined) return undefined
+
+  const cursorUpdatedAt = sql<number>`(
+    SELECT ${writings.updatedAt}
+    FROM ${writings}
+    WHERE ${writings.id} = ${input.cursor}
+      AND ${writings.userId} = ${input.learnerId}
+  )`
+  const compareUpdatedAt = input.direction === "previous" ? gt : lt
+  const compareId = input.direction === "previous" ? gt : lt
+  return or(
+    compareUpdatedAt(writings.updatedAt, cursorUpdatedAt),
+    and(
+      eq(writings.updatedAt, cursorUpdatedAt),
+      compareId(writings.id, input.cursor)
+    )
+  )
+}
+
+function createWritingCatalogCursorCondition(input: {
+  readonly cursor?: WritingTaskPublicationId
+  readonly direction: "next" | "previous"
+}) {
+  if (input.cursor === undefined) return undefined
+
+  const cursorPublishedAt = sql<number>`(
+    SELECT ${writingTaskPublications.publishedAt}
+    FROM ${writingTaskPublications}
+    WHERE ${writingTaskPublications.id} = ${input.cursor}
+  )`
+  const cursorTaskId = sql<string>`(
+    SELECT ${writingTaskPublications.taskId}
+    FROM ${writingTaskPublications}
+    WHERE ${writingTaskPublications.id} = ${input.cursor}
+  )`
+  const comparePublishedAt = input.direction === "previous" ? gt : lt
+  const compareTaskId = input.direction === "previous" ? gt : lt
+  return or(
+    comparePublishedAt(writingTaskPublications.publishedAt, cursorPublishedAt),
+    and(
+      eq(writingTaskPublications.publishedAt, cursorPublishedAt),
+      compareTaskId(writingTasks.id, cursorTaskId)
+    )
+  )
+}
+
+function createWritingTaskCursorCondition(filter: {
+  readonly cursor?: WritingTaskId
+  readonly direction: "next" | "previous"
+}) {
+  if (filter.cursor === undefined) return undefined
+
+  const cursorUpdatedAt = sql<number>`(
+    SELECT ${writingTasks.updatedAt}
+    FROM ${writingTasks}
+    WHERE ${writingTasks.id} = ${filter.cursor}
+  )`
+  const compareUpdatedAt = filter.direction === "previous" ? gt : lt
+  const compareId = filter.direction === "previous" ? gt : lt
+  return or(
+    compareUpdatedAt(writingTasks.updatedAt, cursorUpdatedAt),
+    and(
+      eq(writingTasks.updatedAt, cursorUpdatedAt),
+      compareId(writingTasks.id, filter.cursor)
+    )
+  )
 }
 
 function toTaskValues(draft: WritingTaskDraft) {

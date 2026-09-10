@@ -1,9 +1,10 @@
 import type { Database } from "bun:sqlite"
 import type { CourseId, LessonId } from "@workspace/types/ids"
-import { platformDayBoundary } from "@workspace/kernel/day-boundary"
+import { createFts5Phrase } from "@workspace/db/fts5"
 
 import type {
   OperationsDashboard,
+  OperationsLessonAnalyticsCursor,
   OperationsLessonAnalyticsItem,
   OperationsLessonAnalyticsSort,
   OperationsReportingRepository,
@@ -43,83 +44,38 @@ type LessonAnalyticsRow = Readonly<{
 }>
 
 const dashboardSql = `
-  WITH
-  eligible_learners AS (
-    SELECT user_id AS id
-    FROM identity_reporting_learners
-  ),
-  first_starts AS (
+  WITH metric_totals AS (
     SELECT
-      progress.user_id,
-      date(
-        min(progress.started_at) / 1000,
-        'unixepoch',
-        ?4
-      ) AS first_start_date
-    FROM learning_reporting_lesson_progress AS progress
-    INNER JOIN eligible_learners
-      ON eligible_learners.id = progress.user_id
-    GROUP BY progress.user_id
-  ),
-  mature_cohort AS (
-    SELECT user_id, first_start_date
-    FROM first_starts
-    WHERE first_start_date <= ?3
-  ),
-  returned_cohort AS (
-    SELECT mature_cohort.user_id
-    FROM mature_cohort
-    WHERE EXISTS (
-      SELECT 1
-      FROM learning_reporting_activity_days AS activity
-      WHERE activity.user_id = mature_cohort.user_id
-        AND activity.activity_date > mature_cohort.first_start_date
-        AND activity.activity_date <= date(
-          mature_cohort.first_start_date,
-          '+7 days'
-        )
-    )
+      coalesce(sum(signups), 0) AS total_users,
+      coalesce(sum(first_starts), 0) AS first_starts,
+      coalesce(sum(CASE WHEN date_key <= ?3 THEN first_starts ELSE 0 END), 0)
+        AS mature_starts,
+      coalesce(sum(completions), 0) AS completed_lessons,
+      coalesce(sum(CASE WHEN date_key <= ?3 THEN returned_learners ELSE 0 END), 0)
+        AS returned_learners,
+      coalesce(sum(created_writings), 0) AS created_writings,
+      coalesce(sum(check_succeeded_writings), 0) AS check_succeeded_writings,
+      coalesce(sum(revised_after_check_writings), 0)
+        AS revised_after_check_writings
+    FROM operations_reporting_daily_metrics
   )
   SELECT
     (
       SELECT count(DISTINCT activity.user_id)
       FROM learning_reporting_activity_days AS activity
-      INNER JOIN eligible_learners
-        ON eligible_learners.id = activity.user_id
+      INNER JOIN identity_reporting_learners AS learner
+        ON learner.user_id = activity.user_id
       WHERE activity.activity_date BETWEEN ?1 AND ?2
     ) AS activeUsersLast7Days,
-    (
-      SELECT count(*)
-      FROM learning_reporting_lesson_progress AS progress
-      INNER JOIN eligible_learners
-        ON eligible_learners.id = progress.user_id
-      WHERE progress.status = 'completed'
-    ) AS completedLessons,
-    (
-      SELECT count(*)
-      FROM writing_reporting_events AS event
-      INNER JOIN eligible_learners
-        ON eligible_learners.id = event.user_id
-      WHERE event.event_type = 'writing_created'
-    ) AS createdWritings,
-    (SELECT count(*) FROM first_starts) AS firstLessonStarts,
-    (SELECT count(*) FROM mature_cohort) AS matureCohortLearners,
-    (
-      SELECT count(*)
-      FROM writing_reporting_events AS event
-      INNER JOIN eligible_learners
-        ON eligible_learners.id = event.user_id
-      WHERE event.event_type = 'revised_after_check'
-    ) AS revisedAfterCheckWritings,
-    (SELECT count(*) FROM returned_cohort) AS returnedLearners,
-    (
-      SELECT count(*)
-      FROM writing_reporting_events AS event
-      INNER JOIN eligible_learners
-        ON eligible_learners.id = event.user_id
-      WHERE event.event_type = 'check_succeeded'
-    ) AS checkSucceededWritings,
-    (SELECT count(*) FROM eligible_learners) AS totalUsers
+    completed_lessons AS completedLessons,
+    created_writings AS createdWritings,
+    first_starts AS firstLessonStarts,
+    mature_starts AS matureCohortLearners,
+    revised_after_check_writings AS revisedAfterCheckWritings,
+    returned_learners AS returnedLearners,
+    check_succeeded_writings AS checkSucceededWritings,
+    total_users AS totalUsers
+  FROM metric_totals
 `
 
 const dailySeriesSql = `
@@ -130,98 +86,30 @@ const dailySeriesSql = `
     SELECT date(date_key, '+1 day')
     FROM date_range
     WHERE date_key < ?2
-  ),
-  eligible_learners AS (
-    SELECT user_id AS id, created_at
-    FROM identity_reporting_learners
-  ),
-  first_starts AS (
-    SELECT
-      progress.user_id,
-      date(
-        min(progress.started_at) / 1000,
-        'unixepoch',
-        ?4
-      ) AS first_start_date
-    FROM learning_reporting_lesson_progress AS progress
-    INNER JOIN eligible_learners
-      ON eligible_learners.id = progress.user_id
-    GROUP BY progress.user_id
-  ),
-  signup_counts AS (
-    SELECT
-      date(created_at / 1000, 'unixepoch', ?4) AS date_key,
-      count(*) AS count
-    FROM eligible_learners
-    GROUP BY date_key
-  ),
-  start_counts AS (
-    SELECT first_start_date AS date_key, count(*) AS count
-    FROM first_starts
-    GROUP BY first_start_date
-  ),
-  completion_counts AS (
-    SELECT
-      date(
-        progress.completed_at / 1000,
-        'unixepoch',
-        ?4
-      ) AS date_key,
-      count(*) AS count
-    FROM learning_reporting_lesson_progress AS progress
-    INNER JOIN eligible_learners
-      ON eligible_learners.id = progress.user_id
-    WHERE progress.status = 'completed'
-      AND progress.completed_at IS NOT NULL
-    GROUP BY date_key
-  ),
-  return_counts AS (
-    SELECT
-      first_starts.first_start_date AS date_key,
-      count(*) AS count
-    FROM first_starts
-    WHERE EXISTS (
-      SELECT 1
-      FROM learning_reporting_activity_days AS activity
-      WHERE activity.user_id = first_starts.user_id
-        AND activity.activity_date > first_starts.first_start_date
-        AND activity.activity_date <= date(
-          first_starts.first_start_date,
-          '+7 days'
-        )
-    )
-    GROUP BY first_starts.first_start_date
   )
   SELECT
-    coalesce(completion_counts.count, 0) AS completions,
+    coalesce(metric.completions, 0) AS completions,
     date_range.date_key AS date,
     CASE
-      WHEN coalesce(start_counts.count, 0) = 0 THEN 0
+      WHEN coalesce(metric.first_starts, 0) = 0 THEN 0
       WHEN date_range.date_key > ?3 THEN NULL
-      ELSE coalesce(return_counts.count, 0)
+      ELSE coalesce(metric.returned_learners, 0)
     END AS returns,
     CASE
-      WHEN coalesce(start_counts.count, 0) = 0 THEN 'empty'
+      WHEN coalesce(metric.first_starts, 0) = 0 THEN 'empty'
       WHEN date_range.date_key > ?3 THEN 'immature'
       ELSE 'available'
     END AS returnStatus,
-    coalesce(signup_counts.count, 0) AS signups,
-    coalesce(start_counts.count, 0) AS starts
+    coalesce(metric.signups, 0) AS signups,
+    coalesce(metric.first_starts, 0) AS starts
   FROM date_range
-  LEFT JOIN signup_counts ON signup_counts.date_key = date_range.date_key
-  LEFT JOIN start_counts ON start_counts.date_key = date_range.date_key
-  LEFT JOIN completion_counts
-    ON completion_counts.date_key = date_range.date_key
-  LEFT JOIN return_counts ON return_counts.date_key = date_range.date_key
+  LEFT JOIN operations_reporting_daily_metrics AS metric
+    ON metric.date_key = date_range.date_key
   ORDER BY date_range.date_key
 `
 
 const lessonAnalyticsCte = `
   WITH
-  eligible_learners AS (
-    SELECT user_id AS id
-    FROM identity_reporting_learners
-  ),
   current_lessons AS (
     SELECT
       course_id,
@@ -233,22 +121,16 @@ const lessonAnalyticsCte = `
   ),
   progress_counts AS (
     SELECT
-      progress.course_id,
-      progress.curriculum_version_id,
-      progress.lesson_id,
-      count(DISTINCT progress.user_id) AS started,
-      count(
-        DISTINCT CASE
-          WHEN progress.status = 'completed' THEN progress.user_id
-        END
-      ) AS completed
-    FROM learning_reporting_lesson_progress AS progress
-    INNER JOIN eligible_learners
-      ON eligible_learners.id = progress.user_id
-    GROUP BY
-      progress.course_id,
-      progress.curriculum_version_id,
-      progress.lesson_id
+      metric.course_id,
+      metric.curriculum_version_id,
+      metric.lesson_id,
+      metric.started,
+      metric.completed
+    FROM operations_reporting_lesson_metrics AS metric
+    INNER JOIN current_lessons
+      ON current_lessons.course_id = metric.course_id
+      AND current_lessons.curriculum_version_id = metric.curriculum_version_id
+      AND current_lessons.lesson_id = metric.lesson_id
   ),
   lesson_analytics AS (
     SELECT
@@ -263,6 +145,7 @@ const lessonAnalyticsCte = `
       END AS completion_rate,
       current_lessons.course_id,
       current_lessons.course_title,
+      current_lessons.curriculum_version_id,
       CASE
         WHEN coalesce(progress_counts.started, 0) = 0 THEN 0
         ELSE 100 - cast(
@@ -297,13 +180,8 @@ export function createSqliteOperationsReportingRepository(
   return {
     readAnalytics(input) {
       const dailySeries = sqlite
-        .query<DailySeriesRow, [string, string, string, string]>(dailySeriesSql)
-        .all(
-          input.from,
-          input.to,
-          input.matureCohortThrough,
-          platformDayBoundary.sqliteOffset
-        )
+        .query<DailySeriesRow, [string, string, string]>(dailySeriesSql)
+        .all(input.from, input.to, input.matureCohortThrough)
       const worstLessons = readWorstLessons(sqlite)
 
       return {
@@ -316,13 +194,8 @@ export function createSqliteOperationsReportingRepository(
     },
     readDashboard(input) {
       const row = sqlite
-        .query<DashboardRow, [string, string, string, string]>(dashboardSql)
-        .get(
-          input.activeFrom,
-          input.reportDate,
-          input.matureCohortThrough,
-          platformDayBoundary.sqliteOffset
-        )
+        .query<DashboardRow, [string, string, string]>(dashboardSql)
+        .get(input.activeFrom, input.reportDate, input.matureCohortThrough)
       if (row === null) {
         throw new Error("Operations dashboard aggregate could not be read")
       }
@@ -367,22 +240,47 @@ export function createSqliteOperationsReportingRepository(
     },
     readLessonAnalytics(input) {
       const normalizedQuery = input.query.trim()
-      const totalItems =
-        sqlite
-          .query<{ readonly count: number }, [string]>(
-            `${lessonAnalyticsCte}
-             SELECT count(*) AS count
+      const cursor = input.cursor ?? null
+      const orderBy = createLessonAnalyticsOrderBy(
+        input.sort,
+        input.direction,
+        cursor?.direction ?? "older"
+      )
+      const cursorFilter = createLessonAnalyticsCursorFilter(
+        cursor,
+        input.sort,
+        input.direction
+      )
+      const isLegacyOffset = cursor === null && input.page > 1
+      const limit = isLegacyOffset ? input.pageSize : input.pageSize + 1
+      const offset = isLegacyOffset ? (input.page - 1) * input.pageSize : 0
+      const searchPhrase =
+        normalizedQuery === "" ? "" : createFts5Phrase(normalizedQuery)
+      const bindings = [searchPhrase, ...cursorFilter.bindings, limit, offset]
+      const limitParameter = cursorFilter.bindings.length + 2
+      const offsetParameter = limitParameter + 1
+      const fetchedRows = sqlite
+        .query<LessonAnalyticsRow, (number | string)[]>(
+          `${lessonAnalyticsCte}
+           , filtered_lesson_analytics AS MATERIALIZED (
+             SELECT *
              FROM lesson_analytics
              WHERE ?1 = ''
-               OR instr(lower(course_title), lower(?1)) > 0
-               OR instr(lower(lesson_title), lower(?1)) > 0`
-          )
-          .get(normalizedQuery)?.count ?? 0
-      const orderBy = createLessonAnalyticsOrderBy(input.sort, input.direction)
-      const offset = (input.page - 1) * input.pageSize
-      const rows = sqlite
-        .query<LessonAnalyticsRow, [string, number, number]>(
-          `${lessonAnalyticsCte}
+               OR curriculum_version_id IN (
+                 SELECT document.curriculum_version_id
+                 FROM course_curriculum_version_title_fts AS search
+                 INNER JOIN course_curriculum_version_title_search_documents AS document
+                   ON document.rowid = search.rowid
+                 WHERE course_curriculum_version_title_fts MATCH ?1
+               )
+               OR (curriculum_version_id, lesson_id) IN (
+                 SELECT document.curriculum_version_id, document.lesson_id
+                 FROM operations_reporting_lesson_title_fts AS search
+                 INNER JOIN operations_reporting_lesson_title_search_documents AS document
+                   ON document.rowid = search.rowid
+                 WHERE operations_reporting_lesson_title_fts MATCH ?1
+               )
+           )
            SELECT
              completed,
              completion_rate AS completionRate,
@@ -392,25 +290,32 @@ export function createSqliteOperationsReportingRepository(
              lesson_id AS lessonId,
              lesson_title AS lessonTitle,
              started
-           FROM lesson_analytics
-           WHERE ?1 = ''
-             OR instr(lower(course_title), lower(?1)) > 0
-             OR instr(lower(lesson_title), lower(?1)) > 0
-           ORDER BY ${orderBy},
-             course_title COLLATE NOCASE ASC,
-             lesson_title COLLATE NOCASE ASC,
-             lesson_id ASC
-           LIMIT ?2 OFFSET ?3`
+           FROM filtered_lesson_analytics
+           ${cursorFilter.sql}
+           ORDER BY ${orderBy}
+           LIMIT ?${limitParameter} OFFSET ?${offsetParameter}`
         )
-        .all(normalizedQuery, input.pageSize, offset)
+        .all(...bindings)
+      const rows =
+        cursor?.direction === "newer" ? fetchedRows.reverse() : fetchedRows
+      const hasExtraItem = rows.length > input.pageSize
+      const pageRows =
+        cursor?.direction === "newer" && hasExtraItem
+          ? rows.slice(1)
+          : rows.slice(0, input.pageSize)
+      const hasNextPage =
+        cursor?.direction === "newer" ? pageRows.length > 0 : hasExtraItem
+      const hasPreviousPage =
+        cursor?.direction === "newer"
+          ? hasExtraItem
+          : (cursor !== null || isLegacyOffset) && pageRows.length > 0
 
       return {
-        items: rows.map(toLessonAnalyticsItem),
+        hasNextPage,
+        hasPreviousPage,
+        items: pageRows.map(toLessonAnalyticsItem),
         page: input.page,
         pageSize: input.pageSize,
-        totalItems,
-        totalPages:
-          totalItems === 0 ? 0 : Math.ceil(totalItems / input.pageSize),
       }
     },
   }
@@ -484,17 +389,89 @@ function readD7ReturnStatus(
 
 function createLessonAnalyticsOrderBy(
   sort: OperationsLessonAnalyticsSort,
-  direction: OperationsSortDirection
+  direction: OperationsSortDirection,
+  navigation: OperationsLessonAnalyticsCursor["direction"]
 ): string {
-  const directionSql = direction === "asc" ? "ASC" : "DESC"
+  const primaryDirection = readNavigationDirection(direction, navigation)
+  const tieDirection = readNavigationDirection("asc", navigation)
   switch (sort) {
     case "completionRate":
-      return `completion_rate ${directionSql}`
+      return `completion_rate ${primaryDirection}, course_title COLLATE NOCASE ${tieDirection}, lesson_title COLLATE NOCASE ${tieDirection}, lesson_id ${tieDirection}`
     case "course":
-      return `course_title COLLATE NOCASE ${directionSql}`
+      return `course_title COLLATE NOCASE ${primaryDirection}, lesson_title COLLATE NOCASE ${tieDirection}, lesson_id ${tieDirection}`
     case "dropOff":
-      return `drop_off_rate ${directionSql}`
+      return `drop_off_rate ${primaryDirection}, course_title COLLATE NOCASE ${tieDirection}, lesson_title COLLATE NOCASE ${tieDirection}, lesson_id ${tieDirection}`
     case "lesson":
-      return `lesson_title COLLATE NOCASE ${directionSql}`
+      return `lesson_title COLLATE NOCASE ${primaryDirection}, course_title COLLATE NOCASE ${tieDirection}, lesson_id ${tieDirection}`
   }
+}
+
+function createLessonAnalyticsCursorFilter(
+  cursor: OperationsLessonAnalyticsCursor | null,
+  sort: OperationsLessonAnalyticsSort,
+  direction: OperationsSortDirection
+): Readonly<{ bindings: readonly (number | string)[]; sql: string }> {
+  if (cursor === null) return { bindings: [], sql: "" }
+
+  const columns = createLessonAnalyticsCursorColumns(sort, direction, cursor)
+  const bindings: (number | string)[] = []
+  const alternatives = columns.map((column, index) => {
+    const equalities = columns.slice(0, index).map((previous) => {
+      bindings.push(previous.value)
+      return `${previous.expression} = ?${bindings.length + 1}`
+    })
+    bindings.push(column.value)
+    const operator =
+      readNavigationDirection(column.direction, cursor.direction) === "ASC"
+        ? ">"
+        : "<"
+    return `(${[...equalities, `${column.expression} ${operator} ?${bindings.length + 1}`].join(" AND ")})`
+  })
+  return { bindings, sql: `WHERE ${alternatives.join(" OR ")}` }
+}
+
+function createLessonAnalyticsCursorColumns(
+  sort: OperationsLessonAnalyticsSort,
+  direction: OperationsSortDirection,
+  cursor: OperationsLessonAnalyticsCursor
+) {
+  const course = {
+    direction: "asc" as const,
+    expression: "course_title COLLATE NOCASE",
+    value: cursor.courseTitle,
+  }
+  const lesson = {
+    direction: "asc" as const,
+    expression: "lesson_title COLLATE NOCASE",
+    value: cursor.lessonTitle,
+  }
+  const id = {
+    direction: "asc" as const,
+    expression: "lesson_id",
+    value: cursor.lessonId,
+  }
+  const primary = (expression: string) => ({
+    direction,
+    expression,
+    value: cursor.primary,
+  })
+
+  switch (sort) {
+    case "completionRate":
+      return [primary("completion_rate"), course, lesson, id]
+    case "course":
+      return [primary("course_title COLLATE NOCASE"), lesson, id]
+    case "dropOff":
+      return [primary("drop_off_rate"), course, lesson, id]
+    case "lesson":
+      return [primary("lesson_title COLLATE NOCASE"), course, id]
+  }
+}
+
+function readNavigationDirection(
+  direction: OperationsSortDirection,
+  navigation: OperationsLessonAnalyticsCursor["direction"]
+): "ASC" | "DESC" {
+  const reversed = navigation === "newer"
+  return (direction === "asc") !== reversed ? "ASC" : "DESC"
 }

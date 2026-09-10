@@ -22,6 +22,7 @@ import {
   learnerCourseProgress,
   learnerLessonAnswers,
   learnerLessonProgress,
+  learnerReportingSummaries,
   learnerStepDraftAnswerJsonMaxBytes,
   learnerStepDrafts,
 } from "#learning/infrastructure/persistence/schema"
@@ -38,10 +39,7 @@ import {
   type CompleteLessonPlan,
   type CompleteLessonSnapshot,
 } from "#learning/domain/complete-lesson-effect-plan"
-import {
-  calculateCurrentStreakDays,
-  type LearningDateKey,
-} from "#learning/domain/learning-date"
+import type { LearningDateKey } from "#learning/domain/learning-date"
 import type {
   CompleteLearnerLessonCommand,
   CompleteLearnerLessonTransitionResult,
@@ -912,14 +910,12 @@ function readCompletedResult(
     )
   }
 
-  const activityDates = db
-    .select({ activityDate: learnerActivityDays.activityDate })
-    .from(learnerActivityDays)
-    .where(eq(learnerActivityDays.userId, userId))
-    .all()
-    .map((r) => r.activityDate as LearningDateKey)
-
-  const streakDays = calculateCurrentStreakDays(activityDates)
+  const streakDays =
+    db
+      .select({ value: learnerReportingSummaries.streakDaysAtLastActivity })
+      .from(learnerReportingSummaries)
+      .where(eq(learnerReportingSummaries.userId, userId))
+      .get()?.value ?? 0
 
   // Basic accuracy computation (mocked as 100 if we cannot trivially compute correct vs wrong attempts)
   const accuracyPercent = 100
@@ -1134,6 +1130,53 @@ function recordActivityDay(
       target: [learnerActivityDays.userId, learnerActivityDays.activityDate],
     })
     .run()
+
+  transaction
+    .insert(learnerReportingSummaries)
+    .values({
+      completedLessons: input.completedLessons,
+      lastActive: input.activityDate,
+      streakDaysAtLastActivity: 1,
+      userId: input.userId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        completedLessons: sql`${learnerReportingSummaries.completedLessons} + ${input.completedLessons}`,
+        lastActive: sql`CASE
+          WHEN ${learnerReportingSummaries.lastActive} IS NULL
+            OR ${learnerReportingSummaries.lastActive} < ${input.activityDate}
+          THEN ${input.activityDate}
+          ELSE ${learnerReportingSummaries.lastActive}
+        END`,
+      },
+      target: learnerReportingSummaries.userId,
+    })
+    .run()
+
+  transaction.run(sql`
+    UPDATE ${learnerReportingSummaries}
+    SET streak_days_at_last_activity = (
+      WITH RECURSIVE streak(activity_date) AS (
+        SELECT max(${learnerActivityDays.activityDate})
+        FROM ${learnerActivityDays}
+        WHERE ${learnerActivityDays.userId} = ${input.userId}
+        UNION ALL
+        SELECT date(streak.activity_date, '-1 day')
+        FROM streak
+        WHERE EXISTS (
+          SELECT 1
+          FROM ${learnerActivityDays}
+          WHERE ${learnerActivityDays.userId} = ${input.userId}
+            AND ${learnerActivityDays.activityDate} =
+              date(streak.activity_date, '-1 day')
+        )
+      )
+      SELECT count(*)
+      FROM streak
+      WHERE activity_date IS NOT NULL
+    )
+    WHERE ${learnerReportingSummaries.userId} = ${input.userId}
+  `)
 }
 
 function toIso(value: Date): string {

@@ -134,10 +134,9 @@ export function toAdminCourseList(page: ContentCoursePage): AdminCourseListDto {
   return adminCourseListDtoSchema.parse({
     items: page.items,
     pagination: {
-      page: page.page,
+      nextCursor: "nextCursor" in page ? page.nextCursor : null,
       pageSize: page.pageSize,
-      totalItems: page.totalItems,
-      totalPages: page.totalPages,
+      previousCursor: "previousCursor" in page ? page.previousCursor : null,
     },
   })
 }

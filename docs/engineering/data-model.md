@@ -41,6 +41,9 @@
 - 코스 진행을 부모로 하는 레슨 진행·답안·초안은 `CASCADE`를 유지한다. 단계 초안은 step revision 삭제에도 함께 제거한다. content와 identity의 현재 상태는 공개 query port에서 확인하며 learning persistence가 상대 schema를 join하지 않는다.
 - 단계 초안은 사용자·코스·curriculum version·레슨·스텝별 한 건, 음수가 아닌 version과 64 KiB 이하의 UTF-8 JSON으로 제한한다.
 - 단계 완료는 답안 저장, 해당 초안 삭제, 진행 전이, 레슨·코스 완료와 활동 집계를 하나의 learning transaction에서 적용한다.
+- learning module은 관리자 사용자 목록용 학습 요약을 사용자별 한 행으로 유지한다.
+- 학습 요약은 완료 레슨 수, 최근 활동일과 최근 활동일 기준 연속 학습일을 저장한다.
+- 학습 활동 transaction은 원본 활동일과 학습 요약을 함께 갱신한다.
 
 ## Writing 데이터 경계
 
@@ -77,7 +80,14 @@
 ## 운영 Reporting 데이터 경계
 
 - operations module의 reporting repository는 각 module이 공개한 리포팅 읽기 뷰만 join·aggregate한다. 뷰는 소유 module의 `infrastructure/persistence/reporting-view.ts`가 이름과 컬럼을 선언하고 API의 append-only migration이 생성하므로, 원본 컬럼이 사라지면 배포 전 migration에서 실패한다. 원본 schema와 제품 불변식의 소유권은 각 module에 그대로 남으며 reporting projection은 원본을 변경하지 않는다.
+- API composition은 관리자 사용자 목록용 `admin_learner_read_models` projection을 소유한다.
+- migration trigger는 identity 원본과 learning 학습 요약의 변경을 projection에 반영한다.
+- 관리자 사용자 목록 adapter는 projection을 keyset cursor로 조회하며 원본 학습 이력을 집계하지 않는다.
 - 쓰기 지표는 writing module의 원문 없는 event reporting view만 사용한다.
+- operations module은 일별 지표, 학습자 활성화와 레슨별 지표 rollup을 소유한다.
+- API append-only migration은 기존 원본을 backfill하고 원본 transaction의 trigger로 rollup을 동기화한다.
+- reporting checkpoint는 마지막 원본 변경 시각과 동기화 완료 시각을 저장한다.
+- 레슨 제목 검색은 trigram FTS projection을 사용하며 빈 검색어 또는 Unicode 3자 이상만 허용한다.
 - API composition은 writer와 분리한 SQLite read-only connection을 주입하고 repository는 `query_only`를 확인한다. 보고 조회가 쓰기 transaction이나 다른 module command repository로 우회해서는 안 된다.
 - 집계 SQL은 필요한 projection과 aggregate만 반환한다. 전체 table row를 application memory로 읽어 join하지 않는다.
 - 삭제 상태 학습자는 모든 운영 지표에서 제외한다. 첫 레슨 시작, `Asia/Seoul` 날짜 경계, D7 성숙 cohort와 완료·이탈의 제품 의미는 `docs/product/metrics.md`가 소유한다.

@@ -37,13 +37,16 @@ import {
 import {
   readLearnerApiErrorCode,
   settleLearnerApiRequest,
+  type LearnerWritingPageDto,
   type LearnerWritingSummaryDto,
 } from "@/shared/http/learner-api-client"
 
 export function WritingHomePage({
   initialWritings,
+  pagination,
 }: {
   readonly initialWritings: readonly LearnerWritingSummaryDto[]
+  readonly pagination: LearnerWritingPageDto["pagination"]
 }) {
   const interactive = useSyncExternalStore(
     subscribeToHydration,
@@ -162,6 +165,22 @@ export function WritingHomePage({
         <StartWritingCta />
       )}
 
+      {pagination.previousCursor === null &&
+      pagination.nextCursor === null ? null : (
+        <nav aria-label="글 목록 페이지" className="flex justify-end gap-2">
+          <WritingPageLink
+            cursor={pagination.previousCursor}
+            direction="previous"
+            label="이전 글"
+          />
+          <WritingPageLink
+            cursor={pagination.nextCursor}
+            direction="next"
+            label="다음 글"
+          />
+        </nav>
+      )}
+
       <AlertDialog
         onOpenChange={(open) => {
           if (!open && !deleting) setDeleteTarget(null)
@@ -192,6 +211,34 @@ export function WritingHomePage({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+function WritingPageLink({
+  cursor,
+  direction,
+  label,
+}: {
+  readonly cursor: string | null
+  readonly direction: "next" | "previous"
+  readonly label: string
+}) {
+  if (cursor === null) {
+    return (
+      <Button disabled size="sm" type="button" variant="outline">
+        {label}
+      </Button>
+    )
+  }
+
+  const params = new URLSearchParams({ cursor, direction })
+  return (
+    <Link
+      className={buttonVariants({ size: "sm", variant: "outline" })}
+      href={`/app/writing?${params.toString()}`}
+    >
+      {label}
+    </Link>
   )
 }
 

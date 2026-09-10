@@ -105,23 +105,21 @@ export function AdminUsersPage({
     router.push(
       createGetFilterHref(readGetFormFields(formRef.current), {
         [name]: value,
-        page: 1,
       })
     )
   }
 
-  const { pagination } = usersResult.value
+  const { items, pagination } = usersResult.value
 
   return (
     <>
-      <UsersHeading totalUsers={pagination.totalItems} />
+      <UsersHeading />
       <form
         ref={formRef}
         aria-label="사용자 필터"
         className="mb-4 flex flex-wrap items-center gap-3"
         method="get"
       >
-        <input name="page" type="hidden" value="1" />
         <Field className="relative min-w-[220px] flex-1 gap-0">
           <FieldLabel className="sr-only">사용자 검색</FieldLabel>
           <SearchIcon
@@ -133,6 +131,8 @@ export function AdminUsersPage({
             aria-label="사용자 검색"
             className="pl-10 font-semibold"
             defaultValue={filters.query}
+            maxLength={100}
+            minLength={3}
             name="query"
             placeholder="이름 또는 이메일 검색…"
           />
@@ -216,7 +216,7 @@ export function AdminUsersPage({
           검색
         </Button>
         <span className="ml-auto text-sm font-bold text-muted-foreground">
-          {usersResult.value.pagination.totalItems}명
+          현재 {items.length}명
         </span>
       </form>
       {message === null ? null : (
@@ -331,34 +331,46 @@ function UserPagination({
   readonly filters: ReadAdminUsersInput
   readonly pagination: AdminUserList["pagination"]
 }) {
-  if (pagination.totalPages <= 1) return null
+  if (!pagination.hasPreviousPage && !pagination.hasNextPage) return null
 
-  const pageHref = (page: number) =>
-    createGetFilterHref(
-      [
-        ["query", filters.query],
-        ["status", filters.status],
-        ["sort", filters.sort],
-        ["pageSize", filters.pageSize],
-      ],
-      { page }
-    )
+  const baseFields = [
+    ["query", filters.query],
+    ["status", filters.status],
+    ["sort", filters.sort],
+    ["pageSize", filters.pageSize],
+  ] as const
+  const previousHref =
+    pagination.previousCursor === null
+      ? null
+      : createGetFilterHref([
+          ...baseFields,
+          ["cursor", pagination.previousCursor],
+          ["direction", "previous"],
+        ])
+  const nextHref =
+    pagination.nextCursor === null
+      ? null
+      : createGetFilterHref([
+          ...baseFields,
+          ["cursor", pagination.nextCursor],
+          ["direction", "next"],
+        ])
 
   return (
     <nav
       aria-label="사용자 목록 페이지"
       className="mt-4 flex items-center justify-end gap-3"
     >
-      {pagination.page > 1 ? (
-        <Link className="font-bold" href={pageHref(pagination.page - 1)}>
+      {pagination.hasPreviousPage && previousHref !== null ? (
+        <Link className="font-bold" href={previousHref}>
           이전 페이지
         </Link>
       ) : null}
       <span className="text-sm font-bold text-muted-foreground">
-        {pagination.page} / {pagination.totalPages}
+        현재 페이지
       </span>
-      {pagination.page < pagination.totalPages ? (
-        <Link className="font-bold" href={pageHref(pagination.page + 1)}>
+      {pagination.hasNextPage && nextHref !== null ? (
+        <Link className="font-bold" href={nextHref}>
           다음 페이지
         </Link>
       ) : null}
@@ -366,14 +378,6 @@ function UserPagination({
   )
 }
 
-function UsersHeading({ totalUsers }: { readonly totalUsers?: number }) {
-  return (
-    <AdminPageHeader
-      description={
-        totalUsers === undefined
-          ? "학습자 상태와 진행 현황을 관리합니다."
-          : `학습자 ${totalUsers}명 · 상태와 진행 현황을 관리합니다.`
-      }
-    />
-  )
+function UsersHeading() {
+  return <AdminPageHeader description="학습자 상태와 진행 현황을 관리합니다." />
 }

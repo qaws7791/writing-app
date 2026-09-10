@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { err, ok } from "@workspace/kernel/result"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -21,9 +21,6 @@ export function createDrizzleIdentityRepository(
   return {
     async findLearnerProfile(userId) {
       return readLearnerProfile(database, userId)
-    },
-    async listLearnerProfiles() {
-      return readLearnerProfiles(database)
     },
     async provisionLearnerProfile(input) {
       database
@@ -99,17 +96,6 @@ function readLearnerProfile(
     .get()
 
   return row === undefined ? null : toLearnerProfileRecord(row)
-}
-
-function readLearnerProfiles(
-  database: WritingAppDatabase
-): readonly LearnerProfileRecord[] {
-  return database
-    .select()
-    .from(learnerProfiles)
-    .orderBy(asc(learnerProfiles.userId))
-    .all()
-    .map(toLearnerProfileRecord)
 }
 
 function toLearnerProfileRecord(row: {

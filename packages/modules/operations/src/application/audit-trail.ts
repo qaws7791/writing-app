@@ -8,6 +8,7 @@ import type {
 } from "@workspace/types/ids"
 
 import type {
+  AuditEventCursor,
   AuditEventRepository,
   AuditEventRepositoryError,
 } from "#operations/application/ports/audit-event-repository"
@@ -30,6 +31,7 @@ type AuditTrailError =
 type AuditEventQuery = Readonly<{
   actor: OperationsActor
   category: AuditCategory | null
+  cursor?: string | null
   from: string | null
   page: number
   pageSize: number
@@ -37,11 +39,15 @@ type AuditEventQuery = Readonly<{
 }>
 
 export type AuditEventPage = Readonly<{
+  hasNextPage?: boolean
+  hasPreviousPage?: boolean
   items: readonly AuditEvent[]
+  nextCursor?: string | null
   page: number
   pageSize: number
-  totalItems: number
-  totalPages: number
+  previousCursor?: string | null
+  totalItems?: number
+  totalPages?: number
 }>
 
 type AuditDayRange = Readonly<{
@@ -173,33 +179,130 @@ export function createAuditTrail(input: {
     async readEvents(query) {
       const range = readAuditDayRange(query)
       if (range === null) return err({ kind: "invalid-audit-query" })
+      const cursorValue = query.cursor ?? null
+      const cursor = decodeAuditEventCursor(cursorValue)
+      if (cursorValue !== null && cursor === null) {
+        return err({ kind: "invalid-audit-query" })
+      }
 
-      const counted = await input.repository.countEvents({
-        category: query.category,
-        ...range,
-      })
-      if (counted.isErr()) return err(counted.error)
+      if (cursor === null && query.page > 1) {
+        const counted = await input.repository.countEvents({
+          category: query.category,
+          ...range,
+        })
+        if (counted.isErr()) return err(counted.error)
 
-      const totalItems = counted.value
-      const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize))
-      const page = Math.min(query.page, totalPages)
+        const totalItems = counted.value
+        const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize))
+        const page = Math.min(query.page, totalPages)
+        const listed = await input.repository.listEvents({
+          category: query.category,
+          cursor: null,
+          limit: query.pageSize,
+          offset: (page - 1) * query.pageSize,
+          ...range,
+        })
+        if (listed.isErr()) return err(listed.error)
+        return ok({
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+          items: listed.value,
+          nextCursor:
+            page < totalPages
+              ? encodePageBoundary(listed.value, "older")
+              : null,
+          page,
+          pageSize: query.pageSize,
+          previousCursor:
+            page > 1 ? encodePageBoundary(listed.value, "newer") : null,
+          totalItems,
+          totalPages,
+        })
+      }
+
       const listed = await input.repository.listEvents({
         category: query.category,
-        limit: query.pageSize,
-        offset: (page - 1) * query.pageSize,
+        cursor,
+        limit: query.pageSize + 1,
+        offset: 0,
         ...range,
       })
+      if (listed.isErr()) return err(listed.error)
 
-      return listed.isErr()
-        ? err(listed.error)
-        : ok({
-            items: listed.value,
-            page,
-            pageSize: query.pageSize,
-            totalItems,
-            totalPages,
-          })
+      const hasExtraItem = listed.value.length > query.pageSize
+      const items =
+        cursor?.direction === "newer" && hasExtraItem
+          ? listed.value.slice(1)
+          : listed.value.slice(0, query.pageSize)
+      const hasNextPage =
+        cursor?.direction === "newer" ? items.length > 0 : hasExtraItem
+      const hasPreviousPage =
+        cursor?.direction === "newer"
+          ? hasExtraItem
+          : cursor !== null && items.length > 0
+
+      return ok({
+        hasNextPage,
+        hasPreviousPage,
+        items,
+        nextCursor: hasNextPage ? encodePageBoundary(items, "older") : null,
+        page: query.page,
+        pageSize: query.pageSize,
+        previousCursor: hasPreviousPage
+          ? encodePageBoundary(items, "newer")
+          : null,
+      })
     },
+  }
+}
+
+const auditCursorIdPattern = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u
+
+function encodePageBoundary(
+  events: readonly AuditEvent[],
+  direction: AuditEventCursor["direction"]
+): string | null {
+  const event = direction === "older" ? events.at(-1) : events[0]
+  return event === undefined ? null : encodeAuditEventCursor(event, direction)
+}
+
+function encodeAuditEventCursor(
+  event: AuditEvent,
+  direction: AuditEventCursor["direction"]
+): string {
+  return Buffer.from(
+    JSON.stringify([direction, event.createdAt.getTime(), event.id]),
+    "utf8"
+  ).toString("base64url")
+}
+
+function decodeAuditEventCursor(value: string | null): AuditEventCursor | null {
+  if (value === null) return null
+
+  try {
+    const decoded: unknown = JSON.parse(
+      Buffer.from(value, "base64url").toString("utf8")
+    )
+    if (
+      !Array.isArray(decoded) ||
+      decoded.length !== 3 ||
+      (decoded[0] !== "newer" && decoded[0] !== "older") ||
+      !Number.isSafeInteger(decoded[1]) ||
+      decoded[1] < 0 ||
+      typeof decoded[2] !== "string" ||
+      !auditCursorIdPattern.test(decoded[2])
+    ) {
+      return null
+    }
+    const createdAt = new Date(decoded[1])
+    if (!Number.isFinite(createdAt.getTime())) return null
+    return {
+      createdAt,
+      direction: decoded[0],
+      id: decoded[2] as AuditEventId,
+    }
+  } catch {
+    return null
   }
 }
 

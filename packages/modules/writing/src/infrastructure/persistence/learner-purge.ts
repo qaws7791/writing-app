@@ -1,4 +1,5 @@
 import { inArray } from "drizzle-orm"
+import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 
 import {
@@ -14,27 +15,43 @@ export const writingLearnerDataPurge: LearnerDataPurgePort = {
   purge(transaction, userIds) {
     if (userIds.length === 0) return
 
-    const writingIds = transaction
-      .select({ id: writings.id })
-      .from(writings)
-      .where(inArray(writings.userId, userIds))
-      .all()
-      .map((row) => row.id)
+    const writingIds = chunkByBoundParameters(userIds, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    }).flatMap((userIdChunk) =>
+      transaction
+        .select({ id: writings.id })
+        .from(writings)
+        .where(inArray(writings.userId, userIdChunk))
+        .all()
+        .map((row) => row.id)
+    )
 
-    if (writingIds.length > 0) {
+    for (const writingIdChunk of chunkByBoundParameters(writingIds, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    })) {
       transaction
         .delete(writingChecks)
-        .where(inArray(writingChecks.writingId, writingIds))
+        .where(inArray(writingChecks.writingId, writingIdChunk))
         .run()
     }
-    transaction
-      .delete(writingAiNotices)
-      .where(inArray(writingAiNotices.userId, userIds))
-      .run()
-    transaction
-      .delete(writingEvents)
-      .where(inArray(writingEvents.userId, userIds))
-      .run()
-    transaction.delete(writings).where(inArray(writings.userId, userIds)).run()
+    for (const userIdChunk of chunkByBoundParameters(userIds, {
+      fixedParameters: 0,
+      parametersPerItem: 1,
+    })) {
+      transaction
+        .delete(writingAiNotices)
+        .where(inArray(writingAiNotices.userId, userIdChunk))
+        .run()
+      transaction
+        .delete(writingEvents)
+        .where(inArray(writingEvents.userId, userIdChunk))
+        .run()
+      transaction
+        .delete(writings)
+        .where(inArray(writings.userId, userIdChunk))
+        .run()
+    }
   },
 }

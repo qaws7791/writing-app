@@ -36,10 +36,14 @@ export const adminAnalyticsDtoSchema = z.strictObject({
 export const adminLessonAnalyticsPageDtoSchema = z.strictObject({
   items: z.array(adminLessonAnalyticsItemDtoSchema),
   pagination: z.strictObject({
+    hasNextPage: z.boolean(),
+    hasPreviousPage: z.boolean(),
+    nextCursor: z.string().nullable(),
     page: adminPositiveIntegerSchema,
     pageSize: adminPositiveIntegerSchema,
-    totalItems: adminNonNegativeIntegerSchema,
-    totalPages: adminNonNegativeIntegerSchema,
+    previousCursor: z.string().nullable(),
+    totalItems: adminNonNegativeIntegerSchema.optional(),
+    totalPages: adminNonNegativeIntegerSchema.optional(),
   }),
 })
 

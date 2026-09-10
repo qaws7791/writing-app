@@ -6,7 +6,59 @@ import {
   sqliteTable,
   text,
   uniqueIndex,
+  primaryKey,
 } from "drizzle-orm/sqlite-core"
+
+export const operationsReportingDailyMetrics = sqliteTable(
+  "operations_reporting_daily_metrics",
+  {
+    checkSucceededWritings: integer("check_succeeded_writings").notNull(),
+    completions: integer("completions").notNull(),
+    createdWritings: integer("created_writings").notNull(),
+    dateKey: text("date_key").primaryKey().notNull(),
+    firstStarts: integer("first_starts").notNull(),
+    returnedLearners: integer("returned_learners").notNull(),
+    revisedAfterCheckWritings: integer(
+      "revised_after_check_writings"
+    ).notNull(),
+    signups: integer("signups").notNull(),
+  }
+)
+
+export const operationsReportingLearnerActivations = sqliteTable(
+  "operations_reporting_learner_activations",
+  {
+    firstStartDate: text("first_start_date"),
+    returnedWithin7Days: integer("returned_within_7_days").notNull(),
+    signupDate: text("signup_date").notNull(),
+    userId: text("user_id").primaryKey().notNull(),
+  }
+)
+
+export const operationsReportingLessonMetrics = sqliteTable(
+  "operations_reporting_lesson_metrics",
+  {
+    completed: integer("completed").notNull(),
+    courseId: text("course_id").notNull(),
+    curriculumVersionId: text("curriculum_version_id").notNull(),
+    lessonId: text("lesson_id").notNull(),
+    started: integer("started").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.courseId, table.curriculumVersionId, table.lessonId],
+    }),
+  ]
+)
+
+export const operationsReportingCheckpoint = sqliteTable(
+  "operations_reporting_checkpoint",
+  {
+    id: integer("id").primaryKey().notNull(),
+    reconciledAt: integer("reconciled_at").notNull(),
+    sourceChangedAt: integer("source_changed_at").notNull(),
+  }
+)
 
 import {
   auditActionValues,

@@ -1,5 +1,11 @@
 import { sql } from "drizzle-orm"
-import { check, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import {
+  check,
+  index,
+  integer,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core"
 import { authUsers } from "@workspace/auth/schema"
 
 import { userStatusValues } from "#identity/domain/user-status"
@@ -24,6 +30,11 @@ export const learnerProfiles = sqliteTable(
       sql`${table.status} IN ('active', 'suspended', 'deleted')`
     ),
     check("learner_profiles_version_check", sql`${table.version} >= 0`),
+    index("learner_profiles_deleted_purge_idx")
+      .on(table.deletedAt, table.userId)
+      .where(
+        sql`${table.status} = 'deleted' AND ${table.deletedAt} IS NOT NULL`
+      ),
   ]
 )
 

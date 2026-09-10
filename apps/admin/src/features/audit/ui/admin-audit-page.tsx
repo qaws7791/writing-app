@@ -210,15 +210,18 @@ function AuditPagination({
   readonly filters: ReadAdminAuditEventsInput
   readonly pagination: AdminAuditEvents["pagination"]
 }) {
-  if (pagination.totalPages <= 1) return null
+  if (!pagination.hasNextPage && !pagination.hasPreviousPage) return null
 
-  const pageHref = (page: number) =>
+  const pageHref = (page: number, cursor: string | null | undefined) =>
     createGetFilterHref(
       [
         ["from", filters.from],
         ["to", filters.to],
         ["category", filters.category],
         ["pageSize", filters.pageSize],
+        ...(cursor === null || cursor === undefined
+          ? []
+          : [["cursor", cursor] as const]),
       ],
       { page }
     )
@@ -228,16 +231,22 @@ function AuditPagination({
       aria-label="감사 이력 페이지"
       className="flex items-center justify-end gap-3 p-4"
     >
-      {pagination.page > 1 ? (
-        <Link className="font-bold" href={pageHref(pagination.page - 1)}>
+      {pagination.hasPreviousPage ? (
+        <Link
+          className="font-bold"
+          href={pageHref(pagination.page - 1, pagination.previousCursor)}
+        >
           이전 페이지
         </Link>
       ) : null}
       <span className="text-sm font-bold text-muted-foreground">
-        {pagination.page} / {pagination.totalPages}
+        {pagination.page}페이지
       </span>
-      {pagination.page < pagination.totalPages ? (
-        <Link className="font-bold" href={pageHref(pagination.page + 1)}>
+      {pagination.hasNextPage ? (
+        <Link
+          className="font-bold"
+          href={pageHref(pagination.page + 1, pagination.nextCursor)}
+        >
           다음 페이지
         </Link>
       ) : null}

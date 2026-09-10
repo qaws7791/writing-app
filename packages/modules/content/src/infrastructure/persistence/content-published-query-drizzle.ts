@@ -1,4 +1,4 @@
-import { and, asc, count, eq } from "drizzle-orm"
+import { and, asc, eq, gt, or, sql } from "drizzle-orm"
 import type {
   ContentAssetId,
   CourseId,
@@ -12,6 +12,7 @@ import {
   readCurriculumVersionId,
   readLessonId,
   type PublishedCourseSummary,
+  type PublishedCourseSummaryQuery,
   type PublishedCurriculumRevision,
   type PublishedLessonReference,
 } from "#content/domain/content-model"
@@ -27,15 +28,31 @@ import {
 } from "#content/infrastructure/persistence/schema"
 
 export function listPublishedCourseSummaries(
-  database: CourseReadDatabase
+  database: CourseReadDatabase,
+  query?: PublishedCourseSummaryQuery
 ): readonly PublishedCourseSummary[] {
+  const cursorCondition =
+    query?.after === undefined
+      ? undefined
+      : or(
+          gt(courses.sortOrder, query.after.sortOrder),
+          and(
+            eq(courses.sortOrder, query.after.sortOrder),
+            gt(courses.id, query.after.courseId)
+          )
+        )
   const rows = database
     .select({
       category: courseCurriculumVersions.category,
       courseId: courses.id,
       coverAssetId: courseCurriculumVersions.coverAssetId,
       description: courseCurriculumVersions.description,
-      lessonCount: count(lessonVersions.id),
+      lessonCount: sql<number>`(
+        SELECT count(*)
+        FROM ${lessonVersions}
+        WHERE ${lessonVersions.curriculumVersionId} = ${courseCurriculumVersions.id}
+          AND ${lessonVersions.status} = ${activeStatus}
+      )`.mapWith(Number),
       revision: courseCurriculumVersions.revision,
       sortOrder: courses.sortOrder,
       title: courseCurriculumVersions.title,
@@ -47,16 +64,18 @@ export function listPublishedCourseSummaries(
       courseCurriculumVersions,
       eq(courseCurriculumVersions.id, courses.publishedCurriculumVersionId)
     )
-    .leftJoin(
-      lessonVersions,
+    .where(
       and(
-        eq(lessonVersions.curriculumVersionId, courseCurriculumVersions.id),
-        eq(lessonVersions.status, activeStatus)
+        eq(courses.status, activeStatus),
+        eq(courseCurriculumVersions.status, "published"),
+        query?.category === undefined
+          ? undefined
+          : eq(courseCurriculumVersions.category, query.category),
+        cursorCondition
       )
     )
-    .where(eq(courses.status, activeStatus))
-    .groupBy(courses.id, courseCurriculumVersions.id)
     .orderBy(asc(courses.sortOrder), asc(courses.id))
+    .limit(query?.limit ?? -1)
     .all()
 
   return rows.map((row) => ({

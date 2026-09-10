@@ -17,10 +17,16 @@ export const adminAnalyticsQuerySchema = z.object({
  * 이 표 하나로 개선 후보를 판단한다.
  */
 export const adminLessonAnalyticsQuerySchema = z.object({
+  cursor: z.string().min(1).max(800).optional(),
   direction: adminSortDirectionSchema.default("desc"),
   page: z.coerce.number().int().positive().max(10_000).default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(10),
-  query: z.string().trim().max(100).default(""),
+  query: z
+    .string()
+    .trim()
+    .max(100)
+    .refine((value) => value === "" || [...value].length >= 3)
+    .default(""),
   sort: adminLessonAnalyticsSortSchema.default("dropOff"),
 })
 

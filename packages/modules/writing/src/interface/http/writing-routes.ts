@@ -13,6 +13,7 @@ import {
   writingCatalogQuerySchema,
   writingCatalogResponseSchema,
   writingDetailSchema,
+  writingListQuerySchema,
   writingListResponseSchema,
   writingParamsSchema,
   writingVersionBodySchema,
@@ -88,13 +89,21 @@ function registerCatalogRoute<TEnv extends WritingHonoEnv>(
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
     const query = context.req.valid("query")
-    const items = await application.listCatalog({
+    const page = await application.listCatalog({
+      ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+      direction: query.direction,
       ...(query.domain === undefined ? {} : { domain: query.domain }),
+      pageSize: query.pageSize,
       ...(query.typeName === undefined ? {} : { typeName: query.typeName }),
     })
     return context.json(
       writingCatalogResponseSchema.parse({
-        items: items.map(presentWritingCatalogItem),
+        items: page.items.map(presentWritingCatalogItem),
+        pagination: {
+          nextCursor: page.nextCursor,
+          pageSize: page.pageSize,
+          previousCursor: page.previousCursor,
+        },
       }),
       200
     )
@@ -110,6 +119,7 @@ function registerListWritingsRoute<TEnv extends WritingHonoEnv>(
     method: "get",
     operationId: "getWritings",
     path: "/writings",
+    request: { query: writingListQuerySchema },
     responses: authenticatedResponses(
       jsonResponse("저장한 글 목록입니다.", writingListResponseSchema)
     ),
@@ -117,12 +127,21 @@ function registerListWritingsRoute<TEnv extends WritingHonoEnv>(
     ...authenticated,
   } satisfies RouteConfig)
   app.openapi(route, async (context) => {
-    const writings = await application.list(
-      context.var.writingLearner.learnerId
-    )
+    const query = context.req.valid("query")
+    const page = await application.list({
+      cursor: query.cursor,
+      direction: query.direction,
+      learnerId: context.var.writingLearner.learnerId,
+      pageSize: query.pageSize,
+    })
     return context.json(
       writingListResponseSchema.parse({
-        items: writings.map(presentWritingSummary),
+        items: page.items.map(presentWritingSummary),
+        pagination: {
+          nextCursor: page.nextCursor,
+          pageSize: page.pageSize,
+          previousCursor: page.previousCursor,
+        },
       }),
       200
     )
