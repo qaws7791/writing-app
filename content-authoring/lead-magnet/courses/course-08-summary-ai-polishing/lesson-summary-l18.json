@@ -1,0 +1,177 @@
+[
+  {
+    "type": "compare",
+    "title": "현우의 통계 검수, 수치 왜곡과 맥락 복원 대조",
+    "analysis": "비율 변화와 포인트 변화의 차이, 표본 한계를 원문과 대조해요.",
+    "versions": [
+      {
+        "label": "수치 왜곡",
+        "mark": "7% 감소했다고 요약문에",
+        "text": "원문 통계에서 청년 실업률이 7% 감소했다고 요약문에 잘못 적었어요."
+      },
+      {
+        "label": "맥락 복원",
+        "mark": "0.5%포인트 소폭 낮아진",
+        "text": "실제 통계는 실업률이 7%에서 6.5%로 0.5%포인트 소폭 낮아진 것이에요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "이 요약은 통계의 표본 조건을 명시했나요?",
+    "statement": "응답자의 80%가 서비스에 매우 만족했다는 압도적인 긍정 평가예요.",
+    "correct": false,
+    "explanation": "전체 고객이 아닌 100명 한정 표본이라는 치명적 조건을 누락하여 왜곡했어요."
+  },
+  {
+    "type": "match",
+    "title": "통계 왜곡 유형과 교정 원칙 짝짓기",
+    "pairs": [
+      {
+        "left": "7% 감소 오기",
+        "leftId": "p1-l",
+        "right": "0.5%p 변화 표기",
+        "rightId": "p1-r"
+      },
+      {
+        "left": "80% 만족 과장",
+        "leftId": "p2-l",
+        "right": "표본 100명 한정 명시",
+        "rightId": "p2-r"
+      },
+      {
+        "left": "200% 매출 폭증",
+        "leftId": "p3-l",
+        "right": "자산 매각 착시 규명",
+        "rightId": "p3-r"
+      }
+    ],
+    "explanation": "수치 왜곡의 형태와 원문 맥락을 복원한 교정안을 연결해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "통계의 인과관계를 정확히 복원한 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "불만 접수가 아니라 응답자 수가 절반으로 줄었어요."
+      },
+      {
+        "id": "opt-2",
+        "text": "신제품 덕분에 고객 불만이 50%나 급감했어요."
+      },
+      {
+        "id": "opt-3",
+        "text": "만족도가 비약적으로 상승하여 불만이 사라졌어요."
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "응답 모수 감소에 따른 착시를 정확히 짚어내어 팩트 왜곡을 바로잡았기 때문이에요."
+  },
+  {
+    "type": "select",
+    "question": "문장에서 생산성 수치 왜곡의 진짜 원인을 짚은 구간은?",
+    "segments": [
+      "생산성 향상이 아니라 ",
+      "근무 시간이 두 배로 늘어난 ",
+      "단순 노동 투입 착시가 ",
+      "원인의 전부였어요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s2"],
+    "explanation": "근무 시간 2배 증가라는 변수를 찾아내어 생산성 착시를 걷어냈기 때문이에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 통계 지표를 정확히 검증했나요?",
+    "statement": "영업이익이 아니라 일회성 자산 매각 대금이 포함된 착시 수치예요.",
+    "correct": true,
+    "explanation": "매출 급증이 영업 활동이 아닌 자산 매각 착시임을 원문 표 대조로 밝혀냈어요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "AI가 통계를 요약할 때 작성자가 가장 주의할 점은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "숫자가 커 보이면 제목에 넣어 관심을 끌어요."
+      },
+      {
+        "id": "opt-b",
+        "text": "원문 통계표의 모수, 단위, 조건을 1대 1 대조해요."
+      },
+      {
+        "id": "opt-c",
+        "text": "통계 세부 숫자는 빼고 대략적인 느낌으로 적어요."
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "모수와 단위를 대조하지 않으면 숫자가 180도 왜곡되어 큰 사고가 나요."
+  },
+  {
+    "type": "categorize",
+    "title": "통계 진술 정확도 판별하기",
+    "categories": [
+      {
+        "id": "cat-skew",
+        "label": "왜곡된 수치 진술"
+      },
+      {
+        "id": "cat-exact",
+        "label": "정확한 맥락 복원"
+      }
+    ],
+    "items": [
+      {
+        "id": "it-1",
+        "text": "실업률 7% 감소",
+        "categoryId": "cat-skew"
+      },
+      {
+        "id": "it-2",
+        "text": "0.5%p 하락",
+        "categoryId": "cat-exact"
+      },
+      {
+        "id": "it-3",
+        "text": "고객 불만 절반 뚝",
+        "categoryId": "cat-skew"
+      },
+      {
+        "id": "it-4",
+        "text": "응답자 수 50% 감소",
+        "categoryId": "cat-exact"
+      }
+    ],
+    "explanation": "단순 과장된 수치 표현과 엄격한 통계 단위 표현을 가려내요."
+  },
+  {
+    "type": "error_correct",
+    "question": "착시 통계 문장을 정확한 맥락 문장으로 고치세요.",
+    "segments": ["직원 생산성이 ", "두 배로 뛰어올라 ", "최고 실적을 냈어요."],
+    "segmentIds": ["c1", "c2", "c3"],
+    "correctSegment": "c2",
+    "fixes": [
+      "야근 시간이 두 배로 늘어 ",
+      "단순 노동 투입이 증가해 ",
+      "외주 인력이 대거 투입되어 "
+    ],
+    "fixIds": ["f1", "f2", "f3"],
+    "correctFix": "f1",
+    "explanation": "생산성 2배라는 왜곡 대신 야근 시간 2배 증가라는 진실된 수치로 고쳐요."
+  },
+  {
+    "type": "sentence_build",
+    "question": "통계 팩트체크 결론 문장을 조립하세요.",
+    "tiles": [
+      "원문 통계표와 ",
+      "1대 1로 대조하여 ",
+      "정확한 사실과 ",
+      "맥락을 복원해요."
+    ],
+    "tileIds": ["t1", "t2", "t3", "t4"],
+    "correct": ["t1", "t2", "t3", "t4"],
+    "explanation": "원문 통계표와의 1대 1 대조로 팩트와 맥락을 복원하는 문장을 완성해요."
+  }
+]
