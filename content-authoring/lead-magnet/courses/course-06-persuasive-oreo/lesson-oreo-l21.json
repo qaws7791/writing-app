@@ -1,0 +1,170 @@
+[
+  {
+    "type": "reading",
+    "title": "선택권을 넓히는 3대 대안 비교와 최종 권고안",
+    "body": "단 하나의 안만 올리면 거절당하기 쉬워요. 비용 절감형(A안), 성능 극대화형(B안), 안정적 절충형(C안)을 한눈에 보이는 표로 대조하고, 작성자의 전문적 권고안을 뚜렷하게 제시해야 합의가 빨라져요."
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 작성자의 주관적 권고안을 명확히 밝혔나요?",
+    "statement": "납기와 유지비를 종합 검토할 때 C안의 단계적 도입을 최종 권고해요.",
+    "correct": true,
+    "explanation": "판단 기준과 함께 C안을 권고한다고 명확히 입장을 밝혔어요."
+  },
+  {
+    "type": "categorize",
+    "title": "단일안 강요 문구와 다중 대안 비교 문구 분류",
+    "categories": [
+      {
+        "id": "c-single",
+        "label": "단일안 강요"
+      },
+      {
+        "id": "c-multi",
+        "label": "다중 대안 비교"
+      }
+    ],
+    "items": [
+      {
+        "id": "ci-1",
+        "text": "무조건 1안만 승인 요청",
+        "categoryId": "c-single"
+      },
+      {
+        "id": "ci-2",
+        "text": "다른 대안은 일체 없음",
+        "categoryId": "c-single"
+      },
+      {
+        "id": "ci-3",
+        "text": "비용과 납기 3대 옵션 비교",
+        "categoryId": "c-multi"
+      },
+      {
+        "id": "ci-4",
+        "text": "장단점 분석 후 절충안 권고",
+        "categoryId": "c-multi"
+      }
+    ],
+    "explanation": "선택권을 박탈하는 태도와 객관적 선택지를 펼치는 태도를 구분해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "복수 대안의 기회비용을 균형 있게 다룬 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "A안은 비용이 30% 저렴하나 개발 납기가 2개월 지연될 수 있어요."
+      },
+      {
+        "id": "opt-2",
+        "text": "A안은 완벽하고 훌륭하니 무조건 A안으로 가야 마땅해요."
+      },
+      {
+        "id": "opt-3",
+        "text": "어떤 안을 골라도 결과는 똑같으니 편하신 대로 고르세요."
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "30% 저렴하다는 장점과 납기 지연이라는 기회비용을 정직하게 대조했어요."
+  },
+  {
+    "type": "select",
+    "question": "문장에서 작성자의 최종 권고 이유 구간은?",
+    "segments": [
+      "초기 투자비 회수 기간과 ",
+      "시스템 호환성을 감안할 때 ",
+      "절충형 C안을 채택하는 것이 ",
+      "가장 합리적이에요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s2"],
+    "explanation": "투자 회수와 호환성이라는 판단 근거를 짚은 구간이에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 공정한 대안 비교에 부합하나요?",
+    "statement": "B안과 C안은 결함투성이이므로 읽어보실 가치도 없어요.",
+    "correct": false,
+    "explanation": "다른 대안을 일방적으로 폄하하여 객관적 비교 신뢰도를 떨어뜨려요."
+  },
+  {
+    "type": "match",
+    "title": "3대 대안 옵션과 핵심 특성 매칭",
+    "pairs": [
+      {
+        "left": "A안 최소 투자형",
+        "leftId": "p-l1",
+        "right": "초기 비용 절감",
+        "rightId": "p-r1"
+      },
+      {
+        "left": "B안 최고 사양형",
+        "leftId": "p-l2",
+        "right": "확장성 극대화",
+        "rightId": "p-r2"
+      },
+      {
+        "left": "C안 단계 절충형",
+        "leftId": "p-l3",
+        "right": "최종 권고 채택",
+        "rightId": "p-r3"
+      }
+    ],
+    "explanation": "비용형, 기능형, 절충 권고형 옵션의 성격을 1:1로 대응해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "의사결정권자에게 확신을 주는 권고안 결론 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "결정이 어려우시면 내년으로 안건을 미루는 것도 한 방법이에요."
+      },
+      {
+        "id": "opt-b",
+        "text": "예산 제약과 서비스 안정성을 모두 충족하는 C안을 최종 추천드려요."
+      },
+      {
+        "id": "opt-c",
+        "text": "셋 다 마음에 안 드시면 처음부터 다시 조사해 오겠어요."
+      }
+    ],
+    "correct": "opt-b",
+    "explanation": "예산과 안정성이라는 양대 기준을 들어 C안 추천의 당위성을 입증했어요."
+  },
+  {
+    "type": "error_correct",
+    "question": "단일안 고집 문장을 복수 대안 비교문으로 교정해요.",
+    "segments": [
+      "이 방안 외에는 ",
+      "다른 선택지가 없으니 ",
+      "그냥 결재해 주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": [
+      "비용과 품질을 대조한 ",
+      "제가 보기에 완벽한 ",
+      "더 이상 따질 것 없는 "
+    ],
+    "fixIds": ["f1", "f2", "f3"],
+    "correctFix": "f1",
+    "explanation": "무대포 강요 대신 비용과 품질 대조라는 비교 관점을 제시해요."
+  },
+  {
+    "type": "select",
+    "question": "지원의 비교 보고서에서 최종 권고안 확정 구간은?",
+    "segments": [
+      "3개 대안 중 리스크가 가장 낮고 ",
+      "비용 효율이 뛰어난 ",
+      "절충형 C안으로 최종 확정하여 ",
+      "추진해 주시길 권고해요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s3"],
+    "explanation": "절충형 C안으로 확정하여 추진하자는 권고 구간이에요.",
+    "layout": "inline"
+  }
+]

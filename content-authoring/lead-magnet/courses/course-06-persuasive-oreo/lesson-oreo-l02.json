@@ -1,0 +1,164 @@
+[
+  {
+    "type": "reading",
+    "title": "민서의 건의문과 독자의 네 질문",
+    "body": "상대방을 설득하려면 독자의 머릿속에 떠오르는 네 가지 핵심 물음인 '무슨 말인가? 왜인가? 믿을 근거는? 무엇을 하면 되는가?'에 바로 답해야 해요. 각 문장이 독자의 어느 질문에 대응하는지 명확히 연결해 보세요."
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 '무슨 말인가?'에 답하는 핵심 주장인가요?",
+    "statement": "반복되는 배송 문의는 키워드 자동 분류를 적용해 즉시 배정해야 해요.",
+    "correct": true,
+    "explanation": "무슨 말인지 묻는 독자에게 제안의 핵심 결론을 직관적으로 답해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "'왜인가?'에 답하는 인과적 이유 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "수기 분류에 매일 90분이 소모되어 정작 답변이 지연되기 때문이에요."
+      },
+      {
+        "id": "opt-2",
+        "text": "지난주 문의 1,200건 중 65%가 배송 추적 문의였어요."
+      },
+      {
+        "id": "opt-3",
+        "text": "월요일 오전 회의에서 자동 분류 승인을 요청해요."
+      }
+    ],
+    "correct": "opt-1",
+    "explanation": "왜 도입해야 하는지 작업 병목 원인을 밝혀 '왜인가'에 답해요."
+  },
+  {
+    "type": "match",
+    "title": "독자의 질문과 대응 문장 연결",
+    "pairs": [
+      {
+        "left": "무슨 말인가?",
+        "leftId": "q1",
+        "right": "자동 분류를 도입해요",
+        "rightId": "a1"
+      },
+      {
+        "left": "믿을 근거는?",
+        "leftId": "q2",
+        "right": "문의 65%가 배송 건이에요",
+        "rightId": "a2"
+      },
+      {
+        "left": "무엇을 할까?",
+        "leftId": "q3",
+        "right": "금요일까지 승인해 주세요",
+        "rightId": "a3"
+      }
+    ],
+    "explanation": "독자의 의문과 그에 화답하는 문장을 짝지어 논리 축을 세워요."
+  },
+  {
+    "type": "select",
+    "question": "'믿을 근거는?'에 답하는 데이터 구간은?",
+    "segments": [
+      "지난주 접수된 ",
+      "고객 문의 1,200건을 표본 분석했더니 ",
+      "65%가 정형화된 ",
+      "배송 추적 문의였어요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s2"],
+    "explanation": "표본 수치 1,200건과 분석 사실을 밝힌 구간이 신뢰 근거를 답해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "'무엇을 할까'에 답하는 제안인가요?",
+    "statement": "다른 회사들도 다 자동화를 한다는데 우리도 이제 해야 하지 않을까요?",
+    "correct": false,
+    "explanation": "상대에게 바라는 구체적 행동이 빠져 있어 행동 질문에 답하지 못해요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "'무엇을 할까'에 화답하는 요청 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "상담원들이 각자 요령껏 문의를 분류하기로 해요."
+      },
+      {
+        "id": "opt-b",
+        "text": "수기 분류가 힘들다는 점을 다 같이 공감해 주세요."
+      },
+      {
+        "id": "opt-c",
+        "text": "금요일까지 테스트 분류 적용 여부를 확정해 주세요."
+      }
+    ],
+    "correct": "opt-c",
+    "explanation": "독자가 취해야 할 마감과 승인 행동을 못 박아 질문에 답해요."
+  },
+  {
+    "type": "categorize",
+    "title": "독자 질문별 문장 분류하기",
+    "categories": [
+      {
+        "id": "cat-why",
+        "label": "왜인가? (이유)"
+      },
+      {
+        "id": "cat-action",
+        "label": "무엇을 할까? (행동)"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-1",
+        "text": "답변 지연이 심해요",
+        "categoryId": "cat-why"
+      },
+      {
+        "id": "item-2",
+        "text": "야근이 늘고 있어요",
+        "categoryId": "cat-why"
+      },
+      {
+        "id": "item-3",
+        "text": "초안을 승인해 주세요",
+        "categoryId": "cat-action"
+      },
+      {
+        "id": "item-4",
+        "text": "금요일까지 회신해요",
+        "categoryId": "cat-action"
+      }
+    ],
+    "explanation": "근본 이유를 설명하는 문장과 독자의 행동을 요구하는 문장을 갈라내요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 요청을 구체적 행동 지침으로 교정하세요.",
+    "segments": [
+      "팀장님께서도 바쁘시겠지만 ",
+      "이 문제를 한번 ",
+      "깊이 고민해 주세요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-3",
+    "fixes": [
+      "초안 승인을 검토해 주세요.",
+      "기억해 두세요.",
+      "관심을 가져 주세요."
+    ],
+    "fixIds": ["f1", "f2", "f3"],
+    "correctFix": "f1",
+    "explanation": "막연한 부탁 대신 구체적인 승인 검토 행동을 요청해야 독자가 움직여요."
+  },
+  {
+    "type": "fill_blank",
+    "template": "이번 주 금요일까지 테스트 분류 ___ 여부를 ___ 주세요.",
+    "words": ["도입", "확정해", "보류해", "검증"],
+    "wordIds": ["w1", "w2", "w3", "w4"],
+    "answer": ["w1", "w2"],
+    "explanation": "독자가 해야 할 마감 조치를 못 박아 행동 요구 질문을 완성해요."
+  }
+]

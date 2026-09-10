@@ -1,0 +1,170 @@
+[
+  {
+    "type": "compare",
+    "title": "수아의 제안서, 소재 나열과 명확한 주장 대조",
+    "analysis": "소재만 언급하면 찬반을 정할 수 없지만, 행동 지침을 밝히면 명확한 주장이 돼요.",
+    "versions": [
+      {
+        "label": "단순 소재",
+        "mark": "색상 토큰 관리예요",
+        "text": "오늘 이야기할 주제는 우리 제품의 디자인 시스템과 색상 토큰 관리예요."
+      },
+      {
+        "label": "검증 주장",
+        "mark": "의무 적용해요",
+        "text": "신규 기능 화면은 하드코딩된 색상 대신 표준 색상 토큰을 의무 적용해요."
+      }
+    ]
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 찬반을 가를 수 있는 주장인가요?",
+    "statement": "버튼 크기와 여백의 통일성에 대해 함께 논의해 보고 싶어요.",
+    "correct": false,
+    "explanation": "논의하고 싶다는 의사일 뿐 찬반을 검증할 구체적 명제가 아니에요."
+  },
+  {
+    "type": "categorize",
+    "title": "단순 소재와 행동 주장 분류하기",
+    "categories": [
+      {
+        "id": "cat-topic",
+        "label": "단순 소재"
+      },
+      {
+        "id": "cat-claim",
+        "label": "행동 주장"
+      }
+    ],
+    "items": [
+      {
+        "id": "i1",
+        "text": "소통 방식 개선 생각",
+        "categoryId": "cat-topic"
+      },
+      {
+        "id": "i2",
+        "text": "다크 모드 지원 준비",
+        "categoryId": "cat-topic"
+      },
+      {
+        "id": "i3",
+        "text": "토큰을 의무화해요",
+        "categoryId": "cat-claim"
+      },
+      {
+        "id": "i4",
+        "text": "변수명을 통일해요",
+        "categoryId": "cat-claim"
+      }
+    ],
+    "explanation": "다룰 대상만 말하는 소재와 구체적 행동을 요구하는 주장을 나눠요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "독자가 찬반을 판단할 수 있는 주장 문장은?",
+    "options": [
+      {
+        "id": "opt-1",
+        "text": "아이콘 라이브러리 교체에 관한 내용이에요."
+      },
+      {
+        "id": "opt-2",
+        "text": "모든 버튼 간격은 4픽셀 단위로 단일화해야 해요."
+      },
+      {
+        "id": "opt-3",
+        "text": "폰트 크기와 시각적 위계 설정에 관한 생각이에요."
+      }
+    ],
+    "correct": "opt-2",
+    "explanation": "4픽셀 단위라는 명확한 기준이 있어 찬성과 반대 검증이 가능해요."
+  },
+  {
+    "type": "select",
+    "question": "문장에서 구체적 행동 기준을 명시한 구간은?",
+    "segments": [
+      "시맨틱 컬러 토큰을 ",
+      "3분기 안에 구축하여 ",
+      "다크 모드 전환 비용을 ",
+      "절반으로 줄여야 해요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s2"],
+    "explanation": "3분기 구축이라는 마감과 조치를 밝힌 구간이 행동 기준이에요.",
+    "layout": "inline"
+  },
+  {
+    "type": "true_false",
+    "question": "이 문장은 찬반을 가를 수 있는 주장인가요?",
+    "statement": "컴포넌트 명칭을 코드 변수명과 일치시켜 의사소통 오차를 없애야 해요.",
+    "correct": true,
+    "explanation": "독자가 실천 여부를 명확히 판별할 수 있어 완전한 주장이에요."
+  },
+  {
+    "type": "multiple_choice",
+    "question": "단순 소재를 검증 가능한 주장으로 바꾼 문장은?",
+    "options": [
+      {
+        "id": "opt-a",
+        "text": "디자인 시스템 컴포넌트 업데이트의 중요성이에요."
+      },
+      {
+        "id": "opt-b",
+        "text": "컴포넌트 관리가 잘되면 협업이 수월해질 것 같아요."
+      },
+      {
+        "id": "opt-c",
+        "text": "격주 검토를 통과한 컴포넌트만 공유 보관소에 등록해야 해요."
+      }
+    ],
+    "correct": "opt-c",
+    "explanation": "등록 조건을 명시하여 찬반을 가릴 수 있는 주장이 됐어요."
+  },
+  {
+    "type": "error_correct",
+    "question": "모호한 소재 언급을 구체적 행동 주장으로 교정하세요.",
+    "segments": [
+      "본문 폰트에 관한 고민을 ",
+      "신규 기능 화면에 ",
+      "우선 반영하기로 해요."
+    ],
+    "segmentIds": ["seg-1", "seg-2", "seg-3"],
+    "correctSegment": "seg-1",
+    "fixes": [
+      "세 규격의 표준 폰트를 ",
+      "예쁜 서체 선정을 ",
+      "다양한 글꼴 사용을 "
+    ],
+    "fixIds": ["f1", "f2", "f3"],
+    "correctFix": "f1",
+    "explanation": "고민하자는 모호한 말 대신 규격 통일이라는 행동 기준을 세워요."
+  },
+  {
+    "type": "select",
+    "question": "문장에서 찬반 판단이 어려운 모호한 구간은?",
+    "segments": [
+      "승인되지 않은 외부 아이콘 삽입을 ",
+      "차단하고 전용 에셋만 쓰기 위해 ",
+      "다각도로 검토해 ",
+      "볼 예정이에요."
+    ],
+    "segmentIds": ["s1", "s2", "s3", "s4"],
+    "correct": ["s3"],
+    "explanation": "다각도로 검토한다는 표현은 구체적 행동 기준이 없어 모호해요.",
+    "layout": "inline"
+  },
+  {
+    "type": "sentence_build",
+    "question": "수아의 제안서 마무리 문장을 완성하세요.",
+    "tiles": [
+      "신규 컴포넌트는 ",
+      "격주 검토를 거쳐 ",
+      "통과된 항목만 ",
+      "공유 보관소에 등록해요."
+    ],
+    "tileIds": ["t1", "t2", "t3", "t4"],
+    "correct": ["t1", "t2", "t3", "t4"],
+    "explanation": "행동 조건과 등록 기준을 담은 문장을 조립하여 주장을 완성해요."
+  }
+]
