@@ -25,4 +25,4 @@
 
 ## 검증 기록
 
-실제 migration 실행과 복구 훈련의 commit, 데이터 source, 환경, 명령, 무결성 결과와 소요 시간은 archive 보고서에 고정한다. 저장소 fixture 통과는 운영 DB 적용 성공의 증거가 아니다.
+실제 migration 실행과 복구 훈련의 commit, 데이터 source, 환경, 명령, 무결성 결과와 소요 시간은 해당 커밋의 CI와 git 이력에서 확인한다. 저장소 fixture 통과는 운영 DB 적용 성공의 증거가 아니다.

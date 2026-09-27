@@ -128,10 +128,10 @@
     "prepare": "lefthook install",
     "preflight:release": "bun scripts/check-github-release-configuration.ts github",
     "repomix": "bun run repomix:code",
-    "repomix:analysis": "bunx repomix --style markdown --output .artifacts/repomix/codebase-analysis.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md,docs/engineering/contracts/**/*.json,packages/config/**,scripts/**,apps/ui/**' --ignore 'docs/work/**,docs/archive/**,docs/research/**,prototype/**,.worktrees/**,.artifacts/**,apps/ui/dist/**,apps/ui/.turbo/**'",
+    "repomix:analysis": "bunx repomix --style markdown --output .artifacts/repomix/codebase-analysis.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md,docs/engineering/contracts/**/*.json,packages/config/**,scripts/**,apps/ui/**' --ignore 'prototype/**,.worktrees/**,.artifacts/**,apps/ui/dist/**,apps/ui/.turbo/**'",
     "restore:deletion-markers": "bun --filter @workspace/api restore:deletion-markers",
     "repomix:code": "bunx repomix --style markdown --output .artifacts/repomix/codebase.md --remove-empty-lines --ignore '.agents,docs,.worktrees,.artifacts'",
-    "repomix:docs": "bunx repomix --style markdown --output .artifacts/repomix/combined-docs.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md' --ignore 'docs/work/**,docs/archive/**,docs/research/**'",
+    "repomix:docs": "bunx repomix --style markdown --output .artifacts/repomix/combined-docs.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md'",
     "repomix:apps": "bunx repomix --style markdown --output .artifacts/repomix/apps.md --remove-empty-lines --include 'apps/**/*.ts,apps/**/*'",
     "repomix:packages": "bunx repomix --style markdown --output .artifacts/repomix/packages.md --remove-empty-lines --include 'packages/**/*.ts,packages/**/*.tsx' --ignore 'packages/config/**'",
     "setup": "bun scripts/setup.ts"

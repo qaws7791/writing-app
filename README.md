@@ -46,7 +46,5 @@ bun run verify
 - `docs/product`: 제품 문제, 요구사항과 운영 정책
 - `docs/design`: 화면 목적, 정보 구조, UI와 접근성 기준
 - `docs/engineering`: 설계 원칙, 구현·운영 절차와 품질 기준
-- `docs/work`: 진행 중인 한시적 작업 기록
-- `docs/archive`: 날짜와 commit이 고정된 과거 기록과 검증 증거
 
-현재 코드 사실을 문서의 서술로 추정하지 않는다. 작업 로그와 archive도 현재 사실의 근거로 사용하지 않는다.
+현재 코드 사실을 문서의 서술로 추정하지 않는다.

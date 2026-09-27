@@ -59,7 +59,7 @@
 1. alert에서 revision, request 식별자와 영향 범위를 찾는다.
 2. 로그·metric·배포 기록을 연결해 원인과 고객 영향을 분리한다.
 3. code rollback, 설정 복구, 데이터 복구 중 안전한 경로를 결정한다.
-4. incident 결과와 개선 조치는 commit·환경·증거를 고정한 archive 기록으로 남긴다.
+4. incident 결과와 개선 조치는 commit·환경·증거를 해당 커밋의 git 이력에 남긴다.
 
 ## 외부 운영 준비 조건
 

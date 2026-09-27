@@ -36,7 +36,7 @@
 
 새 제품 기능은 먼저 책임 module과 공개 협력 계약을 정해야 한다. 별도 배포나 DB가 필요해지는 시점에는 같은 port를 추출 경계로 재평가하되 미리 remote abstraction을 만들지 않는다. 현재 source 위치와 package 수는 코드·설정에서 확인하고 이 ADR에 복제하지 않는다.
 
-이 결정은 ADR-0014의 app-owned concrete persistence 위치를 대체한다. ADR-0018의 인증 vendor 경계와 ADR-0022의 현재 schema era 계보는 이 결정의 예외·실행 규칙으로 함께 유지한다.
+이 결정은 ADR-0014의 app-owned concrete persistence 위치를 대체한다. 대체한 ADR-0014의 본문은 git 이력에서 확인한다. ADR-0018의 인증 vendor 경계와 ADR-0022의 현재 schema era 계보는 이 결정의 예외·실행 규칙으로 함께 유지한다.
 
 ## 검증
 

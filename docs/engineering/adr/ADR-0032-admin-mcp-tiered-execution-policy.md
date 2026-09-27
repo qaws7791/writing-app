@@ -75,6 +75,4 @@ Credential scope만으로는 owner가 특정 요청을 검토했다는 증거가
 - [인증·권한 정책](../auth-permissions.md)
 - [관리자 transport 보안 가이드](../admin-transport-security.md)
 - [개인정보와 AI 데이터 사용](../privacy.md)
-- [전체 Tool 구현 계획](../../work/2026-08-10-admin-mcp-full-admin-tools/plan.md)
-- [ADR-0030](./ADR-0030-admin-mcp-oauth-resource-server.md)
 - [ADR-0031](./ADR-0031-admin-mcp-owner-approved-content-changes.md)

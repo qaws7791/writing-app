@@ -8,7 +8,7 @@
 
 Modern MCP wire protocol `2026-07-28` 지원 결정은 유지한다.
 
-이 결정은 [ADR-0030](./ADR-0030-admin-mcp-oauth-resource-server.md)을 전체 대체한다.
+이 결정은 ADR-0030 조회 전용 관리자 MCP와 OAuth resource server 결정을 전체 대체한다. 대체한 결정의 본문은 git 이력에서 확인한다.
 
 이 결정은 [ADR-0031](./ADR-0031-admin-mcp-owner-approved-content-changes.md)의 legacy 조회 허용 결과를 대체한다.
 

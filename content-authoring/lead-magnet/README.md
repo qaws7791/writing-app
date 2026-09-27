@@ -1,6 +1,6 @@
 # Lead Magnet 콘텐츠 집필
 
-이 디렉터리는 `docs/work/2026-08-31-lead-magnet-course-design/` 설계를 실행하는 집필 산출물을 둡니다. 집필·리뷰 규칙은 [`docs/product/authoring-guidelines.md`](../../docs/product/authoring-guidelines.md)가 소유합니다.
+이 디렉터리는 리드 마그넷 코스 설계를 실행하는 집필 산출물을 둡니다. 집필·리뷰 규칙은 [`docs/product/authoring-guidelines.md`](../../docs/product/authoring-guidelines.md)가 소유합니다.
 
 ## 검증
 

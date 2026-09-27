@@ -38,7 +38,7 @@ description: 프로젝트의 권위 소스와 현재 유효 문서를 비교해 
 2. 실제 manifest, configuration, code
 3. 현재 유효한 영구 문서
 
-`docs/work`는 진행 중인 계획과 조사 기록, `docs/archive`는 종료된 기록, `docs/engineering/adr`는 결정 당시의 근거로만 다룬다. 이들을 현재 구현 상태의 권위 소스로 사용하지 않는다. 다만 영구 문서가 이 문서들을 현재 사실의 근거로 잘못 인용하면 충돌로 보고한다.
+`docs/engineering/adr`는 결정 당시의 근거로만 다룬다. 이를 현재 구현 상태의 권위 소스로 사용하지 않는다. 다만 영구 문서가 ADR을 현재 사실의 근거로 잘못 인용하면 충돌로 보고한다.
 
 `admin-api`, `ADMIN_API`, `adminApi`처럼 별도 관리자 API 실행 단위를 전제하는 이름을 찾는다. 관리자 기능의 `/admin` route와 `apps/admin` 프런트엔드는 단일 `api` 명명 위반으로 오인하지 않는다.
 

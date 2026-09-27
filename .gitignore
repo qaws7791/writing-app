@@ -45,6 +45,7 @@ npm-debug.log*
 *.pem
 /.artifacts/
 docs/.obsidian/
+docs/work/
 
 # Agent skills (Antigravity)
 .agent

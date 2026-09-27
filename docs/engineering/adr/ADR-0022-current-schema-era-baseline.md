@@ -30,6 +30,6 @@
 
 ## 검증과 후속
 
-fresh baseline 생성, DB 제약, 현재 schema backup·독립 application read, 이전 최종 계보의 원자적 era 전환과 변조 거부를 자동화한다. 실제 대상별 전환은 operation lock, writer 중지, backup 경로와 복원 smoke를 포함한 archive 보고서가 필요하다.
+fresh baseline 생성, DB 제약, 현재 schema backup·독립 application read, 이전 최종 계보의 원자적 era 전환과 변조 거부를 자동화한다. 실제 대상별 전환은 operation lock, writer 중지, backup 경로와 복원 smoke를 해당 커밋의 git 이력에 남긴다.
 
-이 결정은 ADR-0019의 과거 계보 영구 보존과 known-state adoption, ADR-0021의 운영 inventory 확인 전 legacy runtime 유지 결정을 대체한다. 두 문서의 역사적 맥락은 유지한다.
+이 결정은 ADR-0019의 과거 계보 영구 보존과 known-state adoption, ADR-0021의 운영 inventory 확인 전 legacy runtime 유지 결정을 대체한다. 대체한 ADR-0019의 본문은 git 이력에서 확인한다.

@@ -71,4 +71,4 @@
 1. 공격 표면, 신뢰 경계, 민감 데이터와 실패 시 영향을 식별한다.
 2. 인증·인가, 입력 검증, logging, cache, rate limit, rollback 영향에 대한 테스트를 추가한다.
 3. 외부 공개 범위, secret store, CSP, provider, image 또는 데이터 보존 정책을 바꾸면 ADR 필요성을 판단한다.
-4. 실제 보안 검증 결과는 commit과 환경이 고정된 archive 보고서로 남긴다.
+4. 실제 보안 검증 결과는 commit과 환경이 고정된 CI와 git 이력에서 확인한다.

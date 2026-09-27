@@ -10,8 +10,7 @@
 - 실행 가능한 코드와 설정이 자연스럽게 소유하는 사실은 별도 문서나 생성 문서에 복제하지 않는다.
 - 제품 정책처럼 코드만으로 의도를 판정할 수 없는 사실은 제품 문서가 소유한다.
 - 제품 요구사항, 설계, 아키텍처, 보안, 운영·개발 정책은 Git 문서가 소유한다.
-- `docs/research`는 콘텐츠 판단의 출처와 추론 경로를 보존하지만 현재 제품 정책, 카탈로그나 콘텐츠 값의 권위 소스가 아니다.
-- ADR은 결정의 이유를, `docs/work`는 진행 중 작업을, `docs/archive`는 과거 증거를 기록한다. 셋 모두 현재 topology의 권위 소유자가 아니다.
+- ADR은 결정의 이유를 기록한다. ADR은 현재 topology의 권위 소유자가 아니다. 완료된 한시 문서의 본문은 git 이력에 남는다.
 - 문서는 권위 소스를 찾는 경로와 그 변경의 의도를 설명할 수 있지만, 같은 값을 다시 선언하지 않는다.
 
 ## 사실별 소유자
@@ -26,7 +25,7 @@
 | 집필 품질 계약과 검증 파이프라인          | [`packages/shared/contracts/src/content/authoring/`](../../packages/shared/contracts/src/content/authoring/), [`packages/modules/content/src/authoring/`](../../packages/modules/content/src/authoring/), 루트 `content:validate`·`content:merge` script | 스텝·레슨 의미 규칙, 레슨 브리프 스키마, 시드 검증 CLI      |
 | 레슨 스텝 배치 템플릿과 레이아웃 표준     | `docs/product/lesson-step-templates.md`                                                                                                                                                                                                                  | 60종 권장 배치와 집필 제약. 검증기는 순서를 강제하지 않는다 |
 | 학습 상태 책임과 레슨 전이 정책           | `docs/product/learner-journey.md`                                                                                                                                                                                                                        | 서버·클라이언트 책임과 동기화                               |
-| 현재 코스 draft·published 콘텐츠          | curriculum repository가 관리하는 persisted data                                                                                                                                                                                                          | 콘텐츠 의미와 발행 정책                                     |
+| 현재 코스 draft·published 콘텐츠          | curriculum repository가 관리하는 persisted data. 기본 시드 값은 [`content-seed-data.json`](../packages/modules/content/src/infrastructure/persistence/content-seed-data.json)                                                                            | 콘텐츠 의미와 발행 정책                                     |
 | 관리자 운영 정책                          | `docs/product/admin-operations.md`                                                                                                                                                                                                                       | owner 관리자의 권한·책임 정책                               |
 | 개인정보와 AI 데이터 사용 목적            | `docs/engineering/privacy.md`                                                                                                                                                                                                                            | 사용·최소화·보존 원칙                                       |
 | 화면 목적과 정보 구조                     | `docs/design/screens/`, `docs/design/ia-spec.md`                                                                                                                                                                                                         | 화면 목적, 흐름, 접근성 기준                                |
@@ -42,14 +41,8 @@
 | 데이터 schema·migration                   | module schema·migration, `packages/infra/auth`, `apps/api/src/db`, `apps/api/drizzle`                                                                                                                                                                    | 데이터 불변식과 migration 절차                              |
 | production service·image·network topology | `deploy/compose/compose.yaml`, Caddy 설정, release workflow                                                                                                                                                                                              | 배포 승인·복구·안전 절차                                    |
 | 테스트 명령·실행 대상                     | workspace test 설정과 루트 task                                                                                                                                                                                                                          | 테스트 전략과 품질 기준                                     |
-| 검증 실행 결과                            | commit, 실행 명령, 환경, artifact가 고정된 archive 보고서                                                                                                                                                                                                | 과거 증거                                                   |
+| 검증 실행 결과                            | 해당 커밋의 CI 결과와 git 이력                                                                                                                                                                                                                           | 과거 증거                                                   |
 | 되돌리기 어려운 기술 결정의 이유          | `docs/engineering/adr/`                                                                                                                                                                                                                                  | 결정의 이유와 대안                                          |
-
-## 비권위 연구 지식
-
-`docs/research`는 자료별 접근 범위, 요약, 종합 원리, 역량 분석과 `콘텐츠 ID → 주장 ID → 출처 ID` 연결을 보존한다. 이 연결은 콘텐츠 판단을 검토하고 한계를 추적하기 위한 근거이며 현재 제품 동작이나 제품 정책을 정하지 않는다.
-
-연구 결론이 제품 규칙이 되면 `docs/product`의 관련 권위 문서에 반영한다. 현재 draft·published 콘텐츠는 curriculum repository의 persisted data가 소유하며, 이번 시드 재구축에서 작성하는 코스·유닛·레슨·스텝 값의 단일 작성 원천은 [`content-seed-data.json`](../packages/modules/content/src/infrastructure/persistence/content-seed-data.json)이다. 연구 문서에는 그 값을 복제하지 않고 ID와 적용 근거만 연결한다.
 
 ## 현재 코드 사실 탐색
 

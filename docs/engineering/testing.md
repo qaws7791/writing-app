@@ -11,7 +11,7 @@
 - 테스트 편의를 위해 production 동작을 우회하거나 제품 코드에 조건문을 추가하지 않는다.
 - 테스트 fixture는 명시적으로 만들고, 개발자 데이터·설정·실행 중 process를 재사용하거나 삭제하지 않는다.
 - DOM·앱 테스트는 예상하지 않은 `console.error`·`console.warn`을 실패로 올린다. 실패 경로를 의도적으로 실행해 서드파티 runtime이 로그를 남긴다면 allowlist를 두지 않고 해당 runtime에 로그 목적지를 주입해 끊는다.
-- 실패 재현에 필요한 입력과 assertion은 test source에 두고, 특정 실행의 결과는 archive 보고서에 남긴다.
+- 실패 재현에 필요한 입력과 assertion은 test source에 두고, 특정 실행의 결과는 해당 커밋의 CI와 git 이력에서 확인한다.
 - 테스트 이름은 방지할 사용자·시스템 위험을 드러내고, 공개 동작과 실패 경계를 검증한다. source 문자열, 내부 이름·배열 순서, `Object.freeze` 적용 여부나 한 줄 wrapper의 mock 전달 자체는 회귀 계약으로 삼지 않는다.
 - route 조립, health와 종료 signal 같은 runtime 연결은 반환 객체 단위 테스트보다 실제 HTTP, process 또는 배포 smoke 경계에서 검증한다.
 - 고정 port와 개발 build directory를 사용하는 로컬 runtime smoke는 기본 repository test 대상에서 분리하고 전용 명령으로만 실행한다.
@@ -35,7 +35,7 @@
 | Vitest                   | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                   |
 | Testing Library          | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                         |
 | MSW                      | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                           |
-| Playwright               | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                                                                      |
+| Playwright               | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. locator는 현재 화면의 접근성 이름과 일치해야 한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                   |
 | Lighthouse CI·k6         | Lighthouse CI는 main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                                 |
 | Astro UI 문서·Playwright | `apps/ui`는 실행 가능한 UI 카탈로그와 격리 예제를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
 
@@ -177,4 +177,4 @@ Astro UI 문서의 interaction·접근성 검사는 browser runtime 비용 때�
 
 ## 검증 기록
 
-특정 날짜의 실행 시간, toolchain, 테스트 수치, CI 결과와 production 적용 여부는 living guide에 기록하지 않는다. 재현 가능한 검증 보고서는 기준 commit, 실행 시각·환경, 명령, 결과와 artifact 위치를 포함해 작업 완료 후 archive에 보관한다.
+특정 날짜의 실행 시간, toolchain, 테스트 수치, CI 결과와 production 적용 여부는 living guide에 기록하지 않는다. 검증 수치는 해당 커밋의 CI와 git 이력에서 확인한다.

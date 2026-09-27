@@ -98,7 +98,7 @@
 2. schema·migration·seed·adapter·contract·테스트를 하나의 호환성 단위로 변경한다.
 3. 기존 데이터와 이전 application version이 공존할 수 있는 기간을 판단한다.
 4. destructive 변경은 backup, restore와 rollback 한계를 먼저 검토한다.
-5. 현재 table과 관계는 schema source에서, 과거 변경 이유는 ADR와 archive에서 확인한다.
+5. 현재 table과 관계는 schema source에서, 과거 변경 이유는 ADR과 git 이력에서 확인한다.
 
 ## Seed와 보존
 

@@ -35,4 +35,4 @@ API는 한 process와 한 SQLite writer로 배포되지만 module 경계를 이�
 
 fresh, baseline, 식별 가능한 legacy fixture에서 row 보존, checksum, `foreign_key_check`, application read/write를 검증한다. FK 위반과 중복 draft는 migration 이력 기록 전에 fail-closed한다. 운영 DB와 backup inventory가 확인되기 전에는 legacy MFA·curriculum·resource 변환과 schema adoption 경로를 삭제하지 않는다.
 
-이 결정은 ADR-0019의 module migration 사전 조건·교차 module FK 제거 결정과 ADR-0020의 domain event 협력·교차 module FK 금지 결정을 대체한다. 두 문서의 나머지 역사적 맥락은 유지한다.
+이 결정은 ADR-0019의 module migration 사전 조건·교차 module FK 제거 결정과 ADR-0020의 domain event 협력·교차 module FK 금지 결정을 대체한다. 대체한 ADR-0019의 본문은 git 이력에서 확인한다.

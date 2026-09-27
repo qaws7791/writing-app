@@ -69,6 +69,4 @@ draft 저장은 전체 diff와 복구 snapshot 정책이 필요하다. 발행은
 - [인증·권한 정책](../auth-permissions.md)
 - [관리자 transport 보안 가이드](../admin-transport-security.md)
 - [개인정보와 AI 데이터 사용](../privacy.md)
-- [2단계 구현 계획](../../work/2026-08-10-admin-mcp-approved-content-changes/plan.md)
-- [ADR-0030](./ADR-0030-admin-mcp-oauth-resource-server.md)
 - [ADR-0032](./ADR-0032-admin-mcp-tiered-execution-policy.md)

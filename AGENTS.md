@@ -54,9 +54,6 @@ When principles conflict, prioritize security and correctness, then authoritativ
 - `docs/product/` — product issues, requirements, domain rules.
 - `docs/design/` — screens, UI, accessibility standards.
 - `docs/engineering/` — current system structure, implementation and operational contracts.
-- `docs/research/` — sources and synthesis behind content decisions. Not an authority for current product facts.
-- `docs/work/` — documents for work in progress.
-- `docs/archive/` — records of completed or discarded work.
 
 This map is a quick reference — `docs/_index.md` is the authoritative, up-to-date index.
 
@@ -72,9 +69,8 @@ A directory-level `AGENTS.md` narrows this file's rules for its own path and may
 
 - Before starting a task, read `docs/_index.md`, `docs/authority-map.md`, and the relevant authority document, in that order, to confirm current facts.
 - Package names, routes, ports, environment variable defaults, schemas, services, images, networks, and test execution targets are owned by code and configuration — link to the authority source rather than restating the value in a document.
-- Treat `docs/work/` as scope/judgment context only, never as an authority source for current structure.
-- Treat `docs/archive/` and ADRs as historical record only — exclude them from current-fact determination, and read them only when you need past decisions or evidence.
-- New planning, investigation, and audit documents go in `docs/work/<yyyy-mm-dd-name>/`. On completion, move the same work unit to `docs/archive/<yyyy-mm-dd-name>/`, folding any permanent conclusions into the relevant product/design/engineering authority documents first.
+- Treat ADRs as historical record of decisions — exclude them from current-fact determination except for adopted decisions that still hold.
+- Keep personal planning, investigation, and audit notes on the local machine. Do not commit them. Permanent conclusions belong in product, design, or engineering authority documents or an adopted ADR. Verification numbers belong to that commit's CI and git history.
 - Whenever a change affects a fact that a doc describes, update the relevant `/docs` file: check it's current before starting, and update it again before finishing.
 - For local browser or E2E tests, sign in through the real email and password handlers rather than Google OAuth. `@workspace/env`'s `./e2e-runtime` subpath owns the local origins and seeded credentials, the seeder in `apps/api/src/test-support/` consumes them, and `e2e/auth.ts` owns the sign-in routes; read them instead of restating values here.
 - Update this file when repository-wide agent instructions, project structure, authoritative workflows, required tooling, verification commands, security rules, or commit conventions change. Keep feature-specific facts in their authority source instead.
@@ -166,7 +162,7 @@ bun run build
 
 Run the commands that can observe your change. A change limited to Markdown files needs `bun oxfmt --check` on the touched files and the `/docs` check below. A change touching `apps/`, `packages/`, `scripts/`, `deploy/`, `infra/`, or root configuration needs the full command set. Add the UI documentation, E2E or performance tier when your change touches what that tier covers.
 
-- [ ] `/docs` reflects the change, including moving finished `docs/work/` items to `docs/archive/` with conclusions folded into the relevant authority docs.
+- [ ] `/docs` reflects the change. Permanent conclusions belong in the relevant authority docs. Do not commit personal work notes.
 - [ ] All processes started for the task (Node.js, bash, dev servers, etc.) are safely terminated.
 
 ## Commit Guidelines
