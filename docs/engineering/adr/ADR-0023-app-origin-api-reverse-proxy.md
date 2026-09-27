@@ -2,7 +2,7 @@
 
 ## 상태
 
-부분 대체됨 — origin별 reverse proxy 결정은 유지되며, 관리자 AI stream 항목은 확정 제품 범위에서 제거됨
+부분 대체됨 — 학습자 origin과 관리자 origin의 분리는 유지된다. Caddy path routing과 Next 개발 rewrite는 저장소에서 제거했다. 현재 프록시는 프론트 Worker의 API service binding이다. 관리자 AI stream 항목은 확정 제품 범위에서 제거됐다.
 
 ## 날짜
 

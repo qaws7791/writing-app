@@ -1,47 +1,25 @@
 {
   "extends": ["//"],
   "tasks": {
-    "db:backup": {
-      "passThroughEnv": ["DATABASE_URL"]
-    },
     "db:migrate": {
-      "passThroughEnv": ["DATABASE_URL"]
-    },
-    "db:reset": {
-      "passThroughEnv": [
-        "ALLOW_DATABASE_RESET",
-        "DATABASE_RESET_TARGET_FINGERPRINT",
-        "DATABASE_URL",
-        "NODE_ENV"
-      ]
+      "passThroughEnv": ["NODE_ENV"]
     },
     "db:seed": {
-      "passThroughEnv": ["ALLOW_DATABASE_RESET", "DATABASE_URL", "NODE_ENV"]
+      "passThroughEnv": ["NODE_ENV"]
     },
     "dev": {
       "passThroughEnv": [
-        "ADMIN_ASSET_PUBLIC_BASE_URL",
-        "ADMIN_ASSET_S3_ACCESS_KEY",
-        "ADMIN_ASSET_S3_BUCKET",
-        "ADMIN_ASSET_S3_ENDPOINT",
-        "ADMIN_ASSET_S3_REGION",
-        "ADMIN_ASSET_S3_SECRET_KEY",
         "ADMIN_AUTH_SECRET",
         "ADMIN_ORIGIN",
-        "ADMIN_AUDIT_APPROVED_ADMINS_JSON",
-        "ADMIN_SESSION_EXPECTED_DATABASE_URL",
-        "ADMIN_SESSION_REVOCATION_APPROVED",
+        "ADMIN_SEED_EMAIL",
+        "ADMIN_SEED_NAME",
+        "ADMIN_SEED_PASSWORD",
+        "ADMIN_SEED_RESET_PASSWORD",
         "API_PORT",
+        "ASSET_PUBLIC_BASE_URL",
         "AUTH_EMAIL_FROM",
         "AUTH_EMAIL_REPLY_TO",
         "CURSOR_SIGNING_SECRET",
-        "DATABASE_URL",
-        "DELETION_MARKER_S3_ACCESS_KEY",
-        "DELETION_MARKER_S3_BUCKET",
-        "DELETION_MARKER_S3_ENDPOINT",
-        "DELETION_MARKER_S3_PREFIX",
-        "DELETION_MARKER_S3_REGION",
-        "DELETION_MARKER_S3_SECRET_KEY",
         "DEPLOYMENT_ENVIRONMENT",
         "DEPLOYMENT_VERSION",
         "ENABLE_API_DOCS",
@@ -49,59 +27,20 @@
         "GOOGLE_CLIENT_SECRET",
         "LEARNER_AUTH_SECRET",
         "LEARNER_DELETION_RETENTION_DAYS",
-        "LOG_PRETTY",
+        "LOG_LEVEL",
         "NODE_ENV",
-        "OPENAI_API_KEY",
-        "OPENAI_MAX_RETRIES",
-        "OPENAI_MODEL",
-        "OPENAI_TIMEOUT_MS",
-        "RESEND_API_KEY",
         "WEB_ORIGIN",
         "WRITING_DAILY_SUCCESSFUL_CHECK_LIMIT"
       ]
     },
     "maintenance:daily": {
-      "passThroughEnv": [
-        "ADMIN_ASSET_PUBLIC_BASE_URL",
-        "ADMIN_ASSET_S3_ACCESS_KEY",
-        "ADMIN_ASSET_S3_BUCKET",
-        "ADMIN_ASSET_S3_ENDPOINT",
-        "ADMIN_ASSET_S3_REGION",
-        "ADMIN_ASSET_S3_SECRET_KEY",
-        "DAILY_MAINTENANCE_APPROVED",
-        "DAILY_MAINTENANCE_ENVIRONMENT",
-        "DAILY_MAINTENANCE_EXPECTED_DATABASE_URL",
-        "DATABASE_URL",
-        "LEARNER_DELETION_RETENTION_DAYS",
-        "DEPLOYMENT_ENVIRONMENT",
-        "MAINTENANCE_LOG_RETENTION_EVIDENCE_FILE",
-        "NODE_ENV"
-      ]
+      "passThroughEnv": ["LEARNER_DELETION_RETENTION_DAYS", "NODE_ENV"]
     },
     "purge:deleted-learners": {
-      "passThroughEnv": [
-        "DATABASE_URL",
-        "DELETED_LEARNER_PURGE_APPROVED",
-        "LEARNER_DELETION_RETENTION_DAYS",
-        "DELETED_LEARNER_PURGE_EXPECTED_DATABASE_URL"
-      ]
+      "passThroughEnv": ["LEARNER_DELETION_RETENTION_DAYS", "NODE_ENV"]
     },
     "restore:deletion-markers": {
-      "passThroughEnv": [
-        "DATABASE_URL",
-        "DELETION_MARKER_S3_ACCESS_KEY",
-        "DELETION_MARKER_S3_BUCKET",
-        "DELETION_MARKER_S3_ENDPOINT",
-        "DELETION_MARKER_S3_PREFIX",
-        "DELETION_MARKER_S3_REGION",
-        "DELETION_MARKER_S3_SECRET_KEY",
-        "DELETION_RESTORE_APPROVED",
-        "DELETION_RESTORE_ENVIRONMENT",
-        "DELETION_RESTORE_EXPECTED_DATABASE_URL",
-        "LEARNER_DELETION_RETENTION_DAYS",
-        "DEPLOYMENT_ENVIRONMENT",
-        "NODE_ENV"
-      ]
+      "passThroughEnv": ["LEARNER_DELETION_RETENTION_DAYS", "NODE_ENV"]
     }
   }
 }

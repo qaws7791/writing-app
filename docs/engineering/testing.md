@@ -26,23 +26,23 @@
 | HTTP     | request 검증, 인증·인가, response·header·오류 계약                 |
 | UI       | 사용자 상태, 접근성, 오류와 loading·empty state                    |
 | 브라우저 | 실제 runtime 조립에서의 핵심 사용자 흐름                           |
-| 배포     | 설정 정합성, image smoke, bootstrap·복구 절차                      |
+| 배포     | Worker 설정과 로컬 build. 원격 배포·복구 검증은 보류 상태다.       |
 
 ## 도구별 책임
 
 | 도구                     | 책임과 선택 기준                                                                                                                                                                                                                                                           |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Vitest                   | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. SQLite adapter는 격리된 실제 DB와 transaction·수명주기를 검증한다.                   |
+| Vitest                   | 도메인의 순수 규칙과 application use case를 기본 검증한다. 공통 Node package 설정은 root workspace가 소유하고, DOM이 필요한 대상과 앱 고유 loader가 필요한 대상만 전용 config를 둔다. D1 fixture는 Miniflare의 격리된 D1과 SQL batch를 검증한다.                           |
 | Testing Library          | keyboard·focus·비동기 상태·오류 복구처럼 여러 사용자 동작과 상태 전이가 얽힌 복잡한 interaction을 검증한다. 구현 세부나 정적인 markup 존재 여부만 확인하는 용도로 확대하지 않는다.                                                                                         |
 | MSW                      | 생성 client를 소비하는 UI integration에서 실제 network 경계를 대체한다. 생성된 schema·handler를 계약으로 사용하고, 응답 shape를 테스트마다 수기로 복제하거나 application port를 우회하지 않는다.                                                                           |
 | Playwright               | 인증, routing, API와 browser rendering이 함께 동작해야 하는 핵심 사용자 흐름을 실제 runtime 조립으로 검증한다. locator는 현재 화면의 접근성 이름과 일치해야 한다. 모든 분기나 하위 UI 상태를 E2E로 중복 검증하지 않는다.                                                   |
-| Lighthouse CI·k6         | Lighthouse CI는 main에서 사용자 체감 페이지를 검증한다. k6는 image release digest를 staging에 배포한 뒤 실행해 production 진행을 차단한다. 실제 대상·예산·시나리오는 실행 설정이 소유한다.                                                                                 |
+| Lighthouse CI            | main에서 사용자 체감 페이지를 검증한다. 대상과 예산은 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)이 소유한다.                                                                                                                                                     |
 | Astro UI 문서·Playwright | `apps/ui`는 실행 가능한 UI 카탈로그와 격리 예제를 제공한다. browser contract는 상태 전이·초점·키보드·오류·비활성·접근성을 실제 정적 build에서 검증한다. 제품 화면 조합은 primitive 문서와 분리해 Pattern 또는 Recipe에 둔다. 삭제된 기능의 예제나 fixture는 남기지 않는다. |
 
 ## 테스트 데이터와 인증
 
 - DB fixture는 각 테스트가 열고 닫으며, 실패 경로에서도 자원을 정리한다.
-- SQLite fixture는 추적 중인 statement를 모두 finalize한 뒤 strict close하고 파일을 즉시 제거한다. 강제 GC, 지연 또는 삭제 재시도로 수명주기 결함을 숨기지 않는다.
+- D1 fixture는 테스트마다 Miniflare runtime을 열고, 종료 시 그 runtime을 dispose한다. 개발 서버의 영속 상태 디렉터리를 재사용하거나 삭제하지 않는다.
 - browser와 E2E 테스트는 production OAuth provider에 credential을 제출하지 않는다. Google 로그인은 가짜 client 설정으로 실제 시작 handler와 callback URL까지만 검증하고 외부 이동 직전에 가로챈다. 이메일 인증은 fixture DB의 확인된 사용자를 production과 같은 handler로 검증한다.
 - 로컬 E2E는 격리된 D1·R2와 실제 이메일 인증 handler를 사용한다. 로컬 테스트는 Cloudflare edge의 client IP 신뢰 경계를 검증한 증거가 아니다.
 - E2E fixture를 위한 test-only 인증 route나 제품 UI 조건문을 두지 않는다. 인증 runtime은 주입받은 입력만으로 조립하며, 환경을 직접 읽어 분기를 켜는 통로가 생기지 않도록 커스텀 lint 룰이 `process.env`·`Bun.env`·`import.meta.env` 접근을 차단한다.
@@ -66,7 +66,7 @@ Playwright WebKit과 device descriptor는 실제 iOS Safari 기기 자체가 아
 
 main 품질 workflow는 격리 fixture와 테스트 인증 위에 web Worker build을 새로 조립하고 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)의 landing·learner home·lesson shell mobile 예산을 세 번 측정한다. 실행 wrapper는 fixture와 서버 수명주기, 인증 cookie와 Playwright Chromium 경로를 제공한다. Windows에서는 wrapper가 관리하는 Chromium debugging port를 사용해서 종료 직후의 임시 profile 잠금과 측정 결과 유실을 막는다. 측정·재시도·판정은 Lighthouse CI가 담당한다. `error` assertion은 [Lighthouse CI 공식 설정 계약](https://github.com/GoogleChrome/lighthouse-ci/blob/v0.15.1/docs/configuration.md)에 따라 non-zero로 실패하며 report는 CI artifact로 보존한다.
 
-staging k6는 전용 학습자 session과 고정 fixture로 health, course list, lesson start, multiple-choice 오답 submit만 실행한다. 오답은 `retry`에 머물러 같은 시나리오를 반복할 수 있고 AI feedback endpoint와 provider는 호출하지 않는다. [k6 threshold](https://grafana.com/docs/k6/latest/using-k6/thresholds/)가 check·오류율·지연 경계를 넘으면 실패하며, [시나리오](https://grafana.com/docs/k6/latest/using-k6/scenarios/)와 숫자 예산은 [실행 설정](../../scripts/k6-staging-config.js)이 소유한다. 로컬에서는 source·설정·bundle 산출물만 검증한다. 실제 외부 부하는 image release가 검증한 동일 digest를 승인된 `staging` environment에 배포한 뒤 실행하며, 성공해야 production 배포로 진행한다.
+[k6 시나리오](../../scripts/k6-staging-smoke.js)와 [실행 설정](../../scripts/k6-staging-config.js)은 저장소에 남아 있다. 현재 quality workflow는 k6를 실행하지 않는다. 원격 부하 검증은 [배포 기준](./deployment.md)의 재개 조건 안에 없으며, 이 스크립트의 존재는 운영 부하 검증을 대신하지 않는다.
 
 ## 품질 기준
 
@@ -110,15 +110,14 @@ staging k6는 전용 학습자 session과 고정 fixture로 health, course list,
 
 Vitest workspace가 참조하는 앱 config는 각자 고유 사유가 있을 때만 둔다. `apps/api`는 migration `.sql`을 text로 불러오는 loader, web·admin·shared/ui는 DOM 환경과 React 단일 인스턴스 고정이 그 사유이며 공통 부분은 [React Vitest factory](../../packages/config/vitest-config/src/react.ts)가 소유한다. 단일 process에서 project별 `maxWorkers`를 다르게 두면 Vitest가 실행 순서를 결정할 수 없으므로 worker 상한은 project별로 나누지 않는다.
 
-배포 runtime은 image와 bootstrap smoke에서 검증한다. coverage는 수집하지 않는다. provider를 manifest에 선언하지 않고 수집 설정·명령도 두지 않으며, coverage 숫자는 어떤 경계에서도 gate로 쓰지 않는다. `@vitest/coverage-v8`이 lockfile과 `node_modules`에 있는 것은 bun이 `vitest`의 optional peer를 함께 해석한 결과이고 저장소가 선언한 의존성이 아니다.
+원격 배포 runtime 검증은 보류 상태다. 현재 실행 가능한 배포 형태 검증은 로컬 Worker build와 preview다. coverage는 수집하지 않는다. provider를 manifest에 선언하지 않고 수집 설정·명령도 두지 않으며, coverage 숫자는 어떤 경계에서도 gate로 쓰지 않는다. `@vitest/coverage-v8`이 lockfile과 `node_modules`에 있는 것은 bun이 `vitest`의 optional peer를 함께 해석한 결과이고 저장소가 선언한 의존성이 아니다.
 
 CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원하거나 한 번 생성한 뒤 생성물과 Turbo cache를 단기 artifact로 배포한다. 정적 검사, repository 테스트, build와 browser job은 이 artifact를 받아 병렬 실행하며 각자 생성하지 않는다. 정적 job은 형식·lint·custom lint rule·architecture·dependency 일관성·Knip·type 검사를 한 번의 설치 뒤 병렬 실행하고, 테스트 job도 `scripts` 계약 테스트와 workspace 전체 unit·integration을 병렬 실행한다.
 
-| 경계          | 차단 검증                                                                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull request  | 형식·lint·architecture·dependency·생성물·type, repository와 workspace 전체 unit·integration, production build, 현재 Chromium의 학습자·관리자 핵심 smoke                       |
-| Main push     | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Astro UI 문서 browser contract, 설정된 Chromium·WebKit 전체 E2E, Lighthouse, source image Compose smoke      |
-| Image release | 성공한 동일 revision main 품질 결과, 취약점 정책·attestation, registry digest의 격리 Compose smoke, 동일 digest staging 배포 후 k6, production 외부 준비 증거와 public verify |
+| 경계         | 차단 검증                                                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull request | 형식·lint·architecture·dependency·생성물·type, repository와 workspace 전체 unit·integration, production build, 현재 Chromium의 학습자·관리자 핵심 smoke |
+| Main push    | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Astro UI 문서 browser contract, 설정된 Chromium·WebKit 전체 E2E, Lighthouse            |
 
 PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. API와 Vite runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 로컬 Worker preview runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 같은 핵심 smoke를 순차 실행한다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
 
@@ -128,7 +127,7 @@ PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는
 
 PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. 다른 운영체제의 로컬 개발 호환성은 매 PR 전체 검증이 아니라 필요할 때 설치 smoke나 주기 실행으로 확인한다. Worker 설정은 Wrangler와 Cloudflare Vite plugin이 직접 읽는다.
 
-배포 승인 gate도 같은 원칙을 따른다. playbook의 승인 task만 골라 `--check`로 실제 실행하고, 완결된 production 증거는 통과하며 승인 누락·증거 revision 불일치·placeholder 증거·기간이 지난 복구 훈련·대상 환경 불일치는 각각 멈추는지 확인한다. 조건식의 문자열이나 task 순서를 단정하지 않는다.
+원격 배포 승인 절차는 아직 없다. [배포 기준](./deployment.md)의 재개 조건을 충족하기 전에는 로컬 build 성공으로 운영 배포를 승인하지 않는다.
 
 Astro UI 문서의 interaction·접근성 검사는 browser runtime 비용 때문에 main push에서만 차단한다. 따라서 공유 UI primitive의 상태 전이·초점·axe 회귀는 PR을 통과해 main에서 처음 드러날 수 있고, PR 단계에서는 `packages/shared/ui`의 Vitest 범위만 이를 막는다. 이 지연을 허용하지 않으려면 PR gate에 browser 설치와 문서 contract 실행을 추가해야 한다.
 

@@ -57,12 +57,12 @@
 - `apps/web`과 `apps/admin`은 module, DB와 Drizzle을 import하지 않는다. 앱 내부 의존은 `app → features → entities → shared` 방향을 지키며 client-facing source는 `server` 또는 feature `server` 경계를 import하지 않는다.
 - `better-auth` 직접 import는 `packages/infra/auth` 안에서만 허용한다. auth client subpath는 server, DB와 ORM module을 import하지 않는다.
 - identity module은 `@workspace/auth` runtime을 직접 import하지 않는다. FK 선언에 필요한 공개 auth schema만 identity persistence schema가 소비하며, API auth adapter가 credential table을 읽어 vendor-neutral learner identity directory port를 구현한다.
-- operations reporting은 cross-module runtime 조회의 유일한 예외다([ADR-0026](./adr/ADR-0026-reporting-read-views.md)). 다른 module의 repository·application·migration schema 구현을 import하지 않고, 각 module이 공개한 리포팅 뷰 이름을 포함한 정적 SQL과 reporting 전용 projection만 소유하며, API가 주입한 별도 read-only SQLite connection에서만 실행한다. 뷰 생성은 API migration이 소유하므로 컬럼 드리프트가 배포 전에 드러난다.
+- operations reporting은 cross-module runtime 조회의 유일한 예외다([ADR-0026](./adr/ADR-0026-reporting-read-views.md)). 다른 module의 repository·application·migration schema 구현을 import하지 않고, 각 module이 공개한 리포팅 뷰 이름을 포함한 정적 SQL과 reporting 전용 projection만 소유하며, API가 주입한 D1 SQL client에서만 실행한다. 뷰 생성은 API migration이 소유하므로 컬럼 드리프트가 배포 전에 드러난다.
 - DB infra는 content module을 import하지 않는다. curriculum fixture에 필요한 정규화 정책은 API 조립 지점이 content application 경계에서 소비한다.
 - module 공개 `./migration-schema`는 API의 단일 schema tooling entry, FK를 선언하는 다른 module persistence schema와 격리된 E2E seed fixture가 소비한다. 이름이 용도를 강제로 알리며 auth `./schema`는 Better Auth adapter mapping과 인증 persistence adapter도 소비한다.
 - application migration은 API의 append-only SQL만 소유하며 module은 migration entrypoint를 공개하지 않는다.
 - 실제 seed가 있는 auth, content와 identity만 seed capability를 공개한다. content와 identity는 `./module`에서, auth는 `./seed`에서 공개하며 API seed composition과 seed tooling만 소비한다.
-- OpenAI SDK, AWS SDK와 Pino 직접 import는 각각 `packages/infra/ai`, `storage`, `observability`로 제한한다.
+- Pino 직접 import는 `packages/infra/observability`로 제한한다.
 - API composition과 adapter는 concrete dependency를 조립할 수 있지만 HTTP route, middleware와 response 경계는 DB·Drizzle을 직접 import하지 않는다.
 - capability 간 호출은 공개 API 또는 합의된 application port를 사용한다.
 

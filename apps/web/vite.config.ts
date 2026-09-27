@@ -16,6 +16,8 @@ export default defineConfig({
     vinext({ images: { optimizer: { adapter: imagesOptimizer().adapter } } }),
     cloudflare({
       configPath: process.env["CLOUDFLARE_CONFIG"] ?? "wrangler.jsonc",
+      // API의 wrangler dev가 9229를 사용한다. 두 앱을 동시에 띄울 때 포트를 나눈다.
+      inspectorPort: 9231,
       viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
     }),
   ],

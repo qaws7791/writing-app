@@ -51,12 +51,13 @@ const command = preview
     ]
   : [
       "node",
-      path.resolve(appRoot, "node_modules/next/dist/bin/next"),
+      path.resolve(appRoot, "node_modules/vite/bin/vite.js"),
       "dev",
-      "--hostname",
+      "--host",
       origin.hostname,
       "--port",
       origin.port,
+      "--strictPort",
     ]
 const child = Bun.spawn(command, {
   cwd: appRoot,

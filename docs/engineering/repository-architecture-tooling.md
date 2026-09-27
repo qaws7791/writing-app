@@ -29,6 +29,6 @@ feature 내부 방향, 폴더 존재 여부와 vendor별 소유권은 별도 규
 
 ## 실행
 
-root `lint`는 Oxlint만 실행한다. architecture와 Knip은 별도 root task로 실행하며 CI의 정적 검사 job이 호출한다. 형식, 타입, 동작과 배포 가능성은 각각 Oxfmt, TypeScript, 제품 테스트, production build와 Compose smoke가 소유한다.
+root `lint`는 Oxlint만 실행한다. architecture와 Knip은 별도 root task로 실행하며 CI의 정적 검사 job이 호출한다. 형식, 타입, 동작과 배포 가능성은 각각 Oxfmt, TypeScript, 제품 테스트, production build와 로컬 Worker preview가 소유한다.
 
 정적 검사의 통과는 source graph만 증명하며 production traffic, 외부 provider와 실제 배포 상태를 증명하지 않는다.

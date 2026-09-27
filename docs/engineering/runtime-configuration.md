@@ -6,7 +6,7 @@
 
 1. 저장소 루트에서 `bun run setup`을 실행한다.
 2. 저장소 루트에서 `bun run dev`를 실행한다.
-3. 앱 주소는 각 앱의 [package.json](../../apps/web/package.json)과 [로컬 기본값](../../packages/config/env/src/local-runtime-defaults.ts)에서 확인한다.
+3. 앱 주소는 각 앱의 [package.json](../../apps/web/package.json)과 [로컬 기본값](../../packages/config/env/src/local-runtime-defaults.ts)에서 확인한다. 브라우저는 `localhost`로 연다. `127.0.0.1`은 설정된 origin과 달라 로그인 요청이 거절된다.
 4. 개발 서버를 종료할 때 터미널에서 Ctrl+C를 누른다.
 
 `setup`은 잠금 파일 기준 설치, 코드 생성, 환경 보충, 로컬 D1 migration, seed와 진단을 순서대로 실행한다. 기존 환경 값은 보존한다. 재실행한 seed는 기존 계정을 덮어쓰지 않는다. 관리자 계정은 Git에서 제외된 `apps/api/.dev.vars`에서 확인한다. 학습자는 실제 이메일 가입·로그인 흐름으로 생성한다.

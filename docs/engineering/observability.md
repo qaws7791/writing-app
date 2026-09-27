@@ -62,4 +62,4 @@ Incident commander는 alert에서 source revision, 영향 route와 request 식�
 
 새 telemetry backend, dashboard 또는 alert channel은 운영자, 보존 기간, 접근 제어, 비용, 장애 시 동작과 복구 훈련 방법을 함께 결정한다.
 
-현재 Pino stdout을 받는 Docker `json-file`의 크기 기반 회전은 `application-30d`와 `security-90d`의 일수 기반 파기 증거가 아니다. 일일 maintenance는 외부 sink, class별 실제 기간, 증거 식별자, 검증 시각과 유효기간이 담긴 구조화 증거를 JSON 결과에 연결하며 production actual 실행은 유효한 증거 없이는 실패한다. 외부 sink 설정, 접근 통제와 실제 class 삭제 검증은 아직 저장소에서 확인되지 않았으므로 production 출시 gate로 남는다.
+일일 정리는 외부 log sink 증거가 없으면 `externalLogRetention`을 `unverified`로 남긴다. Docker `json-file` 회전은 현재 실행 경로가 아니다. 외부 sink의 일수 파기, 접근 통제와 실제 class 삭제 검증은 아직 저장소에서 확인되지 않았으므로 production 출시 gate로 남는다.

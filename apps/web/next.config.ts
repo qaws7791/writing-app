@@ -40,21 +40,6 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 )
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    if (!development) return []
-    const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000"
-    return {
-      beforeFiles: [],
-      afterFiles: [
-        { source: "/api/:path*", destination: apiBaseUrl + "/api/:path*" },
-        {
-          source: "/assets/content/:path*",
-          destination: apiBaseUrl + "/assets/content/:path*",
-        },
-      ],
-      fallback: [],
-    }
-  },
   ...(e2eDistDirectory === undefined ? {} : { distDir: e2eDistDirectory }),
   experimental: {
     cpus: 1,
