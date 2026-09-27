@@ -17,7 +17,7 @@ export const logRetentionClasses = {
 } as const
 
 export type RequestCompletedEvent = Readonly<{
-  audience: "admin" | "admin-mcp" | "learner"
+  audience: "admin" | "learner"
   durationMs: number
   errorClass?: "client-error" | "server-error"
   method: string

@@ -33,7 +33,6 @@
 
 ## 비범위
 
-- 관리자 MCP writing-task Tool.
 - 실시간 공동 편집.
 - 둘 이상의 동시 mutable draft.
 - 학습자 글 조회와 수정.

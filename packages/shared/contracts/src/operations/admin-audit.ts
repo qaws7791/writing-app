@@ -40,15 +40,6 @@ export const adminAuditEventDtoSchema = z
     clientIp: z.string().nullable(),
     createdAt: z.iso.datetime(),
     id: z.string().min(1),
-    mcp: z
-      .object({
-        approvalId: z.string().min(1).nullable(),
-        executionId: z.string().min(1),
-        inputDigest: z.string().regex(/^[a-f0-9]{64}$/u),
-        mcpCredentialId: z.string().min(1).max(200),
-      })
-      .strict()
-      .nullable(),
     outcome: adminAuditOutcomeSchema,
     requestId: z.string().min(1),
     retentionUntil: z.iso.datetime(),
@@ -88,30 +79,6 @@ export const adminAuditEventsDtoSchema = z
   })
   .strict()
 
-export const adminMcpAuditEventDtoSchema = adminAuditEventDtoSchema.omit({
-  clientIp: true,
-})
-
-export const adminMcpAuditEventsDtoSchema = z
-  .object({
-    items: z.array(adminMcpAuditEventDtoSchema),
-    pagination: z.strictObject({
-      hasNextPage: z.boolean(),
-      hasPreviousPage: z.boolean(),
-      nextCursor: z.string().nullable(),
-      page: positiveIntegerSchema,
-      pageSize: positiveIntegerSchema,
-      previousCursor: z.string().nullable(),
-      totalItems: nonNegativeIntegerSchema.optional(),
-      totalPages: positiveIntegerSchema.optional(),
-    }),
-  })
-  .strict()
-
 export type AdminAuditCategory = z.infer<typeof adminAuditCategorySchema>
 export type AdminAuditEventDto = z.infer<typeof adminAuditEventDtoSchema>
 export type AdminAuditEventsDto = z.infer<typeof adminAuditEventsDtoSchema>
-export type AdminMcpAuditEventDto = z.infer<typeof adminMcpAuditEventDtoSchema>
-export type AdminMcpAuditEventsDto = z.infer<
-  typeof adminMcpAuditEventsDtoSchema
->

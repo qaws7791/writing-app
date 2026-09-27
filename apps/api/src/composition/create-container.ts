@@ -39,8 +39,6 @@ import {
   createAppLogger,
   type AppLogger,
 } from "@workspace/observability/logger"
-import { createRequestLogger } from "@workspace/observability/request-logger"
-import { createSecurityAuditLogger } from "@workspace/observability/security-audit-logger"
 import type { OperationsModule } from "@workspace/operations/module"
 import type { WritingModule } from "@workspace/writing/module"
 import type { WritingLearnerSessionPort } from "@workspace/writing/http"
@@ -72,12 +70,6 @@ import type { ApiEnv } from "@/config/env"
 import { runApplicationMigrations } from "@/db/migrate"
 import { createApiHealthProbe, type ApiHealthProbe } from "@/runtime/api-health"
 import { systemClock } from "@/runtime/system-clock"
-import { createAdminMcpAccessTokenStore } from "@/mcp/admin/admin-mcp-access-token-store"
-import { createAdminMcpAuthentication } from "@/mcp/admin/admin-mcp-auth"
-import {
-  createAdminMcpRuntime,
-  type AdminMcpRuntime,
-} from "@/mcp/admin/admin-mcp-runtime"
 import {
   createPrefixedIdGenerator,
   uuidGenerator,
@@ -95,7 +87,6 @@ const defaultLocalAuthMailboxPath = fileURLToPath(
 export type ApiContainer = Readonly<{
   admin: Readonly<{
     authHandler: AdminAuthRuntime["authHandler"]
-    mcp: AdminMcpRuntime | undefined
     sessionResolver: AdminSessionResolver
   }>
   dispose: () => Promise<void>
@@ -247,42 +238,6 @@ export async function createContainer(
       ),
     })
 
-    let adminMcp: AdminMcpRuntime | undefined
-    if (env.adminMcp !== undefined) {
-      const adminMcpConfiguration = env.adminMcp
-      const authentication = createAdminMcpAuthentication({
-        accessTokenStore: createAdminMcpAccessTokenStore(database.db),
-        configuration: adminMcpConfiguration,
-        now: clock.now,
-      })
-      adminMcp = createAdminMcpRuntime({
-        authentication,
-        configuration: adminMcpConfiguration,
-        reportProtocolError() {
-          logger?.error(
-            { errorClass: "protocol-error" },
-            "admin.mcp.protocol_failed"
-          )
-        },
-        requestLogger: createRequestLogger(logger),
-        securityAuditLogger: createSecurityAuditLogger(logger),
-        tools: {
-          adminMcpApprovals: operations.adminMcpApprovals,
-          auditTrail: operations.auditTrail,
-          content: content.application,
-          identity,
-          now: clock.now,
-          reportUnexpectedError(event) {
-            logger?.error(event, "admin.mcp.tool_failed")
-          },
-          reporting: operations.reporting,
-        },
-      })
-    }
-    if (adminMcp !== undefined) {
-      cleanup.register("admin-mcp", onceAsync(adminMcp.close))
-    }
-
     const learnerSession = createLearningLearnerSessionPort(
       learnerSessionResolver
     )
@@ -291,7 +246,6 @@ export async function createContainer(
     return {
       admin: {
         authHandler: adminAuth.authHandler,
-        mcp: adminMcp,
         sessionResolver: adminSessionResolver,
       },
       dispose: () => disposeContainer(cleanup.dispose),

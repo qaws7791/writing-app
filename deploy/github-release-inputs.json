@@ -35,7 +35,7 @@
       ]
     },
     "staging": {
-      "optionalSecrets": ["ADMIN_MCP_SYNTHETIC_BEARER_TOKEN"],
+      "optionalSecrets": [],
       "variables": [
         "K6_CURRICULUM_VERSION_ID",
         "K6_LESSON_ID",

@@ -76,5 +76,11 @@
     "fileName": "0012-operations-reporting-rollups.sql",
     "foreignKeys": "on",
     "id": "0012-operations-reporting-rollups"
+  },
+  {
+    "checksum": "8b778f01ac597cc7bdd22380fb7bff5555e243342a29f10cb339eb777ea3c59c",
+    "fileName": "0013-drop-admin-mcp.sql",
+    "foreignKeys": "on",
+    "id": "0013-drop-admin-mcp"
   }
 ]

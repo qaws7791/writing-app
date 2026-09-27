@@ -35,7 +35,6 @@
 | `admin-identity-types.md`               | 관리자·학습자 식별자 타입 경계를 정의한다.               |
 | `admin-auth-security-operations.md`     | 관리자 계정 생성, 감사와 세션 폐기 기준을 정의한다.      |
 | `admin-transport-security.md`           | 새 transport의 관리자 인증 경계를 정의한다.              |
-| `admin-mcp-codex-runbook.md`            | Staging 관리자 MCP의 bearer 연결과 검증 절차를 정의한다. |
 | `security.md`                           | 신뢰 경계와 보안 변경 원칙을 정의한다.                   |
 | `privacy.md`                            | 개인정보와 AI 데이터의 사용·최소화·보존 원칙을 정의한다. |
 | `data-model.md`                         | 데이터 불변식과 모델 변경 원칙을 정의한다.               |

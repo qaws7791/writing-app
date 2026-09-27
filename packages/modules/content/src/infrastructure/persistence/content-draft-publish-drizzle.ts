@@ -192,7 +192,7 @@ export function saveDraft(
   }
 }
 
-export function saveDraftInTransaction(
+function saveDraftInTransaction(
   transaction: WritingAppDatabaseTransaction,
   input: {
     readonly draft: CurriculumDraft
@@ -287,7 +287,7 @@ export function saveDraftInTransaction(
   return ok(saved.value)
 }
 
-export class DraftSaveAbort extends Error {
+class DraftSaveAbort extends Error {
   readonly contentError: ContentError
 
   constructor(contentError: ContentError) {
@@ -565,7 +565,7 @@ export function publishDraft(
   )
 }
 
-export function publishDraftInTransaction(
+function publishDraftInTransaction(
   transaction: WritingAppDatabaseTransaction,
   input: Parameters<ContentRepository["publishDraft"]>[0]
 ): Result<PublishedCurriculumRevision, ContentError> {

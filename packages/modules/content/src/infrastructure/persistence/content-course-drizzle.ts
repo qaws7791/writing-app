@@ -54,7 +54,7 @@ export function createCourse(
   }
 }
 
-export function insertCourse(
+function insertCourse(
   transaction: WritingAppDatabaseTransaction,
   input: {
     readonly category?: string

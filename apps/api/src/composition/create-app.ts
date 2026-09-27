@@ -125,7 +125,6 @@ export function createApp(container: ApiContainer) {
       userReader: container.modules.identity.adminUserReader,
     },
     operations: {
-      adminMcpApprovals: container.modules.operations.adminMcpApprovals,
       auditTrail: container.modules.operations.auditTrail,
       now: container.platform.clock.now,
       reporting: container.modules.operations.reporting,
@@ -143,13 +142,6 @@ export function createApp(container: ApiContainer) {
 
   const unified = createUnifiedApp({
     adminApp: admin,
-    ...(container.admin.mcp === undefined || env.adminMcp === undefined
-      ? {}
-      : {
-          adminMcp: {
-            runtime: container.admin.mcp,
-          },
-        }),
     createRequestId: idGenerator.next,
     learnerApp: learner,
   })

@@ -24,12 +24,6 @@ import {
   saveDraft,
 } from "#content/infrastructure/persistence/content-draft-publish-drizzle"
 import {
-  executeApprovedMcpChange,
-  executeAutomaticMcpChange,
-  readApprovedMcpChangeReceipt,
-  readAutomaticMcpChangeReceipt,
-} from "#content/infrastructure/persistence/content-mcp-receipt-drizzle"
-import {
   findCurriculumByLesson,
   listPublishedCourseSummaries,
   readCurriculum,
@@ -44,12 +38,6 @@ export function createDrizzleContentRepository(
     },
     async createCourse(input) {
       return createCourse(database, input)
-    },
-    async executeApprovedMcpChange(input) {
-      return executeApprovedMcpChange(database, input)
-    },
-    async executeAutomaticMcpChange(input) {
-      return executeAutomaticMcpChange(database, input)
     },
     async findCourse(courseId) {
       return findCourse(database, courseId)
@@ -99,12 +87,6 @@ export function createDrizzleContentRepository(
     },
     async readCurriculum(input) {
       return readCurriculum(database, input)
-    },
-    async readApprovedMcpChangeReceipt(binding) {
-      return readApprovedMcpChangeReceipt(database, binding)
-    },
-    async readAutomaticMcpChangeReceipt(binding) {
-      return readAutomaticMcpChangeReceipt(database, binding)
     },
     async saveCourse(input) {
       return saveCourse(database, input)

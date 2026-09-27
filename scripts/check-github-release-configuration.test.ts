@@ -14,7 +14,7 @@ const contract = {
   automaticSecrets: ["GITHUB_TOKEN"],
   environments: {
     staging: {
-      optionalSecrets: ["ADMIN_MCP_SYNTHETIC_BEARER_TOKEN"],
+      optionalSecrets: ["OPTIONAL_SECRET"],
       secrets: ["REQUIRED_SECRET"],
       variables: [],
     },
@@ -36,7 +36,7 @@ describe("release input optional secrets", () => {
           "    env:",
           "      TOKEN: ${{ secrets.GITHUB_TOKEN }}",
           "      REQUIRED: ${{ secrets.REQUIRED_SECRET }}",
-          "      OPTIONAL: ${{ secrets.ADMIN_MCP_SYNTHETIC_BEARER_TOKEN }}",
+          "      OPTIONAL: ${{ secrets.OPTIONAL_SECRET }}",
         ].join("\n")
       )
     ).not.toThrow()

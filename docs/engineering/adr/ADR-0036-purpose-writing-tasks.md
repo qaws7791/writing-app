@@ -18,7 +18,6 @@
 - 쓰기 과제는 `@workspace/writing`이 소유한다. content module의 코스 계층에 넣지 않는다.
 - 학습자 글은 시작 시점 발행본에 고정한다.
 - 점검은 서버가 저장한 본문을 OpenAI에 전달하고 구조화 결과만 저장한다. 원문은 event·log·감사에 넣지 않는다.
-- 관리자 MCP writing-task Tool은 1차에 두지 않는다.
 
 ## 고려한 대안
 

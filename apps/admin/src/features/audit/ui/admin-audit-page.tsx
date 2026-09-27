@@ -64,7 +64,6 @@ export function AdminAuditPage({
                   <TableHeading>작업</TableHeading>
                   <TableHeading>대상</TableHeading>
                   <TableHeading>결과</TableHeading>
-                  <TableHeading>요청 출처</TableHeading>
                   <TableHeading>요청 식별자</TableHeading>
                 </TableRow>
               </TableHeader>
@@ -73,7 +72,7 @@ export function AdminAuditPage({
                   <TableRow>
                     <TableCell
                       className="px-4 py-10 text-center font-semibold text-muted-foreground"
-                      colSpan={6}
+                      colSpan={5}
                     >
                       {hasAuditFilter(filters)
                         ? "조건에 맞는 감사 이력이 없습니다."
@@ -102,35 +101,6 @@ export function AdminAuditPage({
                         >
                           {readAuditOutcomeLabel(event.outcome)}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="px-4 py-3">
-                        {event.mcp === null ? (
-                          <span className="font-medium text-muted-foreground">
-                            관리자 화면
-                          </span>
-                        ) : (
-                          <div className="flex min-w-36 flex-col items-start gap-1">
-                            <Badge variant="purple">
-                              {event.mcp.approvalId === null
-                                ? "MCP 자동"
-                                : "MCP 승인"}
-                            </Badge>
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {event.mcp.mcpCredentialId}
-                            </span>
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {event.mcp.executionId}
-                            </span>
-                            {event.mcp.approvalId === null ? null : (
-                              <Link
-                                className="text-xs font-semibold underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground/70"
-                                href={`/mcp-approvals/${event.mcp.approvalId}`}
-                              >
-                                승인 요청 보기
-                              </Link>
-                            )}
-                          </div>
-                        )}
                       </TableCell>
                       <TableCell className="px-4 py-3 font-medium whitespace-nowrap text-muted-foreground">
                         {event.requestId}

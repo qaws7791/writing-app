@@ -1,8 +1,4 @@
-type ContainerCleanupName =
-  | "admin-mcp"
-  | "database"
-  | "logger"
-  | "reporting-database"
+type ContainerCleanupName = "database" | "logger" | "reporting-database"
 
 export type ContainerCleanupFailure = Readonly<{
   cause: unknown

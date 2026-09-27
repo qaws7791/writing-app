@@ -10,12 +10,6 @@ export function aContentRepository(
     deleteOrphanedAssetCandidates:
       overrides.deleteOrphanedAssetCandidates ??
       unexpectedCall("deleteOrphanedAssetCandidates"),
-    executeApprovedMcpChange:
-      overrides.executeApprovedMcpChange ??
-      unexpectedCall("executeApprovedMcpChange"),
-    executeAutomaticMcpChange:
-      overrides.executeAutomaticMcpChange ??
-      unexpectedCall("executeAutomaticMcpChange"),
     findCourse: overrides.findCourse ?? unexpectedCall("findCourse"),
     findCurriculumByLesson:
       overrides.findCurriculumByLesson ??
@@ -46,12 +40,6 @@ export function aContentRepository(
     readCourses: overrides.readCourses ?? unexpectedCall("readCourses"),
     readCurriculum:
       overrides.readCurriculum ?? unexpectedCall("readCurriculum"),
-    readApprovedMcpChangeReceipt:
-      overrides.readApprovedMcpChangeReceipt ??
-      unexpectedCall("readApprovedMcpChangeReceipt"),
-    readAutomaticMcpChangeReceipt:
-      overrides.readAutomaticMcpChangeReceipt ??
-      unexpectedCall("readAutomaticMcpChangeReceipt"),
     saveCourse: overrides.saveCourse ?? unexpectedCall("saveCourse"),
     saveDraft: overrides.saveDraft ?? unexpectedCall("saveDraft"),
   }

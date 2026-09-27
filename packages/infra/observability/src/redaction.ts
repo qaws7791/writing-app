@@ -125,10 +125,7 @@ function redactValue(
   allowSecurityNetworkFields: boolean,
   depth: number
 ): unknown {
-  if (
-    !isPublicMcpCredentialId(key, depth) &&
-    isSensitiveKey(key, allowSecurityNetworkFields && depth === 1)
-  ) {
+  if (isSensitiveKey(key, allowSecurityNetworkFields && depth === 1)) {
     return redactedValue
   }
   if (Array.isArray(value)) {
@@ -147,10 +144,6 @@ function redactValue(
       redactValue(entryValue, entryKey, allowSecurityNetworkFields, depth + 1),
     ])
   )
-}
-
-function isPublicMcpCredentialId(key: string, depth: number): boolean {
-  return depth === 1 && key === "mcpCredentialId"
 }
 
 function isSensitiveKey(

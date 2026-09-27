@@ -65,23 +65,8 @@ function createApprovalCases(now: Date): readonly ApprovalCase[] {
     { accepted: true, name: "완결된 production 증거", variables: approved },
     {
       accepted: true,
-      environment: { ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "" },
-      name: "관리자 MCP 비활성 staging 배포",
-      variables: { ...staging, writing_app_admin_mcp_enabled: false },
-    },
-    {
-      accepted: true,
-      environment: {
-        ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "controller-only-test-token",
-      },
-      name: "관리자 MCP 활성 staging controller key",
-      variables: { ...staging, writing_app_admin_mcp_enabled: true },
-    },
-    {
-      accepted: false,
-      environment: { ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "" },
-      name: "관리자 MCP 활성 staging controller key 누락",
-      variables: { ...staging, writing_app_admin_mcp_enabled: true },
+      name: "staging 배포",
+      variables: staging,
     },
     ...(
       [
@@ -161,7 +146,6 @@ function runApprovalCase(
       cwd: ansibleRoot,
       env: {
         ...process.env,
-        ADMIN_MCP_SYNTHETIC_BEARER_TOKEN: "",
         ANSIBLE_FORCE_COLOR: "false",
         ANSIBLE_NOCOLOR: "true",
         ...approvalCase.environment,

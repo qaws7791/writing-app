@@ -2,8 +2,6 @@ import type { Result } from "@workspace/kernel/result"
 import { err, ok } from "@workspace/kernel/result"
 import type {
   AdminId,
-  AdminMcpApprovalId,
-  AdminMcpExecutionId,
   CourseId,
   UserId,
   WritingTaskId,
@@ -55,13 +53,6 @@ export type AuditTarget =
   | Readonly<{ id: UserId; type: "learner" }>
   | Readonly<{ id: WritingTaskId; type: "writing-task" }>
 
-type AuditMcpProvenance = Readonly<{
-  approvalId: AdminMcpApprovalId | null
-  executionId: AdminMcpExecutionId
-  inputDigest: string
-  mcpCredentialId: string
-}>
-
 export type AuditEvent = Readonly<{
   action: AuditAction
   actorId: AdminId
@@ -69,7 +60,6 @@ export type AuditEvent = Readonly<{
   clientIp: string | null
   createdAt: Date
   id: AuditEventId
-  mcp: AuditMcpProvenance | null
   outcome: AuditOutcome
   requestId: string
   retentionUntil: Date
@@ -86,7 +76,6 @@ export type StartAuditEventInput = Readonly<{
   clientIp: string | null
   createdAt: Date
   id: string
-  mcp?: AuditMcpProvenance | null
   requestId: string
   target: AuditTarget
 }>
@@ -95,7 +84,6 @@ const applicationAuditRetentionMs = 365 * 24 * 60 * 60 * 1_000
 const highRiskAuditRetentionMs = 3 * applicationAuditRetentionMs
 const safeAuditIdentifierPattern = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u
 const safeClientIpPattern = /^[0-9A-Fa-f:.]{2,45}$/u
-const sha256HexPattern = /^[a-f0-9]{64}$/u
 
 const auditPolicies = {
   "course.create": {
@@ -182,8 +170,7 @@ export function createStartedAuditEvent(
     !isSafeAuditIdentifier(input.actorId) ||
     !isSafeAuditIdentifier(input.target.id) ||
     !isSafeAuditIdentifier(input.requestId) ||
-    !isSafeClientIp(input.clientIp) ||
-    !isValidMcpProvenance(input.mcp ?? null)
+    !isSafeClientIp(input.clientIp)
   ) {
     return err({ kind: "invalid-audit-event" })
   }
@@ -195,7 +182,6 @@ export function createStartedAuditEvent(
     clientIp: input.clientIp,
     createdAt: new Date(createdAtMs),
     id: input.id as AuditEventId,
-    mcp: input.mcp ?? null,
     outcome: "started",
     requestId: input.requestId,
     retentionUntil: new Date(createdAtMs + policy.retentionMs),
@@ -209,15 +195,4 @@ function isSafeAuditIdentifier(value: string): boolean {
 
 function isSafeClientIp(value: string | null): boolean {
   return value === null || safeClientIpPattern.test(value)
-}
-
-function isValidMcpProvenance(value: AuditMcpProvenance | null): boolean {
-  return (
-    value === null ||
-    (isSafeAuditIdentifier(value.executionId) &&
-      (value.approvalId === null || isSafeAuditIdentifier(value.approvalId)) &&
-      sha256HexPattern.test(value.inputDigest) &&
-      value.mcpCredentialId.length >= 1 &&
-      value.mcpCredentialId.length <= 200)
-  )
 }

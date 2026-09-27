@@ -19,6 +19,7 @@ import removeWritingCompleteSql from "../../drizzle/0009-remove-writing-complete
 import lessonCompletedStepIdsSql from "../../drizzle/0010-lesson-completed-step-ids.sql" with { type: "text" }
 import queryReadEfficiencySql from "../../drizzle/0011-query-read-efficiency.sql" with { type: "text" }
 import operationsReportingRollupsSql from "../../drizzle/0012-operations-reporting-rollups.sql" with { type: "text" }
+import dropAdminMcpSql from "../../drizzle/0013-drop-admin-mcp.sql" with { type: "text" }
 import applicationMigrationManifest from "../../drizzle/application-migrations.json" with { type: "json" }
 
 const migrationSqlByFileName = {
@@ -36,6 +37,7 @@ const migrationSqlByFileName = {
   "0010-lesson-completed-step-ids.sql": lessonCompletedStepIdsSql,
   "0011-query-read-efficiency.sql": queryReadEfficiencySql,
   "0012-operations-reporting-rollups.sql": operationsReportingRollupsSql,
+  "0013-drop-admin-mcp.sql": dropAdminMcpSql,
 } as const
 
 const migrationSources = applicationMigrationManifest.map((migration) => ({

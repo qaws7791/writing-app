@@ -4,15 +4,9 @@ import { shouldUsePrettyLogging } from "@workspace/observability/logger"
 import { defaultDeletedLearnerRetentionDays } from "@workspace/identity/ports"
 import { z } from "@workspace/http-platform/openapi"
 
-import {
-  parseAdminMcpConfiguration,
-  type AdminMcpConfiguration,
-} from "@/mcp/admin/admin-mcp-configuration"
-
 export type ApiEnv = {
   readonly adminAssetStore: AdminAssetStoreEnv | undefined
   readonly adminAuthSecret: string
-  readonly adminMcp: AdminMcpConfiguration | undefined
   readonly adminOrigin: string
   readonly authEmail: AuthEmailEnv
   readonly cursorSigningSecret: string
@@ -97,22 +91,10 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     env.NODE_ENV,
     input["DEPLOYMENT_ENVIRONMENT"]
   )
-  const adminMcp = parseAdminMcpConfiguration(
-    input,
-    deploymentEnvironment,
-    env.ADMIN_ORIGIN
-  )
-  validateAdminMcpRequestStateSecret({
-    adminAuthSecret: env.ADMIN_AUTH_SECRET,
-    adminMcp,
-    cursorSigningSecret,
-    learnerAuthSecret: env.LEARNER_AUTH_SECRET,
-  })
 
   return {
     adminAssetStore,
     adminAuthSecret: env.ADMIN_AUTH_SECRET,
-    adminMcp,
     adminOrigin: env.ADMIN_ORIGIN,
     authEmail: parseAuthEmailEnv(input, env.NODE_ENV),
     cursorSigningSecret,
@@ -147,25 +129,6 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     writingDailySuccessfulCheckLimit: readWritingDailySuccessfulCheckLimit(
       input["WRITING_DAILY_SUCCESSFUL_CHECK_LIMIT"]
     ),
-  }
-}
-
-function validateAdminMcpRequestStateSecret(input: {
-  readonly adminAuthSecret: string
-  readonly adminMcp: AdminMcpConfiguration | undefined
-  readonly cursorSigningSecret: string
-  readonly learnerAuthSecret: string
-}): void {
-  const requestStateSecret = input.adminMcp?.changes?.requestStateSecret
-  if (requestStateSecret === undefined) return
-  if (
-    requestStateSecret === input.adminAuthSecret ||
-    requestStateSecret === input.cursorSigningSecret ||
-    requestStateSecret === input.learnerAuthSecret
-  ) {
-    throw new Error(
-      "Invalid environment variables: ADMIN_MCP_REQUEST_STATE_SECRET: 다른 인증 및 서명 secret과 구분된 값을 사용해야 합니다."
-    )
   }
 }
 
