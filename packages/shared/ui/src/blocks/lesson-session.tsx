@@ -5,9 +5,7 @@ import * as React from "react"
 import { learningSeriesAt } from "#ui/lib/learning-series"
 import { cn } from "#ui/lib/utils"
 import { ErrorCorrectAnswer } from "#ui/components/learning/error-correct-answer"
-import { ParagraphOrganizeAnswer } from "#ui/components/learning/paragraph-organize-answer"
 import { SentenceBuildAnswer } from "#ui/components/learning/sentence-build-answer"
-import { TranscribeAnswer } from "#ui/components/learning/transcribe-answer"
 import { TrueFalseAnswer } from "#ui/components/learning/true-false-answer"
 import { Button } from "#ui/components/primitives/button"
 import {
@@ -101,9 +99,7 @@ type StepType =
   | "CATEGORIZE"
   | "COMPARE"
   | "SENTENCE_BUILD"
-  | "TRANSCRIBE"
   | "ERROR_CORRECT"
-  | "PARAGRAPH_ORGANIZE"
 
 type GradePhase = "answering" | "checked"
 
@@ -118,9 +114,7 @@ const FLOW: StepType[] = [
   "CATEGORIZE",
   "COMPARE",
   "SENTENCE_BUILD",
-  "TRANSCRIBE",
   "ERROR_CORRECT",
-  "PARAGRAPH_ORGANIZE",
 ]
 
 const TOTAL_STEPS = FLOW.length
@@ -187,8 +181,6 @@ const SENTENCE_TILES = [
 ] as const
 const SENTENCE_ANSWER = ["t1", "t2", "t3", "t4"] as const
 
-const TRANSCRIBE_SOURCE = "근거는 주장을 반복하지 않고 사실과 사례를 제시한다."
-
 const ERROR_SEGMENTS = [
   { id: "e1", text: "좋은 근거는" },
   { id: "e2", text: "주장을 되풀이하며" },
@@ -201,17 +193,6 @@ const ERROR_FIXES = [
   { id: "f3", text: "감정을 강조하며" },
 ] as const
 const ERROR_CORRECT_FIX = "f2"
-
-const PARAGRAPH_CARDS = [
-  { id: "p1", text: "학교는 토론 수업을 늘려야 한다." },
-  {
-    id: "p2",
-    text: "토론에 참여한 학생이 발표 자신감이 높아졌다는 조사가 있다.",
-  },
-  { id: "p3", text: "따라서 토론은 설득력 훈련에 도움이 된다." },
-  { id: "p4", text: "급식 메뉴는 매주 바뀌는 편이 좋다." },
-] as const
-const PARAGRAPH_ANSWER = ["p1", "p2", "p3"] as const
 
 type SessionChromeProps = {
   stepIndex: number
@@ -1073,52 +1054,6 @@ function SentenceBuildStep({
   )
 }
 
-function TranscribeStep({
-  stepIndex,
-  onComplete,
-  onClose,
-}: {
-  stepIndex: number
-  onComplete: () => void
-  onClose: () => void
-}) {
-  const [value, setValue] = React.useState("")
-  const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const normalized = (text: string) => text.replace(/\s+/g, " ").trim()
-  const correct =
-    phase !== "answering" && normalized(value) === normalized(TRANSCRIBE_SOURCE)
-
-  return (
-    <SessionChrome
-      stepIndex={stepIndex}
-      primaryLabel="확인하기"
-      primaryDisabled={value.trim() === ""}
-      onPrimary={() => setPhase("checked")}
-      footer={
-        phase === "answering"
-          ? undefined
-          : renderCheckedFeedbackFooter({
-              correct,
-              explanation: "맞춤법·띄어쓰기·문장부호까지 원문과 같아야 합니다.",
-              onContinue: onComplete,
-            })
-      }
-      onClose={onClose}
-    >
-      <Step>
-        <TranscribeAnswer
-          checked={
-            phase === "answering" ? false : correct ? "correct" : "wrong"
-          }
-          onChange={setValue}
-          prompt="[TRANSCRIBE] 아래 문장을 그대로 입력하세요"
-          sourceText={TRANSCRIBE_SOURCE}
-        />
-      </Step>
-    </SessionChrome>
-  )
-}
-
 function ErrorCorrectStep({
   stepIndex,
   onComplete,
@@ -1169,55 +1104,6 @@ function ErrorCorrectStep({
             setFixId(nextFix)
           }}
           segments={[...ERROR_SEGMENTS]}
-        />
-      </Step>
-    </SessionChrome>
-  )
-}
-
-function ParagraphOrganizeStep({
-  stepIndex,
-  onComplete,
-  onClose,
-}: {
-  stepIndex: number
-  onComplete: () => void
-  onClose: () => void
-}) {
-  const [selected, setSelected] = React.useState<readonly string[]>([])
-  const [phase, setPhase] = React.useState<GradePhase>("answering")
-  const correct =
-    phase !== "answering" &&
-    selected.length === PARAGRAPH_ANSWER.length &&
-    selected.every((id, index) => id === PARAGRAPH_ANSWER[index])
-
-  return (
-    <SessionChrome
-      stepIndex={stepIndex}
-      primaryLabel="확인하기"
-      primaryDisabled={selected.length === 0}
-      onPrimary={() => setPhase("checked")}
-      footer={
-        phase === "answering"
-          ? undefined
-          : renderCheckedFeedbackFooter({
-              correct,
-              explanation:
-                "주제문 → 근거 → 결론 순으로 이어지고, 주제와 무관한 문장은 제외합니다.",
-              onContinue: onComplete,
-            })
-      }
-      onClose={onClose}
-    >
-      <Step>
-        <ParagraphOrganizeAnswer
-          cards={[...PARAGRAPH_CARDS]}
-          checked={
-            phase === "answering" ? false : correct ? "correct" : "wrong"
-          }
-          correctCardIds={[...PARAGRAPH_ANSWER]}
-          onChange={setSelected}
-          prompt="[PARAGRAPH_ORGANIZE] 문단에 넣을 문장을 고르고 순서를 맞추세요"
         />
       </Step>
     </SessionChrome>
@@ -1316,25 +1202,9 @@ function LessonFlowStep({
           onClose={onClose}
         />
       )
-    case "TRANSCRIBE":
-      return (
-        <TranscribeStep
-          stepIndex={stepIndex}
-          onComplete={onComplete}
-          onClose={onClose}
-        />
-      )
     case "ERROR_CORRECT":
       return (
         <ErrorCorrectStep
-          stepIndex={stepIndex}
-          onComplete={onComplete}
-          onClose={onClose}
-        />
-      )
-    case "PARAGRAPH_ORGANIZE":
-      return (
-        <ParagraphOrganizeStep
           stepIndex={stepIndex}
           onComplete={onComplete}
           onClose={onClose}

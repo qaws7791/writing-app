@@ -1,7 +1,7 @@
+import type { WritingCheckProvider } from "@workspace/writing/ports"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import {
-  createOpenAiWritingCheckProvider,
   createWritingModule,
   type WritingModule,
 } from "@workspace/writing/module"
@@ -18,18 +18,13 @@ export function composeWritingModule(input: {
   readonly dailySuccessfulCheckLimit: number
   readonly database: WritingAppDatabase
   readonly idGenerator: IdGenerator<WritingId>
-  readonly openAi: Readonly<{
-    apiKey: string | undefined
-    maxRetries: number
-    model: string
-    timeoutMs: number
-  }>
+  readonly checkProvider: WritingCheckProvider
   readonly publicationIdGenerator: IdGenerator<WritingTaskPublicationId>
   readonly taskIdGenerator: IdGenerator<WritingTaskId>
 }): WritingModule {
   return createWritingModule({
     checkIdGenerator: input.checkIdGenerator,
-    checkProvider: createOpenAiWritingCheckProvider(input.openAi),
+    checkProvider: input.checkProvider,
     clock: input.clock,
     dailySuccessfulCheckLimit: input.dailySuccessfulCheckLimit,
     database: input.database,

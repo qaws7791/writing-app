@@ -85,9 +85,9 @@ export function createOperationsReportingQueries(input: {
           })
         )
       }
-      return executeReportingQuery(input, "lesson-analytics", () =>
+      return executeReportingQuery(input, "lesson-analytics", async () =>
         addLessonAnalyticsCursors(
-          input.repository.readLessonAnalytics({ ...query, cursor }),
+          await input.repository.readLessonAnalytics({ ...query, cursor }),
           query.sort,
           query.direction
         )
@@ -209,10 +209,10 @@ async function executeReportingQuery<T>(
     readonly observer: OperationsReportingFailureObserver
   },
   query: OperationsReportingQueryName,
-  operation: () => T
+  operation: () => Promise<T>
 ): Promise<Result<T, OperationsError>> {
   try {
-    return ok(operation())
+    return ok(await operation())
   } catch (cause) {
     input.observer({
       cause,

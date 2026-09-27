@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises"
 import {
   contentStatuses,
   type ContentStatus,
@@ -216,7 +217,9 @@ function normalizeSeedStepContent(step: ContentSeedStep): string {
 async function readContentSeedData(): Promise<readonly ContentSeedCourse[]> {
   const seedUrl = new URL("./content-seed-data.json", import.meta.url)
 
-  return (await Bun.file(seedUrl).json()) as readonly ContentSeedCourse[]
+  return JSON.parse(
+    await readFile(seedUrl, "utf8")
+  ) as readonly ContentSeedCourse[]
 }
 
 export async function validateSeed(input?: {

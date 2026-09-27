@@ -27,10 +27,10 @@ import {
   lessonVersions,
 } from "#content/infrastructure/persistence/schema"
 
-export function listPublishedCourseSummaries(
+export async function listPublishedCourseSummaries(
   database: CourseReadDatabase,
   query?: PublishedCourseSummaryQuery
-): readonly PublishedCourseSummary[] {
+): Promise<readonly PublishedCourseSummary[]> {
   const cursorCondition =
     query?.after === undefined
       ? undefined
@@ -41,7 +41,7 @@ export function listPublishedCourseSummaries(
             gt(courses.id, query.after.courseId)
           )
         )
-  const rows = database
+  const rows = await database
     .select({
       category: courseCurriculumVersions.category,
       courseId: courses.id,
@@ -88,14 +88,14 @@ export function listPublishedCourseSummaries(
   }))
 }
 
-export function readCurriculum(
+export async function readCurriculum(
   database: CourseReadDatabase,
   input: {
     readonly courseId: CourseId
     readonly curriculumVersionId?: CurriculumVersionId
   }
-): PublishedCurriculumRevision | null {
-  const course = database
+): Promise<PublishedCurriculumRevision | null> {
+  const course = await database
     .select()
     .from(courses)
     .where(eq(courses.id, input.courseId))
@@ -111,7 +111,7 @@ export function readCurriculum(
   const versionId =
     input.curriculumVersionId ?? course.publishedCurriculumVersionId
   if (versionId === null) return null
-  const version = database
+  const version = await database
     .select()
     .from(courseCurriculumVersions)
     .where(
@@ -137,18 +137,18 @@ export function readCurriculum(
     revision: version.revision,
     status: course.status,
     title: version.title,
-    units: readCurriculumUnits(database, version.id),
+    units: await readCurriculumUnits(database, version.id),
     visualKey: readCourseVisualKey(version.visualKey),
   }
 }
 
-export function findCurriculumByLesson(
+export async function findCurriculumByLesson(
   database: CourseReadDatabase,
   input: {
     readonly curriculumVersionId?: CurriculumVersionId
     readonly lessonId: LessonId
   }
-): PublishedLessonReference | null {
+): Promise<PublishedLessonReference | null> {
   const versionCondition =
     input.curriculumVersionId === undefined
       ? and(
@@ -159,7 +159,7 @@ export function findCurriculumByLesson(
           eq(courseCurriculumVersions.courseId, courses.id),
           eq(courseCurriculumVersions.id, input.curriculumVersionId)
         )
-  const row = database
+  const row = await database
     .select({
       courseId: courses.id,
       curriculumVersionId: courseCurriculumVersions.id,

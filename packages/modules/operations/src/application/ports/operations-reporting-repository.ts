@@ -88,12 +88,12 @@ export type OperationsReportingRepository = Readonly<{
     readonly from: string
     readonly matureCohortThrough: string
     readonly to: string
-  }) => OperationsAnalytics
+  }) => Promise<OperationsAnalytics>
   readDashboard: (input: {
     readonly activeFrom: string
     readonly matureCohortThrough: string
     readonly reportDate: string
-  }) => OperationsDashboard
+  }) => Promise<OperationsDashboard>
   readLessonAnalytics: (input: {
     readonly cursor?: OperationsLessonAnalyticsCursor | null
     readonly direction: OperationsSortDirection
@@ -101,5 +101,5 @@ export type OperationsReportingRepository = Readonly<{
     readonly pageSize: number
     readonly query: string
     readonly sort: OperationsLessonAnalyticsSort
-  }) => OperationsLessonAnalyticsPage
+  }) => Promise<OperationsLessonAnalyticsPage>
 }>

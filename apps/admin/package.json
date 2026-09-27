@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "vite build",
     "dev": "next dev --hostname 127.0.0.1 --port 3001",
     "lint": "oxlint .",
-    "start": "node ../../scripts/run-next-standalone.mjs admin",
+    "start": "wrangler dev --config dist/server/wrangler.json",
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "node ../../scripts/run-next-typegen.mjs && tsc7 --noEmit"
   },
@@ -24,8 +24,8 @@
     "react-dom": "catalog:",
     "recharts": "catalog:",
     "server-only": "catalog:",
-    "sharp": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "react-server-dom-webpack": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:",
@@ -42,7 +42,15 @@
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "vinext": "catalog:",
+    "@vinext/cloudflare": "catalog:",
+    "@cloudflare/vite-plugin": "catalog:",
+    "vite": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitejs/plugin-rsc": "catalog:",
+    "wrangler": "catalog:",
+    "@cloudflare/workers-types": "catalog:"
   },
   "ignoreScripts": [
     "sharp",

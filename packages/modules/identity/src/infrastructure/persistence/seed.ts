@@ -4,14 +4,14 @@ import type { UserId } from "@workspace/types/ids"
 import { userStatuses } from "#identity/domain/user-status"
 import { learnerProfiles } from "#identity/infrastructure/persistence/schema"
 
-export function seedLearnerIdentity(
+export async function seedLearnerIdentity(
   database: WritingAppDatabase,
   input: Readonly<{
     displayName: string
     userId: UserId
   }>
-): void {
-  database
+): Promise<void> {
+  await database
     .insert(learnerProfiles)
     .values({
       deletedAt: null,

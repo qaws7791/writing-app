@@ -8,6 +8,7 @@ const repositoryRoot = fileURLToPath(new URL(".", import.meta.url))
 
 export default defineConfig({
   test: {
+    maxWorkers: 2,
     projects: [
       path.join(repositoryRoot, "apps/admin/vitest.config.ts"),
       path.join(repositoryRoot, "apps/api/vitest.config.ts"),
@@ -36,11 +37,12 @@ export default defineConfig({
         ],
         root: path.join(repositoryRoot, root),
         ssr: {
-          external: ["bun:sqlite"],
           noExternal: ["zod"],
         },
         test: {
           environment: "node",
+          testTimeout: 30000,
+          hookTimeout: 30000,
           include: ["src/**/*.test.ts"],
           name,
           unstubEnvs: true,

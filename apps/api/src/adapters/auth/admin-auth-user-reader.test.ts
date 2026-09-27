@@ -1,26 +1,29 @@
 import { adminAuthUsers } from "@workspace/auth/schema"
 import { adminIdSchema } from "@workspace/contracts/identity/admin-ids"
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+
 import { afterEach, describe, expect, it } from "vitest"
 
 import { findMissingAdminAuthUserIds } from "@/adapters/auth/admin-auth-user-reader"
-import { runApplicationMigrations } from "@/db/migrate"
+import { runCurrentTestMigration as runApplicationMigrations } from "@workspace/db/test-support/application-migration"
 
 describe("findMissingAdminAuthUserIds", () => {
-  const clients: ReturnType<typeof createInMemoryWritingAppDatabase>[] = []
+  const clients: Awaited<
+    ReturnType<typeof createInMemoryWritingAppDatabase>
+  >[] = []
 
-  afterEach(() => {
-    for (const client of clients.splice(0)) client.close()
+  afterEach(async () => {
+    for (const client of clients.splice(0)) await client.close()
   })
 
-  it("returns only distinct admin IDs that are not present", () => {
-    const client = createInMemoryWritingAppDatabase()
+  it("returns only distinct admin IDs that are not present", async () => {
+    const client = await createInMemoryWritingAppDatabase()
     clients.push(client)
-    runApplicationMigrations(client.sqlite)
+    await runApplicationMigrations(client.sqlite)
     const existingAdminId = adminIdSchema.parse("admin-existing")
     const missingAdminId = adminIdSchema.parse("admin-missing")
     const now = new Date("2026-08-10T00:00:00.000Z")
-    client.db
+    await client.db
       .insert(adminAuthUsers)
       .values({
         createdAt: now,
@@ -33,7 +36,7 @@ describe("findMissingAdminAuthUserIds", () => {
       .run()
 
     expect(
-      findMissingAdminAuthUserIds(client.db, [
+      await findMissingAdminAuthUserIds(client.db, [
         existingAdminId,
         missingAdminId,
         missingAdminId,
@@ -41,10 +44,10 @@ describe("findMissingAdminAuthUserIds", () => {
     ).toEqual([missingAdminId])
   })
 
-  it("does not query an empty owner list", () => {
-    const client = createInMemoryWritingAppDatabase()
+  it("does not query an empty owner list", async () => {
+    const client = await createInMemoryWritingAppDatabase()
     clients.push(client)
 
-    expect(findMissingAdminAuthUserIds(client.db, [])).toEqual([])
+    expect(await findMissingAdminAuthUserIds(client.db, [])).toEqual([])
   })
 })

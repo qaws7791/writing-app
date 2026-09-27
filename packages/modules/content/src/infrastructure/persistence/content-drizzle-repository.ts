@@ -34,65 +34,65 @@ export function createDrizzleContentRepository(
 ): ContentRepository {
   return {
     async createAsset(asset) {
-      return createAsset(database, asset)
+      return await createAsset(database, asset)
     },
     async createCourse(input) {
-      return createCourse(database, input)
+      return await createCourse(database, input)
     },
     async findCourse(courseId) {
-      return findCourse(database, courseId)
+      return await findCourse(database, courseId)
     },
     async findCurriculumByLesson(input) {
-      return findCurriculumByLesson(database, input)
+      return await findCurriculumByLesson(database, input)
     },
     async findDraft(courseId) {
-      return readDraft(database, courseId)
+      return await readDraft(database, courseId)
     },
     async listPublishedCourseSummaries(query) {
-      return listPublishedCourseSummaries(database, query)
+      return await listPublishedCourseSummaries(database, query)
     },
     async listActiveAssetsForCourse(courseId) {
-      return listActiveAssetsForCourse(database, courseId)
+      return await listActiveAssetsForCourse(database, courseId)
     },
     async listAssetsForCourse(courseId) {
-      return listAssetsForCourse(database, courseId)
+      return await listAssetsForCourse(database, courseId)
     },
     async listOrphanedAssetCandidates(input) {
-      return listOrphanedAssetCandidates(database, input)
+      return await listOrphanedAssetCandidates(database, input)
     },
     async deleteOrphanedAssetCandidates(input) {
-      return deleteOrphanedAssetCandidates(database, input)
+      return await deleteOrphanedAssetCandidates(database, input)
     },
     async readAssetOwner(input) {
-      return readAssetOwner(database, input)
+      return await readAssetOwner(database, input)
     },
     async readActiveAssetsByIds(assetIds) {
-      return readActiveAssetsByIds(database, assetIds)
+      return await readActiveAssetsByIds(database, assetIds)
     },
     async publishDraft(input) {
-      return publishDraft(database, input)
+      return await publishDraft(database, input)
     },
     async readCourseEditor(courseId) {
-      const draft = readDraft(database, courseId)
+      const draft = await readDraft(database, courseId)
       if (draft.isErr()) {
         throw new Error(`Content draft invariant failed: ${draft.error.kind}`)
       }
       return draft.value === null ? null : toCourseEditorDocument(draft.value)
     },
     async readCourseChangeTarget(courseId) {
-      return readCourseChangeTarget(database, courseId)
+      return await readCourseChangeTarget(database, courseId)
     },
     async readCourses(input) {
-      return readCourses(database, input)
+      return await readCourses(database, input)
     },
     async readCurriculum(input) {
-      return readCurriculum(database, input)
+      return await readCurriculum(database, input)
     },
     async saveCourse(input) {
-      return saveCourse(database, input)
+      return await saveCourse(database, input)
     },
     async saveDraft(input) {
-      return saveDraft(database, input)
+      return await saveDraft(database, input)
     },
   }
 }

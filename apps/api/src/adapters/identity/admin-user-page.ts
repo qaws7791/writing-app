@@ -1,4 +1,7 @@
-import type { Database, SQLQueryBindings } from "bun:sqlite"
+import type {
+  SqlDatabaseClient as Database,
+  SqlValue as SQLQueryBindings,
+} from "@workspace/db/sql-client"
 
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
 import { learnerAccountStatusSchema } from "@workspace/contracts/identity/status"
@@ -58,7 +61,7 @@ export function createAdminUserPage(sqlite: Database): AdminUserPagePort {
       const primary = readPrimarySql(input.sort)
       const primaryDirection = input.direction === "previous" ? "ASC" : "DESC"
       const tieDirection = input.direction === "previous" ? "DESC" : "ASC"
-      const rows = sqlite
+      const rows = await sqlite
         .query<AdminUserPageSqlRow, SQLQueryBindings[]>(`
           SELECT
             learner.email,

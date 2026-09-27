@@ -1,4 +1,9 @@
-import { and, asc, eq, inArray, isNotNull, lte } from "drizzle-orm"
+import {
+  executeBatch,
+  requireBatchCondition,
+  isBatchConflict,
+} from "@workspace/db/batch"
+import { and, asc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -26,144 +31,146 @@ import {
   type CourseReadDatabase,
 } from "#content/infrastructure/persistence/content-drizzle-shared"
 
-export function listActiveAssetsForCourse(
+export async function listActiveAssetsForCourse(
   database: CourseReadDatabase,
   courseId: CourseId
-): readonly ContentAsset[] {
-  return database
-    .select()
-    .from(contentAssets)
-    .where(
-      and(
-        eq(contentAssets.courseId, courseId),
-        eq(contentAssets.status, "active")
+): Promise<readonly ContentAsset[]> {
+  return (
+    await database
+      .select()
+      .from(contentAssets)
+      .where(
+        and(
+          eq(contentAssets.courseId, courseId),
+          eq(contentAssets.status, "active")
+        )
       )
-    )
-    .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
-    .all()
-    .map(toContentAsset)
+      .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
+      .all()
+  ).map(toContentAsset)
 }
 
-export function listAssetsForCourse(
+export async function listAssetsForCourse(
   database: CourseReadDatabase,
   courseId: CourseId
-): readonly ContentAsset[] {
-  return database
-    .select()
-    .from(contentAssets)
-    .where(eq(contentAssets.courseId, courseId))
-    .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
-    .all()
-    .map(toContentAsset)
+): Promise<readonly ContentAsset[]> {
+  return (
+    await database
+      .select()
+      .from(contentAssets)
+      .where(eq(contentAssets.courseId, courseId))
+      .orderBy(asc(contentAssets.createdAt), asc(contentAssets.id))
+      .all()
+  ).map(toContentAsset)
 }
 
-export function readActiveAssetsByIds(
+export async function readActiveAssetsByIds(
   database: CourseReadDatabase,
   assetIds: readonly ContentAssetId[]
-): readonly ContentAsset[] {
+): Promise<readonly ContentAsset[]> {
   if (assetIds.length === 0) return []
 
   const uniqueAssetIds = [...new Set(assetIds)]
-  return chunkByBoundParameters(uniqueAssetIds, {
-    fixedParameters: 1,
-    parametersPerItem: 1,
-  })
-    .flatMap((assetIdChunk) =>
-      database
-        .select()
-        .from(contentAssets)
-        .where(
-          and(
-            inArray(contentAssets.id, assetIdChunk),
-            eq(contentAssets.status, "active")
-          )
-        )
-        .all()
-        .map(toContentAsset)
+  return (
+    await Promise.all(
+      chunkByBoundParameters(uniqueAssetIds, {
+        fixedParameters: 1,
+        parametersPerItem: 1,
+      }).map(async (assetIdChunk) =>
+        (
+          await database
+            .select()
+            .from(contentAssets)
+            .where(
+              and(
+                inArray(contentAssets.id, assetIdChunk),
+                eq(contentAssets.status, "active")
+              )
+            )
+            .all()
+        ).map(toContentAsset)
+      )
     )
+  )
+    .flat()
     .sort((left, right) =>
       left.id === right.id ? 0 : left.id < right.id ? -1 : 1
     )
 }
 
-export function listOrphanedAssetCandidates(
+export async function listOrphanedAssetCandidates(
   database: WritingAppDatabase,
   input: { readonly batchSize: number; readonly cutoff: Date }
 ) {
   try {
     return ok(
-      database
-        .select({
-          id: contentAssets.id,
-          objectKey: contentAssets.objectKey,
-        })
-        .from(contentAssets)
-        .innerJoin(
-          courseCurriculumVersions,
-          eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
-        )
-        .where(
-          and(
-            eq(contentAssets.status, "orphaned"),
-            isNotNull(contentAssets.orphanedAt),
-            lte(contentAssets.orphanedAt, input.cutoff),
-            eq(courseCurriculumVersions.status, "draft")
+      (
+        await database
+          .select({
+            id: contentAssets.id,
+            objectKey: contentAssets.objectKey,
+          })
+          .from(contentAssets)
+          .innerJoin(
+            courseCurriculumVersions,
+            eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
           )
-        )
-        .orderBy(asc(contentAssets.orphanedAt), asc(contentAssets.id))
-        .limit(input.batchSize)
-        .all()
-        .map(({ id, objectKey }) => ({ id: id as ContentAssetId, objectKey }))
-    )
-  } catch (cause) {
-    return err({ cause, kind: "content-asset-persistence-failed" } as const)
-  }
-}
-
-export function deleteOrphanedAssetCandidates(
-  database: WritingAppDatabase,
-  input: {
-    readonly assetIds: readonly ContentAssetId[]
-    readonly cutoff: Date
-  }
-) {
-  if (input.assetIds.length === 0) return ok(0)
-
-  try {
-    const deletedCount = database.transaction((transaction) =>
-      chunkByBoundParameters(input.assetIds, {
-        fixedParameters: 2,
-        parametersPerItem: 1,
-      }).reduce((total, assetIdChunk) => {
-        const deleted = transaction
-          .delete(contentAssets)
           .where(
             and(
-              inArray(contentAssets.id, assetIdChunk),
               eq(contentAssets.status, "orphaned"),
               isNotNull(contentAssets.orphanedAt),
-              lte(contentAssets.orphanedAt, input.cutoff)
+              lte(contentAssets.orphanedAt, input.cutoff),
+              eq(courseCurriculumVersions.status, "draft")
             )
           )
-          .returning({ id: contentAssets.id })
+          .orderBy(asc(contentAssets.orphanedAt), asc(contentAssets.id))
+          .limit(input.batchSize)
           .all()
-        return total + deleted.length
-      }, 0)
+      ).map(({ id, objectKey }) => ({ id: id as ContentAssetId, objectKey }))
     )
-    return ok(deletedCount)
   } catch (cause) {
     return err({ cause, kind: "content-asset-persistence-failed" } as const)
   }
 }
 
-export function readAssetOwner(
+export async function deleteOrphanedAssetCandidates(
+  database: WritingAppDatabase,
+  input: { readonly assetIds: readonly ContentAssetId[]; readonly cutoff: Date }
+) {
+  const queries = chunkByBoundParameters(input.assetIds, {
+    fixedParameters: 2,
+    parametersPerItem: 1,
+  }).map((ids) =>
+    database
+      .delete(contentAssets)
+      .where(
+        and(
+          inArray(contentAssets.id, ids),
+          eq(contentAssets.status, "orphaned"),
+          isNotNull(contentAssets.orphanedAt),
+          lte(contentAssets.orphanedAt, input.cutoff)
+        )
+      )
+      .returning({ id: contentAssets.id })
+  )
+  const [first, ...rest] = queries
+  if (first === undefined) return ok(0)
+  try {
+    const results = await database.batch([first, ...rest])
+    return ok(results.reduce((count, rows) => count + rows.length, 0))
+  } catch (cause) {
+    return err({ cause, kind: "content-asset-persistence-failed" } as const)
+  }
+}
+
+export async function readAssetOwner(
   database: CourseReadDatabase,
   input: {
     readonly courseId: CourseId
     readonly curriculumVersionId: CurriculumVersionId
   }
-): ContentAssetOwner | null {
-  const owner = database
+): Promise<ContentAssetOwner | null> {
+  const owner = await database
     .select({
       courseId: courseCurriculumVersions.courseId,
       curriculumVersionId: courseCurriculumVersions.id,
@@ -189,39 +196,43 @@ export function readAssetOwner(
       }
 }
 
-export function createAsset(
+export async function createAsset(
   database: WritingAppDatabase,
   asset: ContentAsset
-): Result<ContentAsset, ContentError> {
+): Promise<Result<ContentAsset, ContentError>> {
   try {
-    return database.transaction((transaction) => {
-      const owner = transaction
-        .select({
-          courseStatus: courses.status,
-          versionStatus: courseCurriculumVersions.status,
-        })
-        .from(courseCurriculumVersions)
-        .innerJoin(courses, eq(courses.id, courseCurriculumVersions.courseId))
-        .where(
-          and(
-            eq(courses.id, asset.courseId),
-            eq(courseCurriculumVersions.id, asset.curriculumVersionId)
-          )
+    const owner = await database
+      .select({
+        courseStatus: courses.status,
+        versionStatus: courseCurriculumVersions.status,
+      })
+      .from(courseCurriculumVersions)
+      .innerJoin(courses, eq(courses.id, courseCurriculumVersions.courseId))
+      .where(
+        and(
+          eq(courses.id, asset.courseId),
+          eq(courseCurriculumVersions.id, asset.curriculumVersionId)
         )
-        .get()
+      )
+      .get()
 
-      if (owner === undefined || owner.courseStatus !== activeStatus) {
-        return err({ kind: "content-not-found" })
-      }
-      if (owner.versionStatus !== "draft") {
-        return err({ kind: "content-immutable-revision" })
-      }
+    if (owner === undefined || owner.courseStatus !== activeStatus) {
+      return err({ kind: "content-not-found" })
+    }
+    if (owner.versionStatus !== "draft") {
+      return err({ kind: "content-immutable-revision" })
+    }
 
-      transaction.insert(contentAssets).values(asset).run()
-      return ok(asset)
-    })
+    await executeBatch(database, [
+      requireBatchCondition(
+        database,
+        sql`EXISTS (SELECT 1 FROM ${courseCurriculumVersions} INNER JOIN ${courses} ON ${courses.id} = ${courseCurriculumVersions.courseId} WHERE ${courseCurriculumVersions.id} = ${asset.curriculumVersionId} AND ${courses.status} = 'active' AND ${courseCurriculumVersions.status} = 'draft')`
+      ),
+      database.insert(contentAssets).values(asset),
+    ])
+    return ok(asset)
   } catch (cause) {
-    if (isUniqueConstraintViolation(cause)) {
+    if (isBatchConflict(cause) || isUniqueConstraintViolation(cause)) {
       return err({ cause, kind: "content-conflict" })
     }
     throw cause

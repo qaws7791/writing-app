@@ -41,7 +41,7 @@ export function createAuditEventDrizzleRepository(
   return {
     async countEvents(filter) {
       try {
-        const row = database
+        const row = await database
           .select({ total: count() })
           .from(auditEvents)
           .where(createAuditEventFilterCondition(filter))
@@ -55,13 +55,15 @@ export function createAuditEventDrizzleRepository(
     async countExpired(input) {
       try {
         return ok(
-          database
-            .select({ id: auditEvents.id })
-            .from(auditEvents)
-            .where(lte(auditEvents.retentionUntil, input.cutoff))
-            .orderBy(asc(auditEvents.retentionUntil), asc(auditEvents.id))
-            .limit(input.batchSize)
-            .all().length
+          (
+            await database
+              .select({ id: auditEvents.id })
+              .from(auditEvents)
+              .where(lte(auditEvents.retentionUntil, input.cutoff))
+              .orderBy(asc(auditEvents.retentionUntil), asc(auditEvents.id))
+              .limit(input.batchSize)
+              .all()
+          ).length
         )
       } catch (cause) {
         return persistenceFailed(cause, "count-expired")
@@ -69,39 +71,33 @@ export function createAuditEventDrizzleRepository(
     },
     async complete(input) {
       try {
-        return database.transaction((transaction) => {
-          const current = transaction
-            .select({ outcome: auditEvents.outcome })
-            .from(auditEvents)
-            .where(eq(auditEvents.id, input.eventId))
-            .get()
-          if (current?.outcome === input.outcome) return ok(undefined)
-          if (current?.outcome !== "started") {
-            return err({ kind: "audit-event-conflict" } as const)
-          }
-
-          const updated = transaction
-            .update(auditEvents)
-            .set({ outcome: input.outcome })
-            .where(
-              and(
-                eq(auditEvents.id, input.eventId),
-                eq(auditEvents.outcome, "started")
-              )
+        const updated = await database
+          .update(auditEvents)
+          .set({ outcome: input.outcome })
+          .where(
+            and(
+              eq(auditEvents.id, input.eventId),
+              eq(auditEvents.outcome, "started")
             )
-            .returning({ id: auditEvents.id })
-            .get()
-          return updated === undefined
-            ? err({ kind: "audit-event-conflict" } as const)
-            : ok(undefined)
-        })
+          )
+          .returning({ id: auditEvents.id })
+          .get()
+        if (updated !== undefined) return ok(undefined)
+        const current = await database
+          .select({ outcome: auditEvents.outcome })
+          .from(auditEvents)
+          .where(eq(auditEvents.id, input.eventId))
+          .get()
+        return current?.outcome === input.outcome
+          ? ok(undefined)
+          : err({ kind: "audit-event-conflict" } as const)
       } catch (cause) {
         return persistenceFailed(cause, "complete")
       }
     },
     async insert(event) {
       try {
-        database.insert(auditEvents).values(toAuditEventRow(event)).run()
+        await database.insert(auditEvents).values(toAuditEventRow(event)).run()
         return ok(undefined)
       } catch (cause) {
         return persistenceFailed(cause, "insert")
@@ -115,15 +111,16 @@ export function createAuditEventDrizzleRepository(
         )
         const rows =
           input.cursor?.direction === "newer"
-            ? database
-                .select()
-                .from(auditEvents)
-                .where(condition)
-                .orderBy(asc(auditEvents.createdAt), asc(auditEvents.id))
-                .limit(input.limit)
-                .all()
-                .reverse()
-            : database
+            ? (
+                await database
+                  .select()
+                  .from(auditEvents)
+                  .where(condition)
+                  .orderBy(asc(auditEvents.createdAt), asc(auditEvents.id))
+                  .limit(input.limit)
+                  .all()
+              ).reverse()
+            : await database
                 .select()
                 .from(auditEvents)
                 .where(condition)
@@ -146,7 +143,7 @@ export function createAuditEventDrizzleRepository(
           .orderBy(asc(auditEvents.retentionUntil), asc(auditEvents.id))
           .limit(input.batchSize)
 
-        const deleted = database
+        const deleted = await database
           .delete(auditEvents)
           .where(inArray(auditEvents.id, expiredIds))
           .returning({ id: auditEvents.id })

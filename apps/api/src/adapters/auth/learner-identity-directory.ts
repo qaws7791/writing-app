@@ -12,7 +12,7 @@ export function createLearnerIdentityDirectory(
 ): LearnerIdentityDirectoryPort {
   return {
     async findLearnerIdentity(userId) {
-      const row = database
+      const row = await database
         .select()
         .from(authUsers)
         .where(eq(authUsers.id, userId))

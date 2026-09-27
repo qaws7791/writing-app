@@ -1,40 +1,23 @@
-import { fileURLToPath } from "node:url"
+import type { D1Database } from "@cloudflare/workers-types"
+import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1"
 
-import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
+import { createSqlDatabaseClient, type SqlDatabaseClient } from "#db/sql-client"
 
-import {
-  createSqliteDatabase,
-  type SqliteDatabaseClient,
-} from "#db/sqlite-database"
-
-const databaseSchema = {}
-
-export type WritingAppDatabase = BunSQLiteDatabase<typeof databaseSchema>
-
-export type WritingAppDatabaseClient = SqliteDatabaseClient<
-  typeof databaseSchema
->
-
-export function getDefaultDatabaseUrl(): string {
-  return fileURLToPath(new URL("../../../../data/api.sqlite", import.meta.url))
+export type WritingAppDatabase = DrizzleD1Database & {
+  readonly $client: D1Database
 }
+export type WritingAppDatabaseClient = Readonly<{
+  db: WritingAppDatabase
+  sqlite: SqlDatabaseClient
+  close: () => Promise<void>
+}>
 
 export function createWritingAppDatabase(
-  url: string
+  binding: D1Database
 ): WritingAppDatabaseClient {
-  return createSqliteDatabase({ filename: url, schema: databaseSchema })
-}
-
-export function createReadOnlyWritingAppDatabase(
-  url: string
-): WritingAppDatabaseClient {
-  return createSqliteDatabase({
-    filename: url,
-    mode: "read-only",
-    schema: databaseSchema,
-  })
-}
-
-export function createInMemoryWritingAppDatabase(): WritingAppDatabaseClient {
-  return createWritingAppDatabase(":memory:")
+  return {
+    db: drizzle(binding),
+    sqlite: createSqlDatabaseClient(binding),
+    close: async () => {},
+  }
 }

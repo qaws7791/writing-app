@@ -11,7 +11,7 @@
 1. 제품이 어떻게 동작해야 하는지 묻는다면 `docs/product/_index.md`에서 시작한다.
 2. 화면 목적·사용 흐름·접근성 기준을 묻는다면 `docs/design/_index.md`에서 시작한다.
 3. 설계 원칙·운영 절차·보안 기준을 묻는다면 `docs/engineering/_index.md`에서 시작한다.
-4. 현재 package, route, port, 환경 변수, Compose topology, schema, 테스트 대상을 묻는다면 `docs/authority-map.md`의 코드 권위 소스를 직접 확인한다.
+4. 현재 package, route, port, 환경 변수, Worker binding, schema, 테스트 대상을 묻는다면 `docs/authority-map.md`의 코드 권위 소스를 직접 확인한다.
 5. 완료된 한시 문서나 특정 시점의 검증 수치는 해당 커밋의 CI와 git 이력에서 확인한다.
 
 ## 디렉터리 지도

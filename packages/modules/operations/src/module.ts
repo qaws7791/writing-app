@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite"
+import type { SqlDatabaseClient as Database } from "@workspace/db/sql-client"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import type { IdGenerator } from "@workspace/kernel/clock"
 
@@ -21,7 +21,7 @@ export type OperationsModule = Readonly<{
   reporting: OperationsReportingQueries
 }>
 
-export function createOperationsModule(
+export async function createOperationsModule(
   input: Readonly<{
     audit: Readonly<{
       failureObserver: AuditEventFailureObserver
@@ -32,10 +32,10 @@ export function createOperationsModule(
     reportingDatabase: Database
     reportingFailureObserver: OperationsReportingFailureObserver
   }>
-): OperationsModule {
+): Promise<OperationsModule> {
   const reporting = createOperationsReportingQueries({
     observer: input.reportingFailureObserver,
-    repository: createSqliteOperationsReportingRepository(
+    repository: await createSqliteOperationsReportingRepository(
       input.reportingDatabase
     ),
   })

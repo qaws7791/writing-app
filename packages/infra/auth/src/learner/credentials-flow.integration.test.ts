@@ -16,7 +16,7 @@ const newPassword = "New-learner-password-123!"
 
 describe("learner credential recovery", () => {
   it("accepts a reset token only once", async () => {
-    const database = createAuthTestDatabase()
+    const database = await createAuthTestDatabase()
     const emailDelivery = createInMemoryAuthEmailDelivery()
 
     try {
@@ -49,12 +49,12 @@ describe("learner credential recovery", () => {
         code: "INVALID_TOKEN",
       })
     } finally {
-      database.close()
+      await database.close()
     }
   })
 
   it("revokes an existing session after the password is reset", async () => {
-    const database = createAuthTestDatabase()
+    const database = await createAuthTestDatabase()
     const emailDelivery = createInMemoryAuthEmailDelivery()
 
     try {
@@ -90,7 +90,7 @@ describe("learner credential recovery", () => {
         )
       ).resolves.toBeNull()
     } finally {
-      database.close()
+      await database.close()
     }
   })
 })
@@ -167,7 +167,7 @@ async function resetPassword(
   token: string,
   ipAddress: string
 ): Promise<Response> {
-  return postAuth(
+  return await postAuth(
     authHandler,
     "/api/auth/reset-password",
     { newPassword, token },
@@ -205,7 +205,7 @@ async function followCallback(
   authHandler: (request: Request) => Promise<Response>,
   callbackUrl: string
 ): Promise<Response> {
-  return authHandler(
+  return await authHandler(
     new Request(callbackUrl, {
       headers: { Origin: webOrigin },
       redirect: "manual",
@@ -228,7 +228,7 @@ async function postAuth(
   body: Readonly<object>,
   ipAddress: string
 ): Promise<Response> {
-  return authHandler(
+  return await authHandler(
     new Request(`${webOrigin}${path}`, {
       body: JSON.stringify(body),
       headers: {

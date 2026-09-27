@@ -1,14 +1,14 @@
-import type { Database } from "bun:sqlite"
+import type { SqlDatabaseClient as Database } from "@workspace/db/sql-client"
 
 export type ApiHealthProbe = Readonly<{
-  isDatabaseReady: () => boolean
+  isDatabaseReady: () => Promise<boolean>
 }>
 
 export function createApiHealthProbe(database: Database): ApiHealthProbe {
   return {
-    isDatabaseReady() {
+    async isDatabaseReady() {
       try {
-        database.query("SELECT 1").get()
+        await database.query("SELECT 1").get()
         return true
       } catch {
         return false

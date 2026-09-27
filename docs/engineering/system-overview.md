@@ -14,14 +14,14 @@
 - content module은 draft 편집, immutable published revision, 발행·보관과 콘텐츠 schema·seed를 함께 소유한다.
 - learning module은 코스·레슨 조회 projection, 학습 진행·답안·채점·활동일 정책, 학습 schema·repository와 학습자 HTTP interface를 함께 소유한다. content의 published curriculum query와 identity의 상태 query는 API composition에서 주입하며 다른 module table을 직접 읽지 않는다.
 - writing module은 레슨과 독립된 쓰기 과제·발행본, 학습자 글의 생성·조회·version 저장·AI 점검·삭제, 원문 없는 쓰기 event와 학습자·관리자 HTTP interface를 소유한다. 다른 module table을 직접 읽지 않는다.
-- operations module은 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 소유한다. reporting SQL은 같은 SQLite의 여러 module table을 join할 수 있지만 다른 module의 command나 repository를 대신하지 않는다.
+- operations module은 대시보드·분석용 읽기 전용 reporting과 관리자 HTTP interface를 소유한다. reporting SQL은 같은 D1의 여러 module table을 join할 수 있지만 다른 module의 command나 repository를 대신하지 않는다.
 - 외부 provider SDK, logger와 DB runtime 구현은 각각의 infra package에 격리하고 검증된 설정을 명시적으로 주입한다. HTTP framework의 공통 app·middleware·error·security 구현은 http-platform infra가 소유하되, endpoint를 소유하는 module interface는 공개 platform helper와 필요한 Hono route type을 사용한다. API composition은 module route와 실행 경계 route를 최종 app에 등록한다.
 - 각 module과 auth infra는 자기 최종 Drizzle schema를 소유하고, 실제 seed가 있는 경계만 seed provider를 공개한다. API SQL이 유일한 migration 계보를 소유하고 schema·seed 실행을 조립한다.
 - 공유 UI는 화면별 데이터 조회, 라우팅, 인증과 도메인 상태 전이를 소유하지 않는다.
 - UI registry 앱은 Luma source, 정적 문서, preview와 shadcn 배포 artifact를 소유한다. Registry block의 fixture와 local state는 제품 runtime 경계가 아니다.
 - 각 runtime은 자기 설정을 명시적으로 파싱하고, 환경 변수 원문을 도메인 경계 너머로 전달하지 않는다.
 - API 실행 진입점은 검증된 설정, Clock·ID, logger, DB, 외부 I/O와 `content`, `learning`, `writing`, `identity`, `operations` 다섯 module을 하나의 container에서 조립한다. learner·admin HTTP app은 이 container만 소비하며 module 내부 source나 persistence를 직접 알지 않는다.
-- API 종료는 신규 요청 차단과 진행 응답 drain 뒤 `container.dispose()`에 resource 정리를 위임한다. container는 DB와 logger를 역순으로 정리하고 각 실패를 격리하며 signal 중복 수신은 같은 종료 작업으로 수렴시킨다.
+- Worker 실행 자원은 Cloudflare binding으로 주입한다. 로컬 실행 자원은 개발 서버와 테스트 fixture가 종료한다.
 
 ## 의존성 판단
 
@@ -35,13 +35,13 @@
 
 ## 변경 탐색
 
-| 질문                        | 먼저 확인할 권위 소스                                                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 현재 workspace·package 책임 | root와 workspace `package.json`, source import graph                                                                   |
-| 현재 API·schema             | module HTTP `register*Routes`, API composition root, `packages/shared/contracts`, runtime OpenAPI                      |
-| 현재 persistence·migration  | module schema·repository, `packages/infra/auth`, `apps/api/src/db`, `apps/api/drizzle`과 `packages/infra/db` primitive |
-| 현재 배포 topology          | `deploy/compose/`, proxy 설정, release workflow                                                                        |
-| 설계 이유                   | 관련 ADR와 이 문서의 경계 원칙                                                                                         |
+| 질문                        | 먼저 확인할 권위 소스                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 현재 workspace·package 책임 | root와 workspace `package.json`, source import graph                                                                      |
+| 현재 API·schema             | module HTTP `register*Routes`, API composition root, `packages/shared/contracts`, runtime OpenAPI                         |
+| 현재 persistence·migration  | module schema·repository, `packages/infra/auth`, `apps/api/src/db`, `apps/api/migrations`과 `packages/infra/db` primitive |
+| 현재 배포 topology          | 각 앱의 `wrangler.jsonc`, `src/worker.ts`, `vite.config.ts`                                                               |
+| 설계 이유                   | 관련 ADR와 이 문서의 경계 원칙                                                                                            |
 
 ## 독립성과 실패 격리
 

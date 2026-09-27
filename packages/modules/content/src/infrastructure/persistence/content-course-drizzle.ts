@@ -1,3 +1,4 @@
+import { executeBatch, type DatabaseStatement } from "@workspace/db/batch"
 import { and, asc, desc, eq, gt, lt, or, sql } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -32,7 +33,7 @@ import {
   lessonVersions,
 } from "#content/infrastructure/persistence/schema"
 
-export function createCourse(
+export async function createCourse(
   database: WritingAppDatabase,
   input: {
     readonly category: string
@@ -41,11 +42,9 @@ export function createCourse(
     readonly now: Date
     readonly title: string
   }
-): Result<CourseEditorDocument, ContentError> {
+): Promise<Result<CourseEditorDocument, ContentError>> {
   try {
-    return ok(
-      database.transaction((transaction) => insertCourse(transaction, input))
-    )
+    return ok(await insertCourse(database, input))
   } catch (cause) {
     if (isUniqueConstraintViolation(cause)) {
       return err({ cause, kind: "content-conflict" })
@@ -54,7 +53,7 @@ export function createCourse(
   }
 }
 
-function insertCourse(
+async function insertCourse(
   transaction: WritingAppDatabaseTransaction,
   input: {
     readonly category?: string
@@ -63,26 +62,25 @@ function insertCourse(
     readonly now: Date
     readonly title?: string
   }
-): CourseEditorDocument {
+): Promise<CourseEditorDocument> {
+  const statements: DatabaseStatement[] = []
   const curriculumVersionId = createCurriculumVersionId(input.courseId, 1)
-  const sortOrder = readNextCourseSortOrder(transaction)
+  const sortOrder = await readNextCourseSortOrder(transaction)
   const category = input.category ?? "미분류"
   const description = input.description ?? "강의 설명을 입력하세요."
   const title = input.title ?? "새 강의"
 
-  transaction
-    .insert(courses)
-    .values({
+  statements.push(
+    transaction.insert(courses).values({
       createdAt: input.now,
       id: input.courseId,
       publishedCurriculumVersionId: null,
       sortOrder,
       status: activeStatus,
     })
-    .run()
-  transaction
-    .insert(courseCurriculumVersions)
-    .values({
+  )
+  statements.push(
+    transaction.insert(courseCurriculumVersions).values({
       category,
       courseId: input.courseId,
       coverAssetId: null,
@@ -97,8 +95,9 @@ function insertCourse(
       updatedAt: input.now,
       visualKey: "basic-sentence-writing",
     })
-    .run()
+  )
 
+  await executeBatch(transaction, statements)
   return {
     assets: [],
     category,
@@ -113,11 +112,11 @@ function insertCourse(
   }
 }
 
-export function findCourse(
+export async function findCourse(
   database: CourseReadDatabase,
   courseId: CourseId
-): Course | null {
-  const row = database
+): Promise<Course | null> {
+  const row = await database
     .select()
     .from(courses)
     .where(eq(courses.id, courseId))
@@ -136,11 +135,11 @@ export function findCourse(
   }
 }
 
-export function readCourseChangeTarget(
+export async function readCourseChangeTarget(
   database: CourseReadDatabase,
   courseId: CourseId
-): CourseChangeTarget | null {
-  const row = database
+): Promise<CourseChangeTarget | null> {
+  const row = await database
     .select({
       courseId: courses.id,
       editVersion: courseCurriculumVersions.editVersion,
@@ -168,14 +167,14 @@ export function readCourseChangeTarget(
       }
 }
 
-export function saveCourse(
+export async function saveCourse(
   database: WritingAppDatabase,
   input: {
     readonly course: Course
     readonly expectedStatus: Course["status"]
   }
-): Result<Course, ContentError> {
-  const updated = database
+): Promise<Result<Course, ContentError>> {
+  const updated = await database
     .update(courses)
     .set({ status: input.course.status })
     .where(
@@ -192,10 +191,10 @@ export function saveCourse(
     : ok(input.course)
 }
 
-export function readCourses(
+export async function readCourses(
   database: WritingAppDatabase,
   input: ReadContentCoursesInput
-): ContentCourseRowPage {
+): Promise<ContentCourseRowPage> {
   const direction = input.cursor === undefined ? "next" : input.direction
   const category = input.category.trim()
   const whereCondition = createReadCoursesWhereCondition({
@@ -219,7 +218,7 @@ export function readCourses(
     WHERE ${lessonVersions.curriculumVersionId} = ${courseCurriculumVersions.id}
       AND ${lessonVersions.status} = 'active'
   )`
-  const rows = database
+  const rows = await database
     .select({
       category: courseCurriculumVersions.category,
       coverAssetId: courseCurriculumVersions.coverAssetId,
@@ -330,14 +329,18 @@ function createReadCoursesWhereCondition({
   return and(statusCondition, categoryCondition, titleCondition)
 }
 
-function readNextCourseSortOrder(database: CourseReadDatabase): number {
+async function readNextCourseSortOrder(
+  database: CourseReadDatabase
+): Promise<number> {
   return (
-    database
-      .select({
-        value: sql<number>`COALESCE(MAX(${courses.sortOrder}), 0) + 1`,
-      })
-      .from(courses)
-      .get()?.value ?? 1
+    (
+      await database
+        .select({
+          value: sql<number>`COALESCE(MAX(${courses.sortOrder}), 0) + 1`,
+        })
+        .from(courses)
+        .get()
+    )?.value ?? 1
   )
 }
 

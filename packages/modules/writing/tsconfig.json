@@ -10,7 +10,7 @@
       "#identity/*": ["../identity/src/*"],
       "#writing/*": ["./src/*"]
     },
-    "types": ["bun"]
+    "types": ["bun", "@cloudflare/workers-types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

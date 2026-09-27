@@ -12,7 +12,6 @@
     "./admin/server": "./src/admin/server.ts",
     "./email/delivery": "./src/email/delivery.ts",
     "./email/in-memory": "./src/email/in-memory.ts",
-    "./email/resend": "./src/email/resend.ts",
     "./email/templates": "./src/email/templates.ts",
     "./learner/client": "./src/learner/client.ts",
     "./learner/server": "./src/learner/server.ts",
@@ -20,11 +19,12 @@
     "./schema": "./src/schema/index.ts",
     "./seed": "./src/schema/seed.ts",
     "./session-token": "./src/session-token.ts",
-    "./sqlite-database": "./src/sqlite-database.ts"
+    "./sqlite-database": "./src/sqlite-database.ts",
+    "./email/cloudflare": "./src/email/cloudflare.ts"
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/auth",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/auth",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
@@ -40,6 +40,7 @@
     "@workspace/typescript-config": "workspace:*",
     "drizzle-orm": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@cloudflare/workers-types": "catalog:"
   }
 }

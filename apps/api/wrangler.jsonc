@@ -1,0 +1,169 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "writing-app-api-local",
+  "account_id": "23cceaf93cf439c0f6e586bd9bd26133",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "invocation_logs": false,
+    },
+  },
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 4000,
+  },
+  "vars": {
+    "NODE_ENV": "development",
+    "WEB_ORIGIN": "http://localhost:3000",
+    "ADMIN_ORIGIN": "http://localhost:3001",
+    "DEPLOYMENT_ENVIRONMENT": "development",
+    "DEPLOYMENT_VERSION": "local",
+    "LOG_LEVEL": "info",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "writing-app-local",
+      "database_id": "38098f73-fd99-4dcc-9dbd-1f5b3de90c8e",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "CONTENT_ASSETS",
+      "bucket_name": "writing-app-assets-local",
+    },
+    {
+      "binding": "PRIVATE_DATA",
+      "bucket_name": "writing-app-private-local",
+    },
+    {
+      "binding": "LOCAL_MAILBOX",
+      "bucket_name": "writing-app-mailbox-local",
+    },
+  ],
+  "images": {
+    "binding": "IMAGES",
+  },
+  "secrets": {
+    "required": [
+      "LEARNER_AUTH_SECRET",
+      "ADMIN_AUTH_SECRET",
+      "CURSOR_SIGNING_SECRET",
+    ],
+  },
+  "env": {
+    "staging": {
+      "name": "writing-app-api-staging",
+      "workers_dev": false,
+      "vars": {
+        "WEB_ORIGIN": "https://writing-app-web-staging.qaws7791.workers.dev",
+        "ADMIN_ORIGIN": "https://writing-app-admin-staging.qaws7791.workers.dev",
+        "NODE_ENV": "production",
+        "DEPLOYMENT_ENVIRONMENT": "staging",
+        "DEPLOYMENT_VERSION": "cloudflare-initial",
+        "LOG_LEVEL": "info",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "writing-app-staging",
+          "database_id": "38098f73-fd99-4dcc-9dbd-1f5b3de90c8e",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "CONTENT_ASSETS",
+          "bucket_name": "writing-app-assets-staging",
+        },
+        {
+          "binding": "PRIVATE_DATA",
+          "bucket_name": "writing-app-private-staging",
+        },
+      ],
+      "images": {
+        "binding": "IMAGES",
+      },
+      "ai": {
+        "binding": "AI",
+      },
+      "send_email": [
+        {
+          "name": "EMAIL",
+        },
+      ],
+      "triggers": {
+        "crons": ["0 18 * * *"],
+      },
+      "secrets": {
+        "required": [
+          "LEARNER_AUTH_SECRET",
+          "ADMIN_AUTH_SECRET",
+          "CURSOR_SIGNING_SECRET",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+          "AUTH_EMAIL_FROM",
+        ],
+      },
+    },
+    "production": {
+      "name": "writing-app-api-production",
+      "workers_dev": false,
+      "vars": {
+        "WEB_ORIGIN": "https://writing-app-web-production.qaws7791.workers.dev",
+        "ADMIN_ORIGIN": "https://writing-app-admin-production.qaws7791.workers.dev",
+        "NODE_ENV": "production",
+        "DEPLOYMENT_ENVIRONMENT": "production",
+        "DEPLOYMENT_VERSION": "cloudflare-initial",
+        "LOG_LEVEL": "info",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "writing-app-production",
+          "database_id": "fa846fa4-4283-45db-9cf3-43d47fd16bc9",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "CONTENT_ASSETS",
+          "bucket_name": "writing-app-assets-production",
+        },
+        {
+          "binding": "PRIVATE_DATA",
+          "bucket_name": "writing-app-private-production",
+        },
+      ],
+      "images": {
+        "binding": "IMAGES",
+      },
+      "ai": {
+        "binding": "AI",
+      },
+      "send_email": [
+        {
+          "name": "EMAIL",
+        },
+      ],
+      "triggers": {
+        "crons": ["0 18 * * *"],
+      },
+      "secrets": {
+        "required": [
+          "LEARNER_AUTH_SECRET",
+          "ADMIN_AUTH_SECRET",
+          "CURSOR_SIGNING_SECRET",
+          "GOOGLE_CLIENT_ID",
+          "GOOGLE_CLIENT_SECRET",
+          "AUTH_EMAIL_FROM",
+        ],
+      },
+    },
+  },
+}

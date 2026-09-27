@@ -4,7 +4,6 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
-      "#ai/*": ["../../packages/infra/ai/src/*"],
       "#auth/*": ["../../packages/infra/auth/src/*"],
       "#content/*": ["../../packages/modules/content/src/*"],
       "#db/*": ["../../packages/infra/db/src/*"],
@@ -15,9 +14,10 @@
       "#observability/*": ["../../packages/infra/observability/src/*"],
       "#operations/*": ["../../packages/modules/operations/src/*"],
       "#writing/*": ["../../packages/modules/writing/src/*"],
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "#storage/*": ["../../packages/infra/storage/src/*"]
     },
-    "types": ["bun"]
+    "types": ["bun", "@cloudflare/workers-types"]
   },
   "include": ["src/**/*.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]

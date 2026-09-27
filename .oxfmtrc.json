@@ -46,7 +46,11 @@
     ".agents",
     "Kwep/",
     "data",
-    "credentials"
+    "credentials",
+    ".wrangler/",
+    "**/worker-configuration.d.ts",
+    ".dev.vars*",
+    ".artifacts/"
   ],
   "overrides": [
     {

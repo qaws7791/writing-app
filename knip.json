@@ -5,11 +5,11 @@
     ".": {
       "entry": [
         "e2e/**/*.spec.ts",
-        "e2e/fixture-server.ts",
         "lighthouse-ci.config.cjs!",
         "playwright*.config.ts!",
         "scripts/k6-staging-smoke.js!",
-        "scripts/**/*.test.ts"
+        "scripts/**/*.test.ts",
+        "scripts/start-e2e-frontend.ts"
       ],
       "project": [
         "*.{js,cjs,mjs,ts,cts,mts}",
@@ -24,7 +24,8 @@
         "src/app/**/{default,error,global-error,layout,loading,not-found,page,route,template}.{ts,tsx}!",
         "src/**/*.{test,spec}.{ts,tsx}"
       ],
-      "project": ["src/**/*.{css,ts,tsx}"]
+      "project": ["src/**/*.{css,ts,tsx}"],
+      "ignoreDependencies": ["cloudflare"]
     },
     "apps/api": {
       "entry": [
@@ -32,8 +33,9 @@
         "src/test-support/setup-e2e-content-database.ts!",
         "src/test-support/setup-e2e-database.ts!",
         "src/test-support/start-e2e-api.ts!",
-        "src/test-support/unified-api-shutdown-process.ts",
-        "src/**/*.{test,spec}.ts"
+        "src/**/*.{test,spec}.ts",
+        "src/db/schema.ts",
+        "src/test-support/seed-e2e-database.ts!"
       ],
       "project": ["src/**/*.ts"]
     },
@@ -67,7 +69,11 @@
     },
     "packages/modules/*": {
       "includeEntryExports": true,
-      "project": ["src/**/*.{ts,tsx}"]
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreIssues": {
+        "src/infrastructure/persistence/schema.ts": ["exports"],
+        "src/infrastructure/persistence/reporting-view.ts": ["exports"]
+      }
     },
     "packages/config/typescript-config": {
       "entry": ["base.json!", "nextjs.json!", "react-library.json!"],

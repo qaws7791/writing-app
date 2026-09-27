@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite"
+import type { SqlDatabaseClient as Database } from "@workspace/db/sql-client"
 import { Hono } from "hono"
 import { describe, expect, it } from "vitest"
 
@@ -19,7 +19,7 @@ const adminCookie = "admin=valid"
 
 describe("admin audit persistence", () => {
   it("blocks the mutation when the started audit event cannot be inserted", async () => {
-    const fixture = openAuditTrail()
+    const fixture = await openAuditTrail()
 
     try {
       rejectAuditStatement(fixture.sqlite, "INSERT")
@@ -35,14 +35,14 @@ describe("admin audit persistence", () => {
 
       expect(response.status).toBe(503)
       expect(mutationCount).toBe(0)
-      expect(readAuditRows(fixture.sqlite)).toEqual([])
+      expect(await readAuditRows(fixture.sqlite)).toEqual([])
     } finally {
       fixture.close()
     }
   })
 
   it("preserves the started event when the outcome update fails", async () => {
-    const fixture = openAuditTrail()
+    const fixture = await openAuditTrail()
 
     try {
       rejectAuditStatement(fixture.sqlite, "UPDATE")
@@ -58,7 +58,7 @@ describe("admin audit persistence", () => {
 
       expect(response.status).toBe(503)
       expect(mutationCount).toBe(1)
-      expect(readAuditRows(fixture.sqlite)).toEqual([
+      expect(await readAuditRows(fixture.sqlite)).toEqual([
         { outcome: "started", requestId: "request-update-failure" },
       ])
     } finally {
@@ -67,9 +67,9 @@ describe("admin audit persistence", () => {
   })
 })
 
-function openAuditTrail() {
+async function openAuditTrail() {
   let sequence = 0
-  return createAuditTrailFixture({
+  return await createAuditTrailFixture({
     clock: () => now,
     nextId: () => `audit-${++sequence}`,
   })
@@ -149,10 +149,10 @@ function adminHeaders(requestId: string): HeadersInit {
   }
 }
 
-function readAuditRows(
+async function readAuditRows(
   sqlite: Database
-): readonly Readonly<{ outcome: string; requestId: string }>[] {
-  return sqlite
+): Promise<readonly Readonly<{ outcome: string; requestId: string }>[]> {
+  return await sqlite
     .query<{ readonly outcome: string; readonly requestId: string }, []>(
       "SELECT outcome, request_id AS requestId FROM audit_events ORDER BY created_at, id"
     )

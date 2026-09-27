@@ -6,9 +6,7 @@ import { e2eCredentials, e2eRuntime } from "#e2e/runtime"
 
 const repositoryRoot = path.resolve(import.meta.dir, "..")
 const runRoot = await mkdtemp(path.join(tmpdir(), "writing-app-lighthouse-"))
-const databaseUrl = path.join(runRoot, "writing-app.sqlite")
 const sharedEnvironment = {
-  E2E_DATABASE_URL: databaseUrl,
   E2E_RUN_ROOT: runRoot,
 }
 const processes: Bun.Subprocess[] = []
@@ -16,18 +14,12 @@ let exitCode = 1
 
 try {
   await start(
-    ["bun", "e2e/fixture-server.ts"],
-    sharedEnvironment,
-    e2eRuntime.assetOrigin
-  )
-  await start(
     ["bun", "apps/api/src/test-support/start-e2e-api.ts"],
     {
       ...sharedEnvironment,
       ADMIN_AUTH_SECRET: "lighthouse-admin-auth-secret-must-have-32-characters",
       ADMIN_ORIGIN: e2eRuntime.adminOrigin,
       API_PORT: new URL(e2eRuntime.apiOrigin).port,
-      DATABASE_URL: databaseUrl,
       LEARNER_AUTH_SECRET:
         "lighthouse-learner-auth-secret-must-have-32-characters",
       NODE_ENV: "test",
@@ -36,9 +28,10 @@ try {
     `${e2eRuntime.apiOrigin}/api/health`
   )
   await start(
-    ["node", "scripts/run-next-standalone.mjs", "web"],
+    ["bun", "scripts/start-e2e-frontend.ts", "web"],
     {
       ...sharedEnvironment,
+      E2E_RUNTIME: "preview",
       API_BASE_URL: e2eRuntime.apiOrigin,
       CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS: "https://assets.example.test",
       CONTENT_ASSET_PUBLIC_BASE_URL:

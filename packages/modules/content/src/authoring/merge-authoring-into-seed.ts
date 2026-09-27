@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs"
+import { readFile, writeFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 import { collectAuthoringIssuesFromSeedCourses } from "#content/authoring/validate-content-seed-authoring"
@@ -34,8 +36,8 @@ export async function mergeAuthoringIntoSeed(input: {
   | { readonly issues: readonly AuthoringValidationIssue[]; readonly ok: false }
   | { readonly ok: true; readonly result: MergeAuthoringIntoSeedResult }
 > {
-  const seedFile = Bun.file(input.seedPath)
-  if (!(await seedFile.exists())) {
+  const seedFile = input.seedPath
+  if (!existsSync(seedFile)) {
     return {
       issues: [
         {
@@ -48,7 +50,7 @@ export async function mergeAuthoringIntoSeed(input: {
     }
   }
 
-  const seed = (await seedFile.json()) as SeedCourse[]
+  const seed = JSON.parse(await readFile(seedFile, "utf8")) as SeedCourse[]
   const course = seed.find((entry) => entry.id === input.courseId)
   if (course === undefined) {
     return {
@@ -70,13 +72,13 @@ export async function mergeAuthoringIntoSeed(input: {
   for (const unit of course.units) {
     for (const lesson of unit.lessons) {
       const lessonPath = resolve(input.lessonsDirectory, `${lesson.id}.json`)
-      const lessonFile = Bun.file(lessonPath)
-      if (!(await lessonFile.exists())) {
+      const lessonFile = lessonPath
+      if (!existsSync(lessonFile)) {
         skippedLessonCount += 1
         continue
       }
 
-      const steps = (await lessonFile.json()) as unknown[]
+      const steps = JSON.parse(await readFile(lessonFile, "utf8")) as unknown[]
       if (!Array.isArray(steps)) {
         return {
           issues: [
@@ -107,7 +109,7 @@ export async function mergeAuthoringIntoSeed(input: {
   }
 
   if (input.dryRun !== true) {
-    await Bun.write(input.seedPath, `${JSON.stringify(seed, null, 2)}\n`)
+    await writeFile(input.seedPath, `${JSON.stringify(seed, null, 2)}\n`)
   }
 
   return {

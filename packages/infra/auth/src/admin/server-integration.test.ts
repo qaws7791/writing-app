@@ -12,7 +12,7 @@ const webOrigin = "http://localhost:3001"
 
 describe("admin authentication", () => {
   it("rejects public sign-up without creating an admin user or account", async () => {
-    const database = createAuthTestDatabase()
+    const database = await createAuthTestDatabase()
 
     try {
       const runtime = createTestRuntime(database.db)
@@ -33,10 +33,12 @@ describe("admin authentication", () => {
       )
 
       expect(response.status).toBe(404)
-      expect(database.db.select().from(adminAuthUsers).all()).toEqual([])
-      expect(database.db.select().from(adminAuthAccounts).all()).toEqual([])
+      expect(await database.db.select().from(adminAuthUsers).all()).toEqual([])
+      expect(await database.db.select().from(adminAuthAccounts).all()).toEqual(
+        []
+      )
     } finally {
-      database.close()
+      await database.close()
     }
   })
 })

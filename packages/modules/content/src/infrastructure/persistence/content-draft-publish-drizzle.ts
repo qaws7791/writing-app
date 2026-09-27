@@ -1,4 +1,10 @@
-import { and, asc, eq, inArray } from "drizzle-orm"
+import {
+  executeBatch,
+  requireBatchCondition,
+  isBatchConflict,
+  type DatabaseStatement,
+} from "@workspace/db/batch"
+import { and, asc, eq, inArray, sql } from "drizzle-orm"
 import { err, ok, type Result } from "@workspace/kernel/result"
 import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -43,11 +49,11 @@ import {
   lessonVersions,
 } from "#content/infrastructure/persistence/schema"
 
-export function readDraft(
+export async function readDraft(
   database: CourseReadDatabase,
   courseId: CourseId
-): Result<CurriculumDraft | null, ContentError> {
-  const rows = database
+): Promise<Result<CurriculumDraft | null, ContentError>> {
+  const rows = await database
     .select({
       category: courseCurriculumVersions.category,
       courseId: courses.id,
@@ -85,16 +91,16 @@ export function readDraft(
     editVersion: row.editVersion,
     revision: row.revision,
     title: row.title,
-    units: readCurriculumUnits(database, row.curriculumVersionId),
+    units: await readCurriculumUnits(database, row.curriculumVersionId),
     visualKey: readCourseVisualKey(row.visualKey),
   })
 }
 
-export function readCurriculumUnits(
+export async function readCurriculumUnits(
   database: CourseReadDatabase,
   curriculumVersionId: string
-): readonly CurriculumUnit[] {
-  const unitRows = database
+): Promise<readonly CurriculumUnit[]> {
+  const unitRows = await database
     .select()
     .from(courseUnitVersions)
     .where(
@@ -105,7 +111,7 @@ export function readCurriculumUnits(
     )
     .orderBy(asc(courseUnitVersions.sortOrder))
     .all()
-  const lessonRows = database
+  const lessonRows = await database
     .select()
     .from(lessonVersions)
     .where(
@@ -116,7 +122,7 @@ export function readCurriculumUnits(
     )
     .orderBy(asc(lessonVersions.sortOrder))
     .all()
-  const stepRows = database
+  const stepRows = await database
     .select()
     .from(lessonStepVersions)
     .where(
@@ -173,7 +179,7 @@ function toCurriculumStep(
   }
 }
 
-export function saveDraft(
+export async function saveDraft(
   database: WritingAppDatabase,
   input: {
     readonly draft: CurriculumDraft
@@ -181,18 +187,18 @@ export function saveDraft(
     readonly now: Date
     readonly preserveAssetReferences?: boolean
   }
-): Result<CurriculumDraft, ContentError> {
+): Promise<Result<CurriculumDraft, ContentError>> {
   try {
-    return database.transaction((transaction) =>
-      saveDraftInTransaction(transaction, input)
-    )
+    return await saveDraftInTransaction(database, input)
   } catch (error) {
+    if (isBatchConflict(error))
+      return err({ cause: error, kind: "content-conflict" })
     if (error instanceof DraftSaveAbort) return err(error.contentError)
     throw error
   }
 }
 
-function saveDraftInTransaction(
+async function saveDraftInTransaction(
   transaction: WritingAppDatabaseTransaction,
   input: {
     readonly draft: CurriculumDraft
@@ -200,8 +206,9 @@ function saveDraftInTransaction(
     readonly now: Date
     readonly preserveAssetReferences?: boolean
   }
-): Result<CurriculumDraft, ContentError> {
-  const currentDraft = transaction
+): Promise<Result<CurriculumDraft, ContentError>> {
+  const statements: DatabaseStatement[] = []
+  const currentDraft = await transaction
     .select({
       courseStatus: courses.status,
       coverAssetId: courseCurriculumVersions.coverAssetId,
@@ -238,8 +245,9 @@ function saveDraftInTransaction(
     abortDraftSave({ kind: "content-conflict" })
   }
 
-  const assetReferences = validateAndTransitionDraftAssetReferences(
+  const assetReferences = await validateAndTransitionDraftAssetReferences(
     transaction,
+    statements,
     {
       currentCoverAssetId:
         currentDraft.coverAssetId === null
@@ -253,33 +261,43 @@ function saveDraftInTransaction(
   )
   if (assetReferences.isErr()) abortDraftSave(assetReferences.error)
 
-  const updatedDraft = transaction
-    .update(courseCurriculumVersions)
-    .set({
-      category: input.draft.category,
-      coverAssetId: input.draft.coverAssetId,
-      description: input.draft.description,
-      editVersion: input.expectedEditVersion + 1,
-      title: input.draft.title,
-      updatedAt: input.now,
-    })
-    .where(
-      and(
-        eq(courseCurriculumVersions.id, currentDraft.id),
-        eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
-        eq(courseCurriculumVersions.status, "draft")
-      )
+  statements.unshift(
+    requireBatchCondition(
+      transaction,
+      sql`EXISTS (SELECT 1 FROM ${courseCurriculumVersions} INNER JOIN ${courses} ON ${courses.id} = ${courseCurriculumVersions.courseId} WHERE ${courseCurriculumVersions.id} = ${currentDraft.id} AND ${courseCurriculumVersions.editVersion} = ${input.expectedEditVersion} AND ${courseCurriculumVersions.status} = 'draft' AND ${courses.status} = 'active')`
     )
-    .returning({ id: courseCurriculumVersions.id })
-    .get()
-  if (updatedDraft === undefined) {
-    abortDraftSave({ kind: "content-conflict" })
-  }
+  )
+  statements.push(
+    transaction
+      .update(courseCurriculumVersions)
+      .set({
+        category: input.draft.category,
+        coverAssetId: input.draft.coverAssetId,
+        description: input.draft.description,
+        editVersion: input.expectedEditVersion + 1,
+        title: input.draft.title,
+        updatedAt: input.now,
+      })
+      .where(
+        and(
+          eq(courseCurriculumVersions.id, currentDraft.id),
+          eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
+          eq(courseCurriculumVersions.status, "draft")
+        )
+      )
+  )
 
-  deleteDraftContent(transaction, currentDraft.id)
-  insertCurriculumContent(transaction, currentDraft.id, input.draft.units)
+  statements.push(requireBatchCondition(transaction, sql`changes() = 1`))
+  deleteDraftContent(transaction, statements, currentDraft.id)
+  insertCurriculumContent(
+    transaction,
+    statements,
+    currentDraft.id,
+    input.draft.units
+  )
+  await executeBatch(transaction, statements)
 
-  const saved = readDraft(transaction, input.draft.courseId)
+  const saved = await readDraft(transaction, input.draft.courseId)
   if (saved.isErr()) abortDraftSave(saved.error)
   if (saved.value === null) {
     throw new Error("Saved content draft was not found")
@@ -306,8 +324,9 @@ type ExpectedAssetReference = Readonly<{
   kind: ContentAssetKind
 }>
 
-function validateAndTransitionDraftAssetReferences(
+async function validateAndTransitionDraftAssetReferences(
   transaction: WritingAppDatabaseTransaction,
+  statements: DatabaseStatement[],
   input: {
     readonly currentCoverAssetId: ContentAssetId | null
     readonly currentDraftId: CurriculumVersionId
@@ -315,8 +334,8 @@ function validateAndTransitionDraftAssetReferences(
     readonly now: Date
     readonly preserveAssetReferences: boolean
   }
-): Result<void, ContentError> {
-  const currentSteps = transaction
+): Promise<Result<void, ContentError>> {
+  const currentSteps = await transaction
     .select({
       contentJson: lessonStepVersions.contentJson,
       id: lessonStepVersions.id,
@@ -352,31 +371,47 @@ function validateAndTransitionDraftAssetReferences(
       )
     ),
   ]
-  const assets = chunkByBoundParameters(allReferenceIds, {
-    fixedParameters: 0,
-    parametersPerItem: 1,
-  }).flatMap((referenceIdChunk) =>
-    transaction
-      .select({
-        courseId: contentAssets.courseId,
-        curriculumVersionId: contentAssets.curriculumVersionId,
-        id: contentAssets.id,
-        kind: contentAssets.kind,
-        orphanedAt: contentAssets.orphanedAt,
-        status: contentAssets.status,
-        versionStatus: courseCurriculumVersions.status,
-      })
-      .from(contentAssets)
-      .innerJoin(
-        courseCurriculumVersions,
-        and(
-          eq(courseCurriculumVersions.courseId, contentAssets.courseId),
-          eq(courseCurriculumVersions.id, contentAssets.curriculumVersionId)
-        )
+  const assets = (
+    await Promise.all(
+      chunkByBoundParameters(allReferenceIds, {
+        fixedParameters: 0,
+        parametersPerItem: 1,
+      }).map(
+        async (referenceIdChunk) =>
+          await transaction
+            .select({
+              courseId: contentAssets.courseId,
+              curriculumVersionId: contentAssets.curriculumVersionId,
+              id: contentAssets.id,
+              kind: contentAssets.kind,
+              orphanedAt: contentAssets.orphanedAt,
+              status: contentAssets.status,
+              versionStatus: courseCurriculumVersions.status,
+            })
+            .from(contentAssets)
+            .innerJoin(
+              courseCurriculumVersions,
+              and(
+                eq(courseCurriculumVersions.courseId, contentAssets.courseId),
+                eq(
+                  courseCurriculumVersions.id,
+                  contentAssets.curriculumVersionId
+                )
+              )
+            )
+            .where(inArray(contentAssets.id, referenceIdChunk))
+            .all()
       )
-      .where(inArray(contentAssets.id, referenceIdChunk))
-      .all()
-  )
+    )
+  ).flat()
+  for (const asset of assets) {
+    statements.push(
+      requireBatchCondition(
+        transaction,
+        sql`EXISTS (SELECT 1 FROM ${contentAssets} WHERE ${contentAssets.id} = ${asset.id} AND ${contentAssets.status} = ${asset.status} AND ${contentAssets.orphanedAt} IS ${asset.orphanedAt === null ? null : asset.orphanedAt.getTime()})`
+      )
+    )
+  }
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]))
   const reactivationCutoff = new Date(
     input.now.getTime() - contentAssetOrphanRetentionMs
@@ -421,41 +456,43 @@ function validateAndTransitionDraftAssetReferences(
     fixedParameters: 5,
     parametersPerItem: 1,
   })) {
-    transaction
-      .update(contentAssets)
-      .set({
-        orphanedAt: null,
-        status: "active",
-        updatedAt: input.now,
-      })
-      .where(
-        and(
-          inArray(contentAssets.id, assetIdChunk),
-          eq(contentAssets.curriculumVersionId, input.currentDraftId),
-          eq(contentAssets.status, "orphaned")
+    statements.push(
+      transaction
+        .update(contentAssets)
+        .set({
+          orphanedAt: null,
+          status: "active",
+          updatedAt: input.now,
+        })
+        .where(
+          and(
+            inArray(contentAssets.id, assetIdChunk),
+            eq(contentAssets.curriculumVersionId, input.currentDraftId),
+            eq(contentAssets.status, "orphaned")
+          )
         )
-      )
-      .run()
+    )
   }
   for (const assetIdChunk of chunkByBoundParameters(orphanedIds, {
     fixedParameters: 5,
     parametersPerItem: 1,
   })) {
-    transaction
-      .update(contentAssets)
-      .set({
-        orphanedAt: input.now,
-        status: "orphaned",
-        updatedAt: input.now,
-      })
-      .where(
-        and(
-          inArray(contentAssets.id, assetIdChunk),
-          eq(contentAssets.curriculumVersionId, input.currentDraftId),
-          eq(contentAssets.status, "active")
+    statements.push(
+      transaction
+        .update(contentAssets)
+        .set({
+          orphanedAt: input.now,
+          status: "orphaned",
+          updatedAt: input.now,
+        })
+        .where(
+          and(
+            inArray(contentAssets.id, assetIdChunk),
+            eq(contentAssets.curriculumVersionId, input.currentDraftId),
+            eq(contentAssets.status, "active")
+          )
         )
-      )
-      .run()
+    )
   }
 
   return ok(undefined)
@@ -556,21 +593,26 @@ function invalidAssetReference(): Result<never, ContentError> {
   })
 }
 
-export function publishDraft(
+export async function publishDraft(
   database: WritingAppDatabase,
   input: Parameters<ContentRepository["publishDraft"]>[0]
-): Result<PublishedCurriculumRevision, ContentError> {
-  return database.transaction((transaction) =>
-    publishDraftInTransaction(transaction, input)
-  )
+): Promise<Result<PublishedCurriculumRevision, ContentError>> {
+  try {
+    return await publishDraftInTransaction(database, input)
+  } catch (error) {
+    if (isBatchConflict(error))
+      return err({ cause: error, kind: "content-conflict" })
+    throw error
+  }
 }
 
-function publishDraftInTransaction(
+async function publishDraftInTransaction(
   transaction: WritingAppDatabaseTransaction,
   input: Parameters<ContentRepository["publishDraft"]>[0]
-): Result<PublishedCurriculumRevision, ContentError> {
+): Promise<Result<PublishedCurriculumRevision, ContentError>> {
+  const statements: DatabaseStatement[] = []
   const publishedRevision = input.publishedRevision
-  const course = transaction
+  const course = await transaction
     .select({ status: courses.status })
     .from(courses)
     .where(eq(courses.id, publishedRevision.courseId))
@@ -579,36 +621,44 @@ function publishDraftInTransaction(
     return err({ kind: "content-conflict" })
   }
 
-  const published = transaction
-    .update(courseCurriculumVersions)
-    .set({
-      publishedAt: publishedRevision.publishedAt,
-      status: "published",
-      updatedAt: publishedRevision.publishedAt,
-    })
-    .where(
-      and(
-        eq(courseCurriculumVersions.id, publishedRevision.curriculumVersionId),
-        eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
-        eq(courseCurriculumVersions.status, "draft")
-      )
+  statements.push(
+    requireBatchCondition(
+      transaction,
+      sql`EXISTS (SELECT 1 FROM ${courseCurriculumVersions} INNER JOIN ${courses} ON ${courses.id} = ${courseCurriculumVersions.courseId} WHERE ${courseCurriculumVersions.id} = ${publishedRevision.curriculumVersionId} AND ${courseCurriculumVersions.editVersion} = ${input.expectedEditVersion} AND ${courseCurriculumVersions.status} = 'draft' AND ${courses.status} = 'active')`
     )
-    .returning({ id: courseCurriculumVersions.id })
-    .get()
-  if (published === undefined) return err({ kind: "content-conflict" })
+  )
+  statements.push(
+    transaction
+      .update(courseCurriculumVersions)
+      .set({
+        publishedAt: publishedRevision.publishedAt,
+        status: "published",
+        updatedAt: publishedRevision.publishedAt,
+      })
+      .where(
+        and(
+          eq(
+            courseCurriculumVersions.id,
+            publishedRevision.curriculumVersionId
+          ),
+          eq(courseCurriculumVersions.editVersion, input.expectedEditVersion),
+          eq(courseCurriculumVersions.status, "draft")
+        )
+      )
+  )
 
-  transaction
-    .update(courses)
-    .set({
-      publishedCurriculumVersionId: publishedRevision.curriculumVersionId,
-    })
-    .where(eq(courses.id, publishedRevision.courseId))
-    .run()
+  statements.push(
+    transaction
+      .update(courses)
+      .set({
+        publishedCurriculumVersionId: publishedRevision.curriculumVersionId,
+      })
+      .where(eq(courses.id, publishedRevision.courseId))
+  )
 
   const nextRevision = publishedRevision.revision + 1
-  transaction
-    .insert(courseCurriculumVersions)
-    .values({
+  statements.push(
+    transaction.insert(courseCurriculumVersions).values({
       category: publishedRevision.category,
       courseId: publishedRevision.courseId,
       coverAssetId: publishedRevision.coverAssetId,
@@ -623,18 +673,21 @@ function publishDraftInTransaction(
       updatedAt: publishedRevision.publishedAt,
       visualKey: publishedRevision.visualKey,
     })
-    .run()
+  )
   insertCurriculumContent(
     transaction,
+    statements,
     input.nextDraftId,
     publishedRevision.units
   )
 
+  await executeBatch(transaction, statements)
   return ok(publishedRevision)
 }
 
 function insertCurriculumContent(
   transaction: WritingAppDatabaseTransaction,
+  statements: DatabaseStatement[],
   curriculumVersionId: string,
   units: readonly CurriculumUnit[]
 ): void {
@@ -664,47 +717,48 @@ function insertCurriculumContent(
     fixedParameters: 0,
     parametersPerItem: 5,
   })) {
-    transaction
-      .insert(courseUnitVersions)
-      .values([...unitRowChunk])
-      .run()
+    statements.push(
+      transaction.insert(courseUnitVersions).values([...unitRowChunk])
+    )
   }
   for (const lessonRowChunk of chunkByBoundParameters(lessonRows, {
     fixedParameters: 0,
     parametersPerItem: 10,
   })) {
-    transaction
-      .insert(lessonVersions)
-      .values([...lessonRowChunk])
-      .run()
+    statements.push(
+      transaction.insert(lessonVersions).values([...lessonRowChunk])
+    )
   }
   for (const stepRowChunk of chunkByBoundParameters(stepRows, {
     fixedParameters: 0,
     parametersPerItem: 7,
   })) {
-    transaction
-      .insert(lessonStepVersions)
-      .values([...stepRowChunk])
-      .run()
+    statements.push(
+      transaction.insert(lessonStepVersions).values([...stepRowChunk])
+    )
   }
 }
 
 function deleteDraftContent(
   transaction: WritingAppDatabaseTransaction,
+  statements: DatabaseStatement[],
   curriculumVersionId: string
 ): void {
-  transaction
-    .delete(lessonStepVersions)
-    .where(eq(lessonStepVersions.curriculumVersionId, curriculumVersionId))
-    .run()
-  transaction
-    .delete(lessonVersions)
-    .where(eq(lessonVersions.curriculumVersionId, curriculumVersionId))
-    .run()
-  transaction
-    .delete(courseUnitVersions)
-    .where(eq(courseUnitVersions.curriculumVersionId, curriculumVersionId))
-    .run()
+  statements.push(
+    transaction
+      .delete(lessonStepVersions)
+      .where(eq(lessonStepVersions.curriculumVersionId, curriculumVersionId))
+  )
+  statements.push(
+    transaction
+      .delete(lessonVersions)
+      .where(eq(lessonVersions.curriculumVersionId, curriculumVersionId))
+  )
+  statements.push(
+    transaction
+      .delete(courseUnitVersions)
+      .where(eq(courseUnitVersions.curriculumVersionId, curriculumVersionId))
+  )
 }
 
 function readJsonStringArray(value: string): readonly string[] {

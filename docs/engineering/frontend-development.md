@@ -11,11 +11,11 @@
 - 공유 UI는 `packages/shared/ui`에 둔다. `components/primitives`는 shadcn 공용 primitive, `components/learning`은 학습 도메인 프레젠테이션, `blocks`는 화면 조합 예제 block, `hooks`는 공유 hook이다. API 호출, 세션, 채점과 라우팅은 각 제품 앱 feature에서 조합한다.
 - `apps/ui`는 `@workspace/ui`를 소비하는 정적 Astro 문서 앱이다. Block fixture는 제품 route와 production data에 연결하지 않는다.
 - 학습자 조회·변경 응답과 body는 `@workspace/http-client/learner`의 generated 함수에서 유도한 타입을 사용한다. `apps/web/src/features/lesson-session`은 입력 중 상태, 세션 event와 `LessonStepRenderer` 조립만 소유하며 채점 정책은 소유하지 않는다.
-- 어드민의 대시보드·분석·코스·사용자·세션 조회와 변경은 route Server Component, Server Action 또는 가까운 브라우저 event handler에서 `@workspace/http-client/admin`의 generated 함수를 직접 호출한다. 서버 전용 request options는 base URL, canonical session cookie와 상태 변경 요청의 `Origin`만 제공하고, generated 오류는 직렬화 가능한 앱 오류로 한 번만 정규화한다.
+- 어드민의 대시보드·분석·코스·사용자·세션 조회와 변경은 route Server Component, Server Action 또는 가까운 브라우저 event handler에서 `@workspace/http-client/admin`의 generated 함수를 직접 호출한다. 서버 전용 request options는 base URL, API service binding, canonical session cookie와 상태 변경 요청의 `Origin`을 제공하고, generated 오류는 직렬화 가능한 앱 오류로 한 번만 정규화한다.
 
 ## 기술과 적용 범위
 
-- 학습자 웹과 어드민 웹은 manifest가 선언한 Next.js App Router와 React를 사용한다. 기본 서버 런타임은 현재 앱 설정을 따르며, Edge runtime은 지연 개선이 실측되고 모든 의존성이 호환되는 좁은 경계에서만 검토한다.
+- 학습자 웹과 어드민 웹은 Next.js App Router API를 vinext와 Cloudflare Vite plugin으로 실행한다. 실제 runtime 설정은 각 앱의 `vite.config.ts`와 `wrangler.jsonc`가 소유한다.
 - UI 문서 앱은 manifest가 선언한 Astro와 React를 사용하고 정적 산출물만 생성한다.
 - 패키지 관리와 workspace 실행은 Bun과 Turborepo, 정적 타입 검사는 TypeScript strict, 런타임 신뢰 경계 검증은 Zod를 사용한다.
 - 스타일과 공용 프리미티브는 Tailwind CSS와 `packages/shared/ui`, 형식과 lint는 루트 Oxfmt와 Oxlint 설정을 단일 기준으로 사용한다.
@@ -94,7 +94,7 @@
 
 `apps/admin`은 `@workspace/http-client/admin`의 generated 함수만 endpoint 경계로 사용한다. `src/shared/http/admin-api-client.ts`는 generated 오류를 직렬화 가능한 result로 정착하고, `src/server/http/admin-api-request-options.ts`는 내부 API base URL·관리자 cookie·상태 변경 요청의 `Origin`을 제공한다. route Server Component는 초기 조회를 직접 수행한다. 코스 편집 저장·발행·파일 업로드는 feature Server Action이 입력과 세션을 검증한 뒤 generated 함수를 호출하며, 충돌 시 같은 서버 경계에서 최신 draft를 조회해 직렬화 가능한 명령 결과로 반환한다. Client Component에는 초기 데이터와 Server Action 참조만 전달하고 feature DAL·브라우저 adapter·중앙 `AdminApi`를 두지 않는다. Next의 Action 본문 한도는 canonical 파일 상한에 multipart 오버헤드만 허용하고, 실제 파일 크기 제한은 API가 계속 소유한다. 성공 응답 DTO는 generated 반환 타입을 그대로 사용한다.
 
-두 앱의 browser generated client는 현재 앱 origin의 상대 API 경계를 사용한다. 서버 request options는 검증된 내부 `API_BASE_URL`을 사용하며 이 값은 Client Component prop이나 browser bundle에 전달하지 않는다. 로컬 개발에서는 각 Next 설정의 development rewrite가 같은 상대 경로를 내부 API로 전달하고 production에서는 Caddy가 이를 소유한다.
+두 앱의 browser generated client는 현재 앱 origin의 상대 API 경계를 사용한다. 서버 request options는 검증된 내부 `API_BASE_URL`을 사용한다. 이 값은 Client Component prop이나 browser bundle에 전달하지 않는다. 프론트엔드 Worker는 API service binding으로 요청을 전달한다.
 
 서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 학습자 코스 목록은 course page를 조회하고, 홈은 profile과 in-progress page를 병렬 조회한다. 레슨 진입은 lesson만 조회하고 초기 step은 같은 응답의 `learning`에서 읽는다. 별도 progress나 course detail 조회를 시작하지 않는다. 각 요청의 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
 

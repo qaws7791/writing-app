@@ -23,12 +23,12 @@ const defaultPublication = {
   typeName: "칼럼",
 }
 
-function aPublishedWritingTask(
+async function aPublishedWritingTask(
   sqlite: WritingAppSqlite,
   input: Partial<typeof defaultPublication> = {}
-): void {
+): Promise<void> {
   const task = { ...defaultPublication, ...input }
-  sqlite
+  await sqlite
     .query<
       void,
       [
@@ -75,7 +75,7 @@ function aPublishedWritingTask(
       task.goalChars,
       task.requiredElementsJson
     )
-  sqlite
+  await sqlite
     .query<
       void,
       [
@@ -122,7 +122,7 @@ function aPublishedWritingTask(
       task.goalChars,
       task.requiredElementsJson
     )
-  sqlite
+  await sqlite
     .query<void, [string, string]>(
       `
       UPDATE writing_tasks
@@ -133,7 +133,7 @@ function aPublishedWritingTask(
     .run(task.publicationId, task.taskId)
 }
 
-export function aWriting(
+export async function aWriting(
   sqlite: WritingAppSqlite,
   input: Readonly<{
     eventTypes?: readonly WritingFixtureEventType[]
@@ -141,10 +141,10 @@ export function aWriting(
     publicationId?: string
     userId: string
   }>
-): void {
+): Promise<void> {
   const publicationId = input.publicationId ?? defaultPublication.publicationId
-  aPublishedWritingTask(sqlite, { publicationId })
-  sqlite
+  await aPublishedWritingTask(sqlite, { publicationId })
+  await sqlite
     .query<void, [string, string, string]>(
       `
       INSERT INTO writings (
@@ -161,7 +161,7 @@ export function aWriting(
     .run(input.id, input.userId, publicationId)
 
   for (const eventType of input.eventTypes ?? ["writing_created"]) {
-    sqlite
+    await sqlite
       .query<void, [string, string, string]>(
         `
         INSERT INTO writing_events (

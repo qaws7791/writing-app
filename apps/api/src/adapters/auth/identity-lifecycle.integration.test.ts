@@ -5,10 +5,8 @@ import {
   adminIdSchema,
   userIdSchema,
 } from "@workspace/contracts/identity/admin-ids"
-import {
-  createInMemoryWritingAppDatabase,
-  type WritingAppDatabaseClient,
-} from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+import { type WritingAppDatabaseClient } from "@workspace/db/client"
 import { createApp } from "@workspace/http-platform/app"
 import {
   registerLearnerIdentityRoutes,
@@ -26,7 +24,7 @@ import { err, ok } from "@workspace/kernel/result"
 
 import { createIdentitySessionRevocation } from "@/adapters/auth/identity-session-revocation"
 import { createLearnerIdentityDirectory } from "@/adapters/auth/learner-identity-directory"
-import { runApplicationMigrations } from "@/db/migrate"
+import { runCurrentTestMigration as runApplicationMigrations } from "@workspace/db/test-support/application-migration"
 import {
   learnerSessionCookieHeader,
   readLearnerSessionToken,
@@ -42,17 +40,17 @@ const learnerHeaders = {
 
 describe("identity 삭제 lifecycle", () => {
   it("삭제 marker 기록 실패 시 profile과 session을 변경하지 않는다", async () => {
-    const client = createInMemoryWritingAppDatabase()
+    const client = await createInMemoryWritingAppDatabase()
 
     try {
-      prepareActiveLearner(client)
+      await prepareActiveLearner(client)
       const identity = createIdentityFixture(client, {
         recordDeletionMarker: async () =>
           err({ kind: "deletion-marker-storage-failed" }),
         revokeLearnerSessions: createIdentitySessionRevocation(client.db)
           .revokeLearnerSessions,
       })
-      const before = readIdentityState(client)
+      const before = await readIdentityState(client)
 
       const result = await identity.adminUserMutation.deleteUser({
         actor: { id: adminId },
@@ -60,17 +58,17 @@ describe("identity 삭제 lifecycle", () => {
       })
 
       expect(result).toEqual(err({ kind: "identity-deletion-marker-failed" }))
-      expect(readIdentityState(client)).toEqual(before)
+      expect(await readIdentityState(client)).toEqual(before)
     } finally {
-      client.close()
+      await client.close()
     }
   })
 
   it("session 폐기 실패 후 남은 cookie의 보호 route 접근을 거절한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
+    const client = await createInMemoryWritingAppDatabase()
 
     try {
-      prepareActiveLearner(client)
+      await prepareActiveLearner(client)
       const identity = createIdentityFixture(client, {
         recordDeletionMarker: async () => ok(undefined),
         revokeLearnerSessions: async () =>
@@ -89,20 +87,22 @@ describe("identity 삭제 lifecycle", () => {
       expect(result).toEqual(
         err({ kind: "identity-session-revocation-failed" })
       )
-      expect(readIdentityState(client)).toMatchObject({
+      expect(await readIdentityState(client)).toMatchObject({
         sessionCount: 1,
         status: "deleted",
       })
       expect(protectedResponse.status).toBe(403)
     } finally {
-      client.close()
+      await client.close()
     }
   })
 })
 
-function prepareActiveLearner(client: WritingAppDatabaseClient): void {
-  runApplicationMigrations(client.sqlite)
-  aLearner(client.sqlite, {
+async function prepareActiveLearner(
+  client: WritingAppDatabaseClient
+): Promise<void> {
+  await runApplicationMigrations(client.sqlite)
+  await aLearner(client.sqlite, {
     createdAt: learnerCreatedAt.getTime(),
     displayName: "학습자",
     email: "learner@example.test",
@@ -180,7 +180,7 @@ function createLearnerIdentityApp(
       async resolveIdentity(headers) {
         const token = readLearnerSessionToken(headers)
         if (token === null) return null
-        const session = client.db
+        const session = await client.db
           .select({ userId: authSessions.userId })
           .from(authSessions)
           .where(eq(authSessions.token, token))
@@ -200,8 +200,8 @@ function createLearnerIdentityApp(
   return app
 }
 
-function readIdentityState(client: WritingAppDatabaseClient) {
-  const profile = client.sqlite
+async function readIdentityState(client: WritingAppDatabaseClient) {
+  const profile = await client.sqlite
     .query<
       {
         readonly deletedAt: number | null
@@ -216,11 +216,13 @@ function readIdentityState(client: WritingAppDatabaseClient) {
     )
     .get(userId)
   const sessionCount =
-    client.sqlite
-      .query<{ readonly value: number }, [string]>(
-        "SELECT COUNT(*) AS value FROM session WHERE user_id = ?"
-      )
-      .get(userId)?.value ?? 0
+    (
+      await client.sqlite
+        .query<{ readonly value: number }, [string]>(
+          "SELECT COUNT(*) AS value FROM session WHERE user_id = ?"
+        )
+        .get(userId)
+    )?.value ?? 0
 
   return { ...profile, sessionCount }
 }

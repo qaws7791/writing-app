@@ -10,7 +10,7 @@ export function createIdentitySessionRevocation(
   return {
     async revokeLearnerSessions(userId) {
       try {
-        database
+        await database
           .delete(authSessions)
           .where(eq(authSessions.userId, userId))
           .run()

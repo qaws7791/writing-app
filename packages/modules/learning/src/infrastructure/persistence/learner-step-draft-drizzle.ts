@@ -18,7 +18,7 @@ type LearningTransaction = Parameters<
 
 type DraftReader = WritingAppDatabase | LearningTransaction
 
-export function readLearnerStepDrafts(
+export async function readLearnerStepDrafts(
   database: DraftReader,
   input: Readonly<{
     courseId: CourseId
@@ -26,33 +26,34 @@ export function readLearnerStepDrafts(
     lessonId: LessonId
     userId: LearnerId
   }>
-): readonly LearnerStepDraft[] {
-  return database
-    .select({
-      answerJson: learnerStepDrafts.answerJson,
-      stepId: learnerStepDrafts.stepId,
-      updatedAt: learnerStepDrafts.updatedAt,
-      version: learnerStepDrafts.version,
-    })
-    .from(learnerStepDrafts)
-    .where(
-      and(
-        eq(learnerStepDrafts.userId, input.userId),
-        eq(learnerStepDrafts.courseId, input.courseId),
-        eq(learnerStepDrafts.curriculumVersionId, input.curriculumVersionId),
-        eq(learnerStepDrafts.lessonId, input.lessonId)
-      )
-    )
-    .orderBy(asc(learnerStepDrafts.stepId))
-    .all()
-    .map((row) =>
-      learnerStepDraftSchema.parse({
-        answer: parseStoredDraftAnswer(row.answerJson),
-        stepId: row.stepId,
-        updatedAt: row.updatedAt.toISOString(),
-        version: row.version,
+): Promise<readonly LearnerStepDraft[]> {
+  return (
+    await database
+      .select({
+        answerJson: learnerStepDrafts.answerJson,
+        stepId: learnerStepDrafts.stepId,
+        updatedAt: learnerStepDrafts.updatedAt,
+        version: learnerStepDrafts.version,
       })
-    )
+      .from(learnerStepDrafts)
+      .where(
+        and(
+          eq(learnerStepDrafts.userId, input.userId),
+          eq(learnerStepDrafts.courseId, input.courseId),
+          eq(learnerStepDrafts.curriculumVersionId, input.curriculumVersionId),
+          eq(learnerStepDrafts.lessonId, input.lessonId)
+        )
+      )
+      .orderBy(asc(learnerStepDrafts.stepId))
+      .all()
+  ).map((row) =>
+    learnerStepDraftSchema.parse({
+      answer: parseStoredDraftAnswer(row.answerJson),
+      stepId: row.stepId,
+      updatedAt: row.updatedAt.toISOString(),
+      version: row.version,
+    })
+  )
 }
 
 function parseStoredDraftAnswer(answerJson: string): unknown {

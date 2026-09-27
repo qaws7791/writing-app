@@ -1,3 +1,4 @@
+import { fetchApi } from "@/server/http/api-fetch"
 import "server-only"
 
 import { cookies } from "next/headers"
@@ -19,6 +20,7 @@ export async function getServerLearnerRequestOptions(
   return createGeneratedRequestOptions(
     {
       baseUrl: readServerApiBaseUrl(),
+      fetch: fetchApi,
       cookie: `${learnerSessionCookieName}=${encodeURIComponent(sessionToken)}`,
     },
     options

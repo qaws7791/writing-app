@@ -5,7 +5,6 @@
   "imports": {
     "#e2e/*": "./e2e/*.ts",
     "#playwright-config": "./playwright.config.ts",
-    "#scripts/run-next-standalone": "./scripts/run-next-standalone.mjs",
     "#scripts/*": "./scripts/*.ts"
   },
   "catalog": {
@@ -50,7 +49,6 @@
     "react-dom": "19.2.8",
     "recharts": "3.9.2",
     "server-only": "0.0.1",
-    "sharp": "0.35.3",
     "syncpack": "15.3.2",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.3",
@@ -58,7 +56,18 @@
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "vite-tsconfig-paths": "6.1.1",
     "vitest": "4.1.10",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@cloudflare/workers-types": "5.20260927.1",
+    "wrangler": "4.142.0",
+    "miniflare": "5.20260926.0-alpha",
+    "vinext": "1.0.0-beta.13",
+    "@vinext/cloudflare": "1.0.0-beta.11",
+    "@cloudflare/vite-plugin": "1.61.0",
+    "vite": "8.2.1",
+    "@vitejs/plugin-react": "6.0.1",
+    "@vitejs/plugin-rsc": "0.5.34",
+    "react-server-dom-webpack": "19.2.8",
+    "tsx": "4.23.15"
   },
   "workspaces": [
     "apps/*",
@@ -73,11 +82,7 @@
     "build": "turbo build",
     "check:architecture": "depcruise apps packages --config dependency-cruiser.config.mjs --ts-config tsconfig.json --output-type err",
     "check:knip": "knip --config knip.json --no-gitignore --no-progress --treat-config-hints-as-errors",
-    "check:container-image-lock": "bun scripts/check-container-image-lock.ts",
     "check:dependencies": "syncpack lint --dependency-types dev,prod,peer",
-    "check:deployment-ansible": "bun scripts/check-deployment-ansible.ts",
-    "check:deployment-approval": "bun scripts/check-deployment-approval.ts",
-    "check:release-input-contract": "bun scripts/check-github-release-configuration.ts contract",
     "check:workflow-scripts": "bun scripts/check-workflow-scripts.ts",
     "content:merge": "bun scripts/merge-authoring-into-seed.ts",
     "content:validate": "bun scripts/content-validate.ts",
@@ -91,7 +96,6 @@
     "ci:static:knip": "bun run check:knip",
     "ci:static:lint": "bun run lint",
     "ci:static:oxlint-rules": "bun run test:oxlint-rules",
-    "ci:static:release-input-contract": "bun run check:release-input-contract",
     "ci:static:typecheck": "bun run typecheck",
     "ci:static:workflow-scripts": "bun run check:workflow-scripts",
     "ci:tests": "bun run --parallel --no-exit-on-error \"ci:tests:*\"",
@@ -99,13 +103,10 @@
     "ci:tests:workspace": "bun run test",
     "dev": "turbo dev",
     "dev:admin": "turbo dev --filter=@workspace/admin --filter=@workspace/api",
-    "dev:admin:setup": "bun --filter @workspace/api db:migrate && bun --filter @workspace/api db:seed && bun --env-file=apps/api/.env --filter @workspace/api seed:admin",
+    "dev:admin:setup": "bun --filter @workspace/api db:migrate && bun --filter @workspace/api db:seed && bun --env-file=apps/api/.dev.vars --filter @workspace/api seed:admin",
     "dev:app": "turbo dev --filter=@workspace/web --filter=@workspace/api",
     "dev:app:setup": "bun --filter @workspace/api db:migrate && bun --filter @workspace/api db:seed",
-    "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",
     "dev:ui": "turbo dev --filter=@workspace/ui-docs",
-    "db:backup": "bun --filter @workspace/api db:backup",
-    "db:reset": "ALLOW_DATABASE_RESET=true bun --filter @workspace/api db:reset --force",
     "doctor": "bun scripts/doctor.ts",
     "lint": "oxlint apps packages scripts --deny-warnings",
     "lint:fix": "oxlint apps packages scripts --fix",
@@ -113,10 +114,8 @@
     "format": "oxfmt . '!ui/**'",
     "format:check": "oxfmt --check . '!ui/**'",
     "generate": "turbo run generate",
-    "test": "bun run generate && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts",
-    "test:watch": "bun run generate && bun --bun node_modules/vitest/vitest.mjs watch --config vitest.workspace.ts",
-    "test:deployment-images": "bun run generate && bun scripts/test-deployment-images.ts",
-    "test:deployment-bootstrap": "bun scripts/test-deployment-bootstrap.ts",
+    "test": "bun run generate && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts",
+    "test:watch": "bun run generate && node node_modules/vitest/vitest.mjs watch --config vitest.workspace.ts",
     "test:oxlint-rules": "node scripts/oxlint/workspace-rules.node-test.mjs",
     "test:performance:lighthouse": "bun scripts/run-lighthouse-ci.ts",
     "test:e2e": "bun run test:e2e:release",
@@ -126,7 +125,6 @@
     "typecheck": "turbo typecheck",
     "verify": "bun run ci:static && bun run ci:tests && bun run build",
     "prepare": "lefthook install",
-    "preflight:release": "bun scripts/check-github-release-configuration.ts github",
     "repomix": "bun run repomix:code",
     "repomix:analysis": "bunx repomix --style markdown --output .artifacts/repomix/codebase-analysis.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md,docs/engineering/contracts/**/*.json,packages/config/**,scripts/**,apps/ui/**' --ignore 'prototype/**,.worktrees/**,.artifacts/**,apps/ui/dist/**,apps/ui/.turbo/**'",
     "restore:deletion-markers": "bun --filter @workspace/api restore:deletion-markers",
@@ -134,7 +132,8 @@
     "repomix:docs": "bunx repomix --style markdown --output .artifacts/repomix/combined-docs.md --remove-empty-lines --include 'AGENTS.md,README.md,docs/**/*.md'",
     "repomix:apps": "bunx repomix --style markdown --output .artifacts/repomix/apps.md --remove-empty-lines --include 'apps/**/*.ts,apps/**/*'",
     "repomix:packages": "bunx repomix --style markdown --output .artifacts/repomix/packages.md --remove-empty-lines --include 'packages/**/*.ts,packages/**/*.tsx' --ignore 'packages/config/**'",
-    "setup": "bun scripts/setup.ts"
+    "setup": "bun scripts/setup.ts",
+    "cf:login": "wrangler login"
   },
   "devDependencies": {
     "@lhci/cli": "0.15.1",
@@ -158,7 +157,7 @@
     "typescript": "catalog:",
     "vite-tsconfig-paths": "catalog:",
     "vitest": "catalog:",
-    "zod": "catalog:"
+    "wrangler": "catalog:"
   },
   "engines": {
     "node": "24.x"
@@ -172,7 +171,6 @@
     "postcss": "8.5.24",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "sharp": "0.35.3",
     "tmp": "0.2.7",
     "undici": "7.29.0"
   },

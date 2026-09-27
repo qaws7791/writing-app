@@ -12,10 +12,10 @@ export type LearnerProgressFixtureInput = Readonly<{
   userId: string
 }>
 
-export function aLearnerWithProgress(
+export async function aLearnerWithProgress(
   sqlite: WritingAppSqlite,
   input: LearnerProgressFixtureInput
-): void {
+): Promise<void> {
   const {
     activityDates = ["2026-07-01"],
     completedAt = null,
@@ -28,7 +28,7 @@ export function aLearnerWithProgress(
   } = input
   const lastActivityAt = completedAt ?? startedAt
 
-  sqlite
+  await sqlite
     .query<
       void,
       [
@@ -56,7 +56,7 @@ export function aLearnerWithProgress(
       lastActivityAt
     )
 
-  sqlite
+  await sqlite
     .query<
       void,
       [
@@ -90,7 +90,7 @@ export function aLearnerWithProgress(
       lastActivityAt
     )
 
-  sqlite
+  await sqlite
     .query<void, [string, string, string, string, string]>(
       `INSERT INTO learner_lesson_answers (
         user_id, course_id, curriculum_version_id, lesson_id, step_id,
@@ -101,7 +101,7 @@ export function aLearnerWithProgress(
     )
     .run(userId, course.courseId, course.curriculumVersionId, lessonId, stepId)
 
-  sqlite
+  await sqlite
     .query<void, [string, string, string, string, string]>(
       `INSERT INTO learner_step_drafts (
         user_id, course_id, curriculum_version_id, lesson_id, step_id,
@@ -119,7 +119,7 @@ export function aLearnerWithProgress(
     ) VALUES (?1, ?2, ?3, ?3, ?4, 1)`
   )
   for (const [index, activityDate] of activityDates.entries()) {
-    activityDay.run(
+    await activityDay.run(
       userId,
       activityDate,
       Date.parse(`${activityDate}T09:00:00+09:00`),

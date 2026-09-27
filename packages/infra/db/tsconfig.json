@@ -8,7 +8,7 @@
       "#content/*": ["../../modules/content/src/*"],
       "#db/*": ["./src/*"]
     },
-    "types": ["bun"]
+    "types": ["bun", "@cloudflare/workers-types"]
   },
   "include": ["src/**/*.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]

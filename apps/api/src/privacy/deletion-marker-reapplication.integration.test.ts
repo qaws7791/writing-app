@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { userIdSchema } from "@workspace/contracts/identity/admin-ids"
-import {
-  createInMemoryWritingAppDatabase,
-  type WritingAppDatabaseClient,
-} from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+import { type WritingAppDatabaseClient } from "@workspace/db/client"
 import type {
   LearnerDeletionMarker,
   LearnerDeletionMarkerStorePort,
@@ -15,7 +13,7 @@ import {
 import { aLearner } from "@workspace/identity/test-fixtures"
 import { ok } from "@workspace/kernel/result"
 
-import { runApplicationMigrations } from "@/db/migrate"
+import { runCurrentTestMigration as runApplicationMigrations } from "@workspace/db/test-support/application-migration"
 import { createDeletionMarkerReapplication } from "@/privacy/deletion-marker-reapplication"
 
 const now = new Date("2026-07-24T12:00:00.000Z")
@@ -35,10 +33,10 @@ const stateAfterReapplication = {
 
 describe("deletion marker reapplication", () => {
   it("applies post-snapshot markers, revokes sessions, and physically purges expired learners", async () => {
-    const client = createInMemoryWritingAppDatabase()
+    const client = await createInMemoryWritingAppDatabase()
 
     try {
-      const reapplication = openReapplication(client)
+      const reapplication = await openReapplication(client)
 
       const applied = (
         await reapplication.execute({ batchSize: 2, dryRun: false, snapshotAt })
@@ -54,17 +52,17 @@ describe("deletion marker reapplication", () => {
         snapshotAt,
         uniqueUserCount: 5,
       })
-      expect(readRestoreState(client)).toEqual(stateAfterReapplication)
+      expect(await readRestoreState(client)).toEqual(stateAfterReapplication)
     } finally {
-      client.close()
+      await client.close()
     }
   })
 
   it("converges when the same marker set is applied again", async () => {
-    const client = createInMemoryWritingAppDatabase()
+    const client = await createInMemoryWritingAppDatabase()
 
     try {
-      const reapplication = openReapplication(client)
+      const reapplication = await openReapplication(client)
       await reapplication.execute({ batchSize: 2, dryRun: false, snapshotAt })
 
       const rerun = (
@@ -77,16 +75,16 @@ describe("deletion marker reapplication", () => {
         missingUsers: 3,
         purgedUsers: 0,
       })
-      expect(readRestoreState(client)).toEqual(stateAfterReapplication)
+      expect(await readRestoreState(client)).toEqual(stateAfterReapplication)
     } finally {
-      client.close()
+      await client.close()
     }
   })
 })
 
-function openReapplication(client: WritingAppDatabaseClient) {
-  runApplicationMigrations(client.sqlite)
-  seedRestoreFixture(client)
+async function openReapplication(client: WritingAppDatabaseClient) {
+  await runApplicationMigrations(client.sqlite)
+  await seedRestoreFixture(client)
   const markerStore: Pick<LearnerDeletionMarkerStorePort, "readAll"> = {
     readAll: async () => ok(createMarkers()),
   }
@@ -115,8 +113,10 @@ function aMarker(userId: string, requestedAt: Date): LearnerDeletionMarker {
   return { requestedAt, userId: userIdSchema.parse(userId) }
 }
 
-function seedRestoreFixture(client: WritingAppDatabaseClient): void {
-  aLearner(client.sqlite, {
+async function seedRestoreFixture(
+  client: WritingAppDatabaseClient
+): Promise<void> {
+  await aLearner(client.sqlite, {
     displayName: "오래된 사용자",
     email: "old@example.test",
     id: "old",
@@ -124,7 +124,7 @@ function seedRestoreFixture(client: WritingAppDatabaseClient): void {
     sessionToken: "token-old",
     status: "active",
   })
-  aLearner(client.sqlite, {
+  await aLearner(client.sqlite, {
     displayName: "최근 사용자",
     email: "recent@example.test",
     id: "recent",
@@ -132,7 +132,7 @@ function seedRestoreFixture(client: WritingAppDatabaseClient): void {
     sessionToken: "token-recent",
     status: "active",
   })
-  aLearner(client.sqlite, {
+  await aLearner(client.sqlite, {
     deletedAt: alreadyDeletedAt.getTime(),
     displayName: deletedLearnerDisplayName,
     email: "already@example.test",
@@ -143,7 +143,7 @@ function seedRestoreFixture(client: WritingAppDatabaseClient): void {
     status: "deleted",
     version: 1,
   })
-  aLearner(client.sqlite, {
+  await aLearner(client.sqlite, {
     displayName: "snapshot 전 사용자",
     email: "ignored@example.test",
     id: "ignored",
@@ -153,8 +153,8 @@ function seedRestoreFixture(client: WritingAppDatabaseClient): void {
   })
 }
 
-function readRestoreState(client: WritingAppDatabaseClient) {
-  const recent = client.sqlite
+async function readRestoreState(client: WritingAppDatabaseClient) {
+  const recent = await client.sqlite
     .query<
       {
         readonly deletedAt: number | null
@@ -168,27 +168,29 @@ function readRestoreState(client: WritingAppDatabaseClient) {
     .get()
 
   return {
-    alreadySessionCount: readUserRowCount(client, "session", "already"),
-    ignoredSessionCount: readUserRowCount(client, "session", "ignored"),
-    oldUserCount: readUserRowCount(client, "user", "old"),
+    alreadySessionCount: await readUserRowCount(client, "session", "already"),
+    ignoredSessionCount: await readUserRowCount(client, "session", "ignored"),
+    oldUserCount: await readUserRowCount(client, "user", "old"),
     recentDeletedAt: recent?.deletedAt ?? null,
     recentDisplayName: recent?.displayName ?? null,
-    recentSessionCount: readUserRowCount(client, "session", "recent"),
+    recentSessionCount: await readUserRowCount(client, "session", "recent"),
     recentStatus: recent?.status ?? null,
   }
 }
 
-function readUserRowCount(
+async function readUserRowCount(
   client: WritingAppDatabaseClient,
   table: "session" | "user",
   userId: string
-): number {
+): Promise<number> {
   const column = table === "user" ? "id" : "user_id"
   return (
-    client.sqlite
-      .query<{ readonly value: number }, [string]>(
-        `SELECT COUNT(*) AS value FROM ${table} WHERE ${column} = ?`
-      )
-      .get(userId)?.value ?? 0
+    (
+      await client.sqlite
+        .query<{ readonly value: number }, [string]>(
+          `SELECT COUNT(*) AS value FROM ${table} WHERE ${column} = ?`
+        )
+        .get(userId)
+    )?.value ?? 0
   )
 }

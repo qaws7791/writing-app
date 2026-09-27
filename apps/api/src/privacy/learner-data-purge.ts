@@ -1,3 +1,4 @@
+import type { DatabaseStatement } from "@workspace/db/batch"
 import { inArray } from "drizzle-orm"
 import { authUsers, authVerifications } from "@workspace/auth/schema"
 import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
@@ -9,43 +10,31 @@ import { writingLearnerDataPurge } from "@workspace/writing/module"
 /** 인증 사용자 row는 auth infra table이므로 조립 지점이 소유한다. */
 const authUserPurge: LearnerDataPurgePort = {
   moduleName: "auth",
-  purge(transaction, userIds) {
-    if (userIds.length === 0) return
-
-    const userEmails = chunkByBoundParameters(userIds, {
-      fixedParameters: 0,
-      parametersPerItem: 1,
-    }).flatMap((userIdChunk) =>
-      transaction
-        .select({ email: authUsers.email })
-        .from(authUsers)
-        .where(inArray(authUsers.id, userIdChunk))
-        .all()
-        .map(({ email }) => email)
-    )
-
-    for (const emailChunk of chunkByBoundParameters(userEmails, {
+  statements(transaction, userIds) {
+    const statements: DatabaseStatement[] = []
+    for (const ids of chunkByBoundParameters(userIds, {
       fixedParameters: 0,
       parametersPerItem: 1,
     })) {
-      transaction
-        .delete(authVerifications)
-        .where(inArray(authVerifications.identifier, emailChunk))
-        .run()
+      statements.push(
+        transaction
+          .delete(authVerifications)
+          .where(
+            inArray(
+              authVerifications.identifier,
+              transaction
+                .select({ email: authUsers.email })
+                .from(authUsers)
+                .where(inArray(authUsers.id, ids))
+            )
+          ),
+        transaction
+          .delete(authVerifications)
+          .where(inArray(authVerifications.value, ids)),
+        transaction.delete(authUsers).where(inArray(authUsers.id, ids))
+      )
     }
-    for (const userIdChunk of chunkByBoundParameters(userIds, {
-      fixedParameters: 0,
-      parametersPerItem: 1,
-    })) {
-      transaction
-        .delete(authVerifications)
-        .where(inArray(authVerifications.value, userIdChunk))
-        .run()
-      transaction
-        .delete(authUsers)
-        .where(inArray(authUsers.id, userIdChunk))
-        .run()
-    }
+    return statements
   },
 }
 

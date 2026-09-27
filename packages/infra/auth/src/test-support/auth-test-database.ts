@@ -1,10 +1,7 @@
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
-import {
-  createSqliteDatabase,
-  type SqliteDatabaseClient,
-} from "@workspace/db/sqlite-database"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+import type { WritingAppDatabase } from "@workspace/db/client"
 
-import * as authSchema from "#auth/schema/index"
 import {
   adminAuthAccounts,
   adminAuthRateLimits,
@@ -19,18 +16,15 @@ import {
 } from "#auth/schema/index"
 import { createSqliteAuthDatabaseAdapter } from "#auth/sqlite-database"
 
-export type AuthTestDatabase = SqliteDatabaseClient<typeof authSchema>["db"]
+export type AuthTestDatabase = WritingAppDatabase
 
-export function createAuthTestDatabase(): {
-  readonly close: () => void
+export async function createAuthTestDatabase(): Promise<{
+  readonly close: () => Promise<void>
   readonly db: AuthTestDatabase
-} {
-  const client = createSqliteDatabase({
-    filename: ":memory:",
-    schema: authSchema,
-  })
+}> {
+  const client = await createInMemoryWritingAppDatabase()
 
-  runCurrentTestMigration(client.sqlite)
+  await runCurrentTestMigration(client.sqlite)
 
   return { close: () => client.close(), db: client.db }
 }

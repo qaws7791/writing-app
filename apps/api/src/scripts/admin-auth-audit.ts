@@ -1,7 +1,7 @@
 import { asc } from "drizzle-orm"
 import { z } from "zod"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { createReadOnlyWritingAppDatabase } from "@workspace/db/client"
+import { createLocalDatabase } from "@/scripts/local-bindings"
 import {
   adminAuthAccounts,
   adminAuthSessions,
@@ -126,11 +126,7 @@ export function parseApprovedAdmins(
 }
 
 if (import.meta.main) {
-  const databaseUrl = process.env["DATABASE_URL"]
-  if (databaseUrl === undefined) {
-    throw new Error("읽기 전용 감사에는 명시적인 DATABASE_URL이 필요합니다.")
-  }
-  const client = createReadOnlyWritingAppDatabase(databaseUrl)
+  const client = await createLocalDatabase()
   try {
     const report = await auditAdminAuth(
       client.db,
@@ -139,6 +135,6 @@ if (import.meta.main) {
     )
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)
   } finally {
-    client.close()
+    await client.close()
   }
 }

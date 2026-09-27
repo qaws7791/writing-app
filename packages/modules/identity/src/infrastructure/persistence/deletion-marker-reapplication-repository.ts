@@ -1,4 +1,9 @@
-import { eq, inArray } from "drizzle-orm"
+import {
+  executeBatch,
+  requireBatchCondition,
+  type DatabaseStatement,
+} from "@workspace/db/batch"
+import { eq, inArray, sql } from "drizzle-orm"
 import { authSessions, authUsers } from "@workspace/auth/schema"
 import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -20,99 +25,114 @@ export function createDeletionMarkerReapplicationRepository(input: {
   return {
     async applyBatch(command) {
       try {
-        return ok(
-          input.database.transaction(
-            (transaction) => {
-              const userIds = command.markers.map(({ userId }) => userId)
-              const existingUserIds = new Set(
-                chunkByBoundParameters(userIds, {
-                  fixedParameters: 0,
-                  parametersPerItem: 1,
-                }).flatMap((userIdChunk) =>
-                  transaction
+        const transaction = input.database
+        const statements: DatabaseStatement[] = []
+        const userIds = command.markers.map(({ userId }) => userId)
+        const existingUserIds = new Set(
+          (
+            await Promise.all(
+              chunkByBoundParameters(userIds, {
+                fixedParameters: 0,
+                parametersPerItem: 1,
+              }).map(async (userIdChunk) =>
+                (
+                  await transaction
                     .select({ id: authUsers.id })
                     .from(authUsers)
                     .where(inArray(authUsers.id, userIdChunk))
                     .all()
-                    .map(({ id }) => id)
-                )
+                ).map(({ id }) => id)
               )
-              const profilesByUserId = new Map(
-                chunkByBoundParameters(userIds, {
-                  fixedParameters: 0,
-                  parametersPerItem: 1,
-                }).flatMap((userIdChunk) =>
-                  transaction
+            )
+          ).flat()
+        )
+        const profilesByUserId = new Map(
+          (
+            await Promise.all(
+              chunkByBoundParameters(userIds, {
+                fixedParameters: 0,
+                parametersPerItem: 1,
+              }).map(async (userIdChunk) =>
+                (
+                  await transaction
                     .select()
                     .from(learnerProfiles)
                     .where(inArray(learnerProfiles.userId, userIdChunk))
                     .all()
-                    .map((profile) => [profile.userId, profile] as const)
-                )
+                ).map((profile) => [profile.userId, profile] as const)
               )
-              const result = classifyMarkers({
-                existingUserIds,
-                markers: command.markers,
-                profilesByUserId,
-                purgeCutoff: command.purgeCutoff,
-              })
-              if (command.dryRun) return result.counts
-
-              for (const port of input.learnerDataPurges) {
-                port.purge(transaction, result.purgeUserIds)
-              }
-              for (const marker of result.markDeletedMarkers) {
-                const profile = profilesByUserId.get(marker.userId)
-                if (profile === undefined) {
-                  transaction
-                    .insert(learnerProfiles)
-                    .values({
-                      deletedAt: marker.requestedAt,
-                      displayName: deletedLearnerDisplayName,
-                      status: "deleted",
-                      userId: marker.userId,
-                      version: 0,
-                    })
-                    .run()
-                } else {
-                  transaction
-                    .update(learnerProfiles)
-                    .set({
-                      deletedAt:
-                        profile.deletedAt === null ||
-                        marker.requestedAt < profile.deletedAt
-                          ? marker.requestedAt
-                          : profile.deletedAt,
-                      displayName: deletedLearnerDisplayName,
-                      status: "deleted",
-                      version: profile.version + 1,
-                    })
-                    .where(eq(learnerProfiles.userId, marker.userId))
-                    .run()
-                }
-              }
-              const retainedUserIds = command.markers
-                .map(({ userId }) => userId)
-                .filter(
-                  (userId) =>
-                    existingUserIds.has(userId) &&
-                    !result.purgeUserIds.includes(userId)
-                )
-              for (const userIdChunk of chunkByBoundParameters(
-                retainedUserIds,
-                { fixedParameters: 0, parametersPerItem: 1 }
-              )) {
-                transaction
-                  .delete(authSessions)
-                  .where(inArray(authSessions.userId, userIdChunk))
-                  .run()
-              }
-
-              return result.counts
-            },
-            { behavior: "immediate" }
-          )
+            )
+          ).flat()
         )
+        const result = classifyMarkers({
+          existingUserIds,
+          markers: command.markers,
+          profilesByUserId,
+          purgeCutoff: command.purgeCutoff,
+        })
+        if (command.dryRun) return ok(result.counts)
+
+        for (const port of input.learnerDataPurges) {
+          statements.push(...port.statements(transaction, result.purgeUserIds))
+        }
+        for (const marker of result.markDeletedMarkers) {
+          const profile = profilesByUserId.get(marker.userId)
+          statements.push(
+            requireBatchCondition(
+              transaction,
+              profile === undefined
+                ? sql`NOT EXISTS (SELECT 1 FROM ${learnerProfiles} WHERE ${learnerProfiles.userId} = ${marker.userId})`
+                : sql`EXISTS (SELECT 1 FROM ${learnerProfiles} WHERE ${learnerProfiles.userId} = ${marker.userId} AND ${learnerProfiles.version} = ${profile.version})`
+            )
+          )
+          if (profile === undefined) {
+            statements.push(
+              transaction.insert(learnerProfiles).values({
+                deletedAt: marker.requestedAt,
+                displayName: deletedLearnerDisplayName,
+                status: "deleted",
+                userId: marker.userId,
+                version: 0,
+              })
+            )
+          } else {
+            statements.push(
+              transaction
+                .update(learnerProfiles)
+                .set({
+                  deletedAt:
+                    profile.deletedAt === null ||
+                    marker.requestedAt < profile.deletedAt
+                      ? marker.requestedAt
+                      : profile.deletedAt,
+                  displayName: deletedLearnerDisplayName,
+                  status: "deleted",
+                  version: profile.version + 1,
+                })
+                .where(eq(learnerProfiles.userId, marker.userId))
+            )
+          }
+        }
+        const retainedUserIds = command.markers
+          .map(({ userId }) => userId)
+          .filter(
+            (userId) =>
+              existingUserIds.has(userId) &&
+              !result.purgeUserIds.includes(userId)
+          )
+        for (const userIdChunk of chunkByBoundParameters(retainedUserIds, {
+          fixedParameters: 0,
+          parametersPerItem: 1,
+        })) {
+          statements.push(
+            transaction
+              .delete(authSessions)
+              .where(inArray(authSessions.userId, userIdChunk))
+          )
+        }
+
+        await executeBatch(transaction, statements)
+        return ok(result.counts)
       } catch (cause) {
         return err({
           cause,

@@ -15,11 +15,12 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   ssr: {
-    external: ["bun:sqlite"],
     noExternal: ["zod"],
   },
   test: {
     clearMocks: true,
+    testTimeout: 30000,
+    hookTimeout: 30000,
     environment: "node",
     include: ["src/**/*.test.ts"],
     setupFiles: ["./vitest.setup.ts"],

@@ -37,8 +37,8 @@ export function registerHealthRoutes(
     },
     summary: "API readiness 조회",
   })
-  app.openapi(readinessRoute, (context) => {
-    const ready = health.isDatabaseReady()
+  app.openapi(readinessRoute, async (context) => {
+    const ready = await health.isDatabaseReady()
     return context.json(
       parseLearnerRouteResponse(
         context,

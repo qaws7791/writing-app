@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite"
+import type { SqlDatabaseClient as Database } from "@workspace/db/sql-client"
 import type { CourseId, LessonId } from "@workspace/types/ids"
 import { createFts5Phrase } from "@workspace/db/fts5"
 
@@ -166,23 +166,15 @@ const lessonAnalyticsCte = `
   )
 `
 
-export function createSqliteOperationsReportingRepository(
+export async function createSqliteOperationsReportingRepository(
   sqlite: Database
-): OperationsReportingRepository {
-  sqlite.exec("PRAGMA query_only = ON")
-  const queryOnly = sqlite
-    .query<{ readonly query_only: number }, []>("PRAGMA query_only")
-    .get()?.query_only
-  if (queryOnly !== 1) {
-    throw new Error("Operations reporting connection must be query-only")
-  }
-
+): Promise<OperationsReportingRepository> {
   return {
-    readAnalytics(input) {
-      const dailySeries = sqlite
+    async readAnalytics(input) {
+      const dailySeries = await sqlite
         .query<DailySeriesRow, [string, string, string]>(dailySeriesSql)
         .all(input.from, input.to, input.matureCohortThrough)
-      const worstLessons = readWorstLessons(sqlite)
+      const worstLessons = await readWorstLessons(sqlite)
 
       return {
         dailySeries,
@@ -192,8 +184,8 @@ export function createSqliteOperationsReportingRepository(
         worstLessons,
       }
     },
-    readDashboard(input) {
-      const row = sqlite
+    async readDashboard(input) {
+      const row = await sqlite
         .query<DashboardRow, [string, string, string]>(dashboardSql)
         .get(input.activeFrom, input.reportDate, input.matureCohortThrough)
       if (row === null) {
@@ -238,7 +230,7 @@ export function createSqliteOperationsReportingRepository(
         },
       } satisfies OperationsDashboard
     },
-    readLessonAnalytics(input) {
+    async readLessonAnalytics(input) {
       const normalizedQuery = input.query.trim()
       const cursor = input.cursor ?? null
       const orderBy = createLessonAnalyticsOrderBy(
@@ -259,7 +251,7 @@ export function createSqliteOperationsReportingRepository(
       const bindings = [searchPhrase, ...cursorFilter.bindings, limit, offset]
       const limitParameter = cursorFilter.bindings.length + 2
       const offsetParameter = limitParameter + 1
-      const fetchedRows = sqlite
+      const fetchedRows = await sqlite
         .query<LessonAnalyticsRow, (number | string)[]>(
           `${lessonAnalyticsCte}
            , filtered_lesson_analytics AS MATERIALIZED (
@@ -321,12 +313,13 @@ export function createSqliteOperationsReportingRepository(
   }
 }
 
-function readWorstLessons(
+async function readWorstLessons(
   sqlite: Database
-): readonly OperationsLessonAnalyticsItem[] {
-  return sqlite
-    .query<LessonAnalyticsRow, []>(
-      `${lessonAnalyticsCte}
+): Promise<readonly OperationsLessonAnalyticsItem[]> {
+  return (
+    await sqlite
+      .query<LessonAnalyticsRow, []>(
+        `${lessonAnalyticsCte}
        SELECT
          completed,
          completion_rate AS completionRate,
@@ -346,9 +339,9 @@ function readWorstLessons(
          lesson_title COLLATE NOCASE ASC,
          lesson_id ASC
        LIMIT 8`
-    )
-    .all()
-    .map(toLessonAnalyticsItem)
+      )
+      .all()
+  ).map(toLessonAnalyticsItem)
 }
 
 function toLessonAnalyticsItem(

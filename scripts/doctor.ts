@@ -25,7 +25,7 @@ async function runDoctor(): Promise<void> {
   await run(
     [
       "bun",
-      "--env-file=apps/api/.env",
+      "--env-file=apps/api/.dev.vars",
       "apps/api/src/scripts/check-environment.ts",
     ],
     apiEnvironment

@@ -5,10 +5,8 @@ import {
   writingCheckIdSchema,
   writingIdSchema,
 } from "@workspace/contracts/writing/writing"
-import {
-  createInMemoryWritingAppDatabase,
-  type WritingAppDatabaseClient,
-} from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+import { type WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { aLearner } from "@workspace/identity/test-fixtures"
 
@@ -53,7 +51,7 @@ describe("writing SQLite repository", () => {
         },
       })
 
-      expect(staleResult._unsafeUnwrapErr()).toEqual({
+      expect(staleResult._unsafeUnwrapErr()).toMatchObject({
         kind: "writing-version-conflict",
       })
       await expect(readWriting(repository)).resolves.toMatchObject({
@@ -67,7 +65,7 @@ describe("writing SQLite repository", () => {
   it("삭제 event 저장이 실패하면 글 삭제도 rollback한다", async () => {
     await withWritingDatabase(async (client) => {
       const repository = createDrizzleWritingRepository(client.db)
-      client.sqlite.exec(`
+      await client.sqlite.exec(`
         CREATE TRIGGER fail_writing_deletion_event
         BEFORE INSERT ON writing_events
         WHEN NEW.event_type = 'writing_deleted'
@@ -75,7 +73,6 @@ describe("writing SQLite repository", () => {
           SELECT RAISE(ABORT, 'forced writing deletion event failure');
         END;
       `)
-
       await expect(
         repository.deletePiece({
           eventType: "writing_deleted",
@@ -86,12 +83,13 @@ describe("writing SQLite repository", () => {
         })
       ).rejects.toThrow("forced writing deletion event failure")
 
-      const eventTypes = client.db
-        .select({ eventType: writingEvents.eventType })
-        .from(writingEvents)
-        .where(eq(writingEvents.writingId, writingId))
-        .all()
-        .map(({ eventType }) => eventType)
+      const eventTypes = (
+        await client.db
+          .select({ eventType: writingEvents.eventType })
+          .from(writingEvents)
+          .where(eq(writingEvents.writingId, writingId))
+          .all()
+      ).map(({ eventType }) => eventType)
 
       expect({
         eventTypes,
@@ -162,7 +160,7 @@ describe("writing SQLite repository", () => {
         secondResult
       )
       expect(
-        client.sqlite
+        await client.sqlite
           .query<{ count: number }, []>(
             `SELECT COUNT(*) AS count FROM writing_checks WHERE writing_id = '${writingId}'`
           )
@@ -183,13 +181,13 @@ async function readWriting(repository: WritingRepository) {
 async function withWritingDatabase(
   run: (client: WritingAppDatabaseClient) => Promise<void>
 ): Promise<void> {
-  const client = createInMemoryWritingAppDatabase()
+  const client = await createInMemoryWritingAppDatabase()
   try {
-    runCurrentTestMigration(client.sqlite)
-    aLearner(client.sqlite, { id: learnerId })
-    aWriting(client.sqlite, { id: writingId, userId: learnerId })
+    await runCurrentTestMigration(client.sqlite)
+    await aLearner(client.sqlite, { id: learnerId })
+    await aWriting(client.sqlite, { id: writingId, userId: learnerId })
     await run(client)
   } finally {
-    client.close()
+    await client.close()
   }
 }

@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
+    "build": "vite build",
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
     "lint": "oxlint .",
-    "start": "node ../../scripts/run-next-standalone.mjs web",
+    "start": "wrangler dev --config dist/server/wrangler.json",
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "node ../../scripts/run-next-typegen.mjs && tsc7 --noEmit"
   },
@@ -22,11 +22,12 @@
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-server-dom-webpack": "catalog:",
     "server-only": "catalog:",
-    "sharp": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "catalog:",
     "@tailwindcss/postcss": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
@@ -34,6 +35,9 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vinext/cloudflare": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitejs/plugin-rsc": "catalog:",
     "@workspace/typescript-config": "workspace:*",
     "@workspace/vitest-config": "workspace:*",
     "babel-plugin-react-compiler": "catalog:",
@@ -42,7 +46,11 @@
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vinext": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:",
+    "@cloudflare/workers-types": "catalog:"
   },
   "ignoreScripts": [
     "sharp",

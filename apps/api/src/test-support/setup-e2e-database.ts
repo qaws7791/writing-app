@@ -5,26 +5,18 @@ import {
   authAccounts,
   authUsers,
 } from "@workspace/auth/schema"
-import { createWritingAppDatabase } from "@workspace/db/client"
+import { createLocalDatabase } from "@/scripts/local-bindings"
 import {
   e2eSeededCredentials,
   e2eSeededLearnerActors,
 } from "@workspace/env/e2e-runtime"
 import { learnerProfiles } from "@workspace/identity/migration-schema"
 
-import { runApplicationMigrations } from "@/db/migrate"
-import { requireE2eDatabaseUrl } from "@/test-support/e2e-database-url"
-
 const { adminPassword, learnerPassword } = e2eSeededCredentials
 
-if (import.meta.main) {
-  await setupE2eAuthDatabase(requireE2eDatabaseUrl(process.env))
-}
-
-export async function setupE2eAuthDatabase(databaseUrl: string): Promise<void> {
-  const database = createWritingAppDatabase(databaseUrl)
+export async function setupE2eAuthDatabase(persistPath: string): Promise<void> {
+  const database = await createLocalDatabase(persistPath)
   try {
-    runApplicationMigrations(database.sqlite)
     const now = new Date("2026-07-12T00:00:00.000Z")
     const password = await hashAuthPassword(adminPassword)
     const admins = [
@@ -96,6 +88,6 @@ export async function setupE2eAuthDatabase(databaseUrl: string): Promise<void> {
       }))
     )
   } finally {
-    database.close()
+    await database.close()
   }
 }

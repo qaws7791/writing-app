@@ -52,4 +52,4 @@ export function createWritingModule(input: {
 
 export { writingLearnerDataPurge } from "#writing/infrastructure/persistence/learner-purge"
 export { seedWritingDatabase } from "#writing/infrastructure/persistence/seed"
-export { createOpenAiWritingCheckProvider } from "#writing/infrastructure/ai/openai-writing-check-provider"
+export { createWorkersAiWritingCheckProvider } from "#writing/infrastructure/ai/workers-ai-writing-check-provider"

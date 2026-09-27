@@ -2,7 +2,6 @@ import { basename, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   parseContentAssetImageAllowedOrigins,
   parseContentAssetPublicBaseUrl,
@@ -43,6 +42,21 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 )
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    if (!development) return []
+    const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000"
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        { source: "/api/:path*", destination: apiBaseUrl + "/api/:path*" },
+        {
+          source: "/assets/content/:path*",
+          destination: apiBaseUrl + "/assets/content/:path*",
+        },
+      ],
+      fallback: [],
+    }
+  },
   ...(e2eDistDirectory === undefined ? {} : { distDir: e2eDistDirectory }),
   experimental: {
     cpus: 1,
@@ -52,7 +66,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: contentAssetServerActionBodyLimit,
     },
   },
-  output: "standalone",
   outputFileTracingRoot: join(appDirectory, "../.."),
   async headers() {
     return [
@@ -87,22 +100,9 @@ const nextConfig: NextConfig = {
       ...createContentAssetRemotePatterns(contentAssetImageAllowedOrigins),
     ],
   },
-  async rewrites() {
-    if (!development) return []
 
-    const apiBaseUrl = (
-      process.env.API_BASE_URL ?? localRuntimeDefaults.apiBaseUrl
-    ).replace(/\/+$/u, "")
-    return [
-      {
-        destination: `${apiBaseUrl}/api/admin/:path*`,
-        source: "/api/admin/:path*",
-      },
-    ]
-  },
   reactStrictMode: true,
   reactCompiler: true,
-  serverExternalPackages: ["sharp"],
   turbopack: {
     root: join(appDirectory, "../.."),
   },

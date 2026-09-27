@@ -44,7 +44,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/contracts",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/contracts",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {

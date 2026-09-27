@@ -6,7 +6,7 @@
 export const e2eRuntimeOrigins = {
   adminOrigin: "http://127.0.0.1:3101",
   apiOrigin: "http://127.0.0.1:4100",
-  assetOrigin: "http://127.0.0.1:4199",
+  assetOrigin: "http://127.0.0.1:4100",
   learnerOrigin: "http://localhost:3100",
 } as const
 

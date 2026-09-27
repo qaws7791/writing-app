@@ -20,10 +20,8 @@ import {
   lessonVersions,
 } from "@workspace/content/migration-schema"
 import { aPublishedCourse } from "@workspace/content/test-fixtures"
-import {
-  createInMemoryWritingAppDatabase,
-  type WritingAppDatabaseClient,
-} from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+import { type WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import { aLearner } from "@workspace/identity/test-fixtures"
 import { ok } from "@workspace/kernel/result"
@@ -189,7 +187,7 @@ describe("learning SQLite transition repository", () => {
         fixture.database.db
       )
       await repository.startLesson(startFirstLesson, curriculum)
-      publishSecondCurriculumRevision(fixture)
+      await publishSecondCurriculumRevision(fixture)
       const application = createLearningTestApplication(fixture)
 
       const courseDetail = (
@@ -397,16 +395,16 @@ async function withLearningDatabase(
   run: (fixture: LearningFixture) => Promise<void>,
   selectedCurriculum: LearningCurriculum = curriculum
 ): Promise<void> {
-  const database = createInMemoryWritingAppDatabase()
+  const database = await createInMemoryWritingAppDatabase()
   try {
-    runCurrentTestMigration(database.sqlite)
-    aLearner(database.sqlite, { id: learnerId, name: "학습자" })
+    await runCurrentTestMigration(database.sqlite)
+    await aLearner(database.sqlite, { id: learnerId, name: "학습자" })
     const firstStep = selectedCurriculum.lessons[0]?.steps[0]
     const firstLessonSteps = selectedCurriculum.lessons[0]?.steps ?? []
     if (firstStep === undefined) {
       throw new Error("Learning repository fixture requires a first step")
     }
-    aPublishedCourse(database.sqlite, {
+    await aPublishedCourse(database.sqlite, {
       additionalLessons: [
         {
           lessonId: secondLessonId,
@@ -431,7 +429,7 @@ async function withLearningDatabase(
 
     await run({ database })
   } finally {
-    database.close()
+    await database.close()
   }
 }
 
@@ -480,8 +478,10 @@ function createLearningTestApplication(
   })
 }
 
-function publishSecondCurriculumRevision(fixture: LearningFixture): void {
-  fixture.database.db
+async function publishSecondCurriculumRevision(
+  fixture: LearningFixture
+): Promise<void> {
+  await fixture.database.db
     .insert(courseCurriculumVersions)
     .values({
       category: "기초",
@@ -499,7 +499,7 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
       visualKey: "basic-sentence-writing",
     })
     .run()
-  fixture.database.db
+  await fixture.database.db
     .insert(courseUnitVersions)
     .values({
       curriculumVersionId: secondCurriculumVersionId,
@@ -509,7 +509,7 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
       title: "단원",
     })
     .run()
-  fixture.database.db
+  await fixture.database.db
     .insert(lessonVersions)
     .values([
       {
@@ -538,7 +538,7 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
       },
     ])
     .run()
-  fixture.database.db
+  await fixture.database.db
     .insert(lessonStepVersions)
     .values([
       {
@@ -567,7 +567,7 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
       },
     ])
     .run()
-  fixture.database.db
+  await fixture.database.db
     .update(courseCurriculumVersions)
     .set({
       publishedAt: secondPublishedAt,
@@ -576,7 +576,7 @@ function publishSecondCurriculumRevision(fixture: LearningFixture): void {
     })
     .where(eq(courseCurriculumVersions.id, secondCurriculumVersionId))
     .run()
-  fixture.database.db
+  await fixture.database.db
     .update(courses)
     .set({ publishedCurriculumVersionId: secondCurriculumVersionId })
     .where(eq(courses.id, courseId))

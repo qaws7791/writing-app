@@ -1,109 +1,83 @@
-import { mkdir, rm, writeFile } from "node:fs/promises"
+import type { Unstable_RawConfig } from "wrangler"
 import path from "node:path"
-
-import type {
-  AuthEmailDeliveryInput,
-  AuthEmailDeliveryPort,
-} from "@workspace/auth/email/delivery"
-import { createInMemoryAuthEmailDelivery } from "@workspace/auth/email/in-memory"
+import { mkdir, writeFile } from "node:fs/promises"
 import {
   e2eRuntimeOrigins,
   readRequiredE2eEnvironment,
 } from "@workspace/env/e2e-runtime"
-import type { ContentAssetStoragePort } from "@workspace/content/ports"
-import { err, ok } from "@workspace/kernel/result"
 
-import { startApiServer } from "@/main"
-
-if (import.meta.main) {
-  const e2eRunRoot = path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT"))
-  const authEmailDelivery = createE2eAuthEmailDelivery(e2eRunRoot)
-  await startApiServer(process.env, {
-    container: {
-      authEmailDelivery,
-      contentAssetStorage: createE2eContentAssetStorage(e2eRunRoot),
-    },
-    validateEnv(env) {
-      if (env.nodeEnv !== "test") {
-        throw new Error("E2E API는 NODE_ENV=test가 필요합니다.")
-      }
-    },
-  })
+const runRoot = path.resolve(readRequiredE2eEnvironment("E2E_RUN_ROOT"))
+const stateRoot = path.join(runRoot, "state")
+const apiRoot = path.resolve(import.meta.dir, "../..")
+const wrangler = path.resolve(
+  apiRoot,
+  "../../node_modules/wrangler/bin/wrangler.js"
+)
+const config = Bun.JSONC.parse(
+  await Bun.file(path.join(apiRoot, "wrangler.jsonc")).text()
+) as Unstable_RawConfig
+config.main = path.join(apiRoot, "src/worker.ts")
+config.name = "writing-app-api-e2e"
+delete config.env
+delete config.secrets
+config.vars = {
+  ...config.vars,
+  WEB_ORIGIN: e2eRuntimeOrigins.learnerOrigin,
+  ADMIN_ORIGIN: e2eRuntimeOrigins.adminOrigin,
+  ASSET_PUBLIC_BASE_URL: e2eRuntimeOrigins.apiOrigin + "/assets/content",
+  LEARNER_AUTH_SECRET: "e2e-learner-auth-secret-at-least-32-characters",
+  ADMIN_AUTH_SECRET: "e2e-admin-auth-secret-at-least-32-characters",
+  CURSOR_SIGNING_SECRET: "e2e-cursor-secret-at-least-32-characters",
 }
-
-function createE2eContentAssetStorage(
-  e2eRunRoot: string
-): ContentAssetStoragePort {
-  const assetRoot = path.resolve(e2eRunRoot, "content-assets")
-  const publicBaseUrl = e2eRuntimeOrigins.assetOrigin
-  const resolveObjectPath = (objectKey: string): string => {
-    const target = path.resolve(e2eRunRoot, objectKey)
-    if (!target.startsWith(`${assetRoot}${path.sep}`)) {
-      throw new Error(
-        "E2E content asset object key가 허용 경로를 벗어났습니다."
-      )
-    }
-    return target
-  }
-  const resolveUrl = (objectKey: string): string => {
-    resolveObjectPath(objectKey)
-    return new URL(objectKey, `${publicBaseUrl}/`).toString()
-  }
-
-  return {
-    async deleteObjects(objectKeys) {
-      try {
-        await Promise.all(
-          objectKeys.map((objectKey) =>
-            rm(resolveObjectPath(objectKey), { force: true })
-          )
-        )
-        return ok(undefined)
-      } catch (cause) {
-        return err({ cause, retryable: true })
-      }
-    },
-    async putObject(input) {
-      try {
-        const target = resolveObjectPath(input.objectKey)
-        await mkdir(path.dirname(target), { recursive: true })
-        await writeFile(target, input.body, { mode: 0o600 })
-        return ok({ url: resolveUrl(input.objectKey) })
-      } catch (cause) {
-        return err({ cause, retryable: true })
-      }
-    },
-    resolveUrl,
-  }
-}
-
-function createE2eAuthEmailDelivery(e2eRunRoot: string): AuthEmailDeliveryPort {
-  const inMemoryDelivery = createInMemoryAuthEmailDelivery()
-  const mailboxPath = path.join(e2eRunRoot, "auth-email.json")
-
-  return {
-    async deliverPasswordReset(input) {
-      await inMemoryDelivery.deliverPasswordReset(input)
-      await writeMailbox(mailboxPath, "password-reset", input)
-    },
-    async deliverVerification(input) {
-      await inMemoryDelivery.deliverVerification(input)
-      await writeMailbox(mailboxPath, "verification", input)
-    },
-  }
-}
-
-async function writeMailbox(
-  mailboxPath: string,
-  kind: "password-reset" | "verification",
-  input: AuthEmailDeliveryInput
-): Promise<void> {
-  await writeFile(
-    mailboxPath,
-    JSON.stringify({ callbackUrl: input.callbackUrl, kind }),
-    {
-      encoding: "utf8",
-      mode: 0o600,
-    }
-  )
-}
+const databaseConfig = config.d1_databases?.[0]
+if (databaseConfig === undefined) throw new Error("D1 binding이 없습니다.")
+databaseConfig.migrations_dir = path.join(apiRoot, "migrations")
+await mkdir(runRoot, { recursive: true })
+const configPath = path.join(runRoot, "api.json")
+await writeFile(configPath, JSON.stringify(config))
+const migration = Bun.spawn(
+  [
+    "node",
+    wrangler,
+    "d1",
+    "migrations",
+    "apply",
+    "DB",
+    "--local",
+    "--config",
+    configPath,
+    "--persist-to",
+    stateRoot,
+  ],
+  { stdin: "ignore", stdout: "inherit", stderr: "inherit" }
+)
+if ((await migration.exited) !== 0) throw new Error("E2E D1 migration 실패")
+const seed = Bun.spawn(
+  [
+    "node",
+    path.join(apiRoot, "node_modules/tsx/dist/cli.mjs"),
+    "--tsconfig",
+    path.join(apiRoot, "tsconfig.json"),
+    path.join(apiRoot, "src/test-support/seed-e2e-database.ts"),
+  ],
+  { stdin: "ignore", stdout: "inherit", stderr: "inherit" }
+)
+if ((await seed.exited) !== 0) throw new Error("E2E D1 seed 실패")
+const child = Bun.spawn(
+  [
+    "node",
+    wrangler,
+    "dev",
+    "--local",
+    "--config",
+    configPath,
+    "--persist-to",
+    stateRoot,
+    "--port",
+    new URL(e2eRuntimeOrigins.apiOrigin).port,
+  ],
+  { stdin: "ignore", stdout: "inherit", stderr: "inherit" }
+)
+for (const signal of ["SIGINT", "SIGTERM"] as const)
+  process.on(signal, () => child.kill(signal))
+process.exitCode = await child.exited

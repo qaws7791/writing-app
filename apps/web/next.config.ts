@@ -2,7 +2,6 @@ import { basename, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   parseContentAssetImageAllowedOrigins,
   parseContentAssetPublicBaseUrl,
@@ -41,12 +40,26 @@ const contentAssetImageAllowedOrigins = resolveContentAssetImageAllowedOrigins(
 )
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    if (!development) return []
+    const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000"
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        { source: "/api/:path*", destination: apiBaseUrl + "/api/:path*" },
+        {
+          source: "/assets/content/:path*",
+          destination: apiBaseUrl + "/assets/content/:path*",
+        },
+      ],
+      fallback: [],
+    }
+  },
   ...(e2eDistDirectory === undefined ? {} : { distDir: e2eDistDirectory }),
   experimental: {
     cpus: 1,
     useTypeScriptCli: false,
   },
-  output: "standalone",
   outputFileTracingRoot: join(appDirectory, "../.."),
   async headers() {
     return [
@@ -79,22 +92,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
-    if (!development) return []
 
-    const apiBaseUrl = (
-      process.env.API_BASE_URL ?? localRuntimeDefaults.apiBaseUrl
-    ).replace(/\/+$/u, "")
-    return [
-      {
-        destination: `${apiBaseUrl}/api/:path*`,
-        source: "/api/:path*",
-      },
-    ]
-  },
   reactStrictMode: true,
   reactCompiler: true,
-  serverExternalPackages: ["sharp"],
   poweredByHeader: false,
   turbopack: {
     root: join(appDirectory, "../.."),

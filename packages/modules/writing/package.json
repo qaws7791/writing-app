@@ -15,12 +15,11 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/writing",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/writing",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:",
-    "@workspace/ai": "workspace:*",
     "@workspace/auth": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
@@ -28,13 +27,15 @@
     "@workspace/kernel": "workspace:*",
     "@workspace/types": "workspace:*",
     "drizzle-orm": "catalog:",
-    "hono": "catalog:"
+    "hono": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
     "@workspace/identity": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@cloudflare/workers-types": "catalog:"
   }
 }

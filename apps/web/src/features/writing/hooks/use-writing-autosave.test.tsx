@@ -460,12 +460,10 @@ function renderWritingAutosave(
 async function waitUntilReady(
   result: ReturnType<typeof renderWritingAutosave>["result"]
 ): Promise<void> {
-  await act(async () => {
-    await Promise.resolve()
-    await Promise.resolve()
-    await Promise.resolve()
+  await vi.waitFor(async () => {
+    await act(async () => {})
+    expect(result.current.ready).toBe(true)
   })
-  expect(result.current.ready).toBe(true)
 }
 
 async function createWritingConflict(

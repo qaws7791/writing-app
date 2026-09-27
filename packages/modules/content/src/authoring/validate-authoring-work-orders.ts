@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs"
+import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 
 import { findForbiddenBrandTerms } from "@workspace/contracts/content/authoring"
@@ -16,8 +18,8 @@ export async function validateAuthoringWorkOrdersFromFiles(input: {
   readonly lessonsRoot: string
   readonly workOrdersPath: string
 }): Promise<readonly AuthoringValidationIssue[]> {
-  const workOrdersFile = Bun.file(input.workOrdersPath)
-  if (!(await workOrdersFile.exists())) {
+  const workOrdersFile = input.workOrdersPath
+  if (!existsSync(workOrdersFile)) {
     return [
       {
         message: "작업 지시서 파일이 없습니다.",
@@ -29,7 +31,7 @@ export async function validateAuthoringWorkOrdersFromFiles(input: {
 
   let workOrders: unknown
   try {
-    workOrders = await workOrdersFile.json()
+    workOrders = JSON.parse(await readFile(workOrdersFile, "utf8"))
   } catch (cause) {
     return [
       {
@@ -107,8 +109,8 @@ async function validateAuthoringWorkOrder(input: {
   readonly lessonPath: string
   readonly order: AuthoringWorkOrder
 }): Promise<readonly AuthoringValidationIssue[]> {
-  const file = Bun.file(input.lessonPath)
-  if (!(await file.exists())) {
+  const file = input.lessonPath
+  if (!existsSync(file)) {
     return [
       {
         message: `레슨 파일이 없습니다: ${input.lessonPath}`,
@@ -120,7 +122,7 @@ async function validateAuthoringWorkOrder(input: {
 
   let steps: unknown
   try {
-    steps = await file.json()
+    steps = JSON.parse(await readFile(file, "utf8"))
   } catch (cause) {
     return [
       {

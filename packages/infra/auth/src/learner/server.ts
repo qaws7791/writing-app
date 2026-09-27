@@ -114,7 +114,7 @@ export function createLearnerAuthRuntime(
         },
       },
       enabled: true,
-      storage: "memory",
+      storage: "database",
     },
     secret: input.secret,
     socialProviders:

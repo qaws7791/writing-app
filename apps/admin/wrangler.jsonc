@@ -1,0 +1,69 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "writing-app-admin-local",
+  "account_id": "23cceaf93cf439c0f6e586bd9bd26133",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS",
+  },
+  "images": {
+    "binding": "IMAGES",
+  },
+  "services": [
+    {
+      "binding": "API",
+      "service": "writing-app-api-local",
+    },
+  ],
+  "vars": {
+    "NODE_ENV": "development",
+    "API_BASE_URL": "http://writing-app-api",
+    "WEB_ORIGIN": "http://localhost:3000",
+    "ADMIN_ORIGIN": "http://localhost:3001",
+  },
+  "env": {
+    "staging": {
+      "name": "writing-app-admin-staging",
+      "workers_dev": true,
+      "images": {
+        "binding": "IMAGES",
+      },
+      "services": [
+        {
+          "binding": "API",
+          "service": "writing-app-api-staging",
+        },
+      ],
+      "vars": {
+        "NODE_ENV": "production",
+        "API_BASE_URL": "http://writing-app-api",
+        "WEB_ORIGIN": "https://writing-app-web-staging.qaws7791.workers.dev",
+        "ADMIN_ORIGIN": "https://writing-app-admin-staging.qaws7791.workers.dev",
+      },
+    },
+    "production": {
+      "name": "writing-app-admin-production",
+      "workers_dev": true,
+      "images": {
+        "binding": "IMAGES",
+      },
+      "services": [
+        {
+          "binding": "API",
+          "service": "writing-app-api-production",
+        },
+      ],
+      "vars": {
+        "NODE_ENV": "production",
+        "API_BASE_URL": "http://writing-app-api",
+        "WEB_ORIGIN": "https://writing-app-web-production.qaws7791.workers.dev",
+        "ADMIN_ORIGIN": "https://writing-app-admin-production.qaws7791.workers.dev",
+      },
+    },
+  },
+}

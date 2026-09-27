@@ -15,7 +15,7 @@ const deletionMarkerSchema = z
   })
   .strict()
 
-export function createS3DeletionMarkerStore(input: {
+export function createDeletionMarkerStore(input: {
   readonly idGenerator: IdGenerator<string>
   readonly objectStorage: PrivateObjectStorage
   readonly prefix: string

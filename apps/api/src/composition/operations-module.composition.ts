@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite"
+import type { SqlDatabaseClient as Database } from "@workspace/db/sql-client"
 import type { AdminSessionResolver } from "@workspace/identity/ports"
 import {
   createOperationsModule,
@@ -10,7 +10,7 @@ import type { AppLogger } from "@workspace/observability/logger"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 import type { WritingAppDatabase } from "@workspace/db/client"
 
-export function composeOperationsModule(
+export async function composeOperationsModule(
   input: Readonly<{
     clock: Clock
     database: WritingAppDatabase
@@ -18,8 +18,8 @@ export function composeOperationsModule(
     logger: AppLogger
     reportingDatabase: Database
   }>
-): OperationsModule {
-  return createOperationsModule({
+): Promise<OperationsModule> {
+  return await createOperationsModule({
     audit: {
       failureObserver(event) {
         input.logger.error(event, logEventNames.auditPersistenceFailed)

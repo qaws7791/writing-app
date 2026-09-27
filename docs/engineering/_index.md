@@ -29,7 +29,7 @@
 | `tech-stack.md`                         | 기술 선택과 교체 판단 기준을 정의한다.                   |
 | `runtime-configuration.md`              | 설정 소유권·변경·보안 원칙을 정의한다.                   |
 | `deployment.md`                         | 배포 승인, 실행, 복구 절차를 정의한다.                   |
-| `release-runbook.md`                    | 새 VPS의 첫 staging·production 출시 순서를 정의한다.     |
+| `release-runbook.md`                    | 원격 출시 재개 조건을 정의한다.                          |
 | `api-contract.md`                       | HTTP 호환성, 인증, 오류와 계약 변경 원칙을 정의한다.     |
 | `auth-permissions.md`                   | 인증·인가 정책과 권한 변경 절차를 정의한다.              |
 | `admin-identity-types.md`               | 관리자·학습자 식별자 타입 경계를 정의한다.               |

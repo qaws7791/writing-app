@@ -1,17 +1,17 @@
-import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
+import type { WritingAppDatabase } from "@workspace/db/client"
 
 import { authUsers } from "#auth/schema/learner-auth.schema"
 
-export function seedLearnerAuth(
-  database: BunSQLiteDatabase,
+export async function seedLearnerAuth(
+  database: WritingAppDatabase,
   input: Readonly<{
     email: string
     name: string
     now: Date
     userId: string
   }>
-): void {
-  database
+): Promise<void> {
+  await database
     .insert(authUsers)
     .values({
       createdAt: input.now,

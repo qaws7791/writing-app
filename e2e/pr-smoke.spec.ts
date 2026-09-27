@@ -26,18 +26,13 @@ test("학습자가 로그인해 서버가 확정한 레슨 완료를 다시 조�
   await page.getByRole("link", { name: /E2E 상태 전이 코스/ }).click()
   await page.getByRole("link", { name: "학습 시작하기" }).click()
 
-  await page.getByRole("radio", { name: "클라이언트가 채점한다" }).click()
-  await page.getByRole("button", { name: "확인하기" }).click()
-  await page.getByRole("button", { name: "계속하기" }).click()
   await page.getByRole("radio", { name: "서버가 채점한다" }).click()
-  await page.getByRole("button", { name: "확인하기" }).click()
-  await page.getByRole("button", { name: "다음으로", exact: true }).click()
+  await page.getByRole("button", { name: "계속하기" }).click()
   await page.getByRole("radio", { name: "서버가 상태를 계산한다" }).click()
-  await page.getByRole("button", { name: "확인하기" }).click()
-  await page.getByRole("button", { name: "다음으로", exact: true }).click()
+  await page.getByRole("button", { name: "계속하기" }).click()
 
   const completionHeading = page.getByRole("heading", {
-    name: "레슨을 완료했어요!",
+    name: "훌륭합니다!",
   })
   await expect(completionHeading).toBeVisible()
 
@@ -60,12 +55,14 @@ test("관리자 사이드바 이동 중 현재 본문을 유지한다", async ({
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" })
   await page.setViewportSize({ height: 844, width: 390 })
   await expect(page.locator("html")).toHaveClass(/dark/u)
-  await page.getByRole("button", { name: "메뉴 열기" }).click()
-  const mobileSidebar = page.getByRole("dialog", { name: "어드민 메뉴" })
+  await page.getByRole("button", { name: "사이드바 전환" }).click()
+  const mobileSidebar = page.getByRole("dialog", { name: "Sidebar" })
   await expect(mobileSidebar).toBeVisible()
 
   await expectAdminNavigationToKeepContent(page, {
     linkName: "콘텐츠 관리",
+    mobile: true,
+    sourceHeading: "사용자 관리",
     sourcePath: "/users",
     targetHeading: "콘텐츠 관리",
     targetPath: "/courses",
@@ -80,10 +77,17 @@ test("관리자가 발행한 코스를 별도 학습자가 읽는다", async ({
   page,
 }) => {
   await loginAdmin(page, "owner@example.test", { nextPath: "/courses" })
-  await page.getByRole("button", { name: "새 강의" }).click()
+  await page.getByRole("button", { name: "코스 만들기" }).click()
+  const createDialog = page.getByRole("dialog", { name: "코스 만들기" })
+  await createDialog
+    .getByRole("textbox", { name: "제목", exact: true })
+    .fill("E2E 발행 준비 코스")
+  await createDialog
+    .getByRole("button", { name: "만들기", exact: true })
+    .click()
   const courseId = readCreatedCourseId(
     await page
-      .getByRole("link", { exact: true, name: "새 강의" })
+      .getByRole("link", { exact: true, name: "E2E 발행 준비 코스" })
       .last()
       .getAttribute("href")
   )
@@ -135,7 +139,9 @@ test("관리자가 발행한 코스를 별도 학습자가 읽는다", async ({
       learnerPage.getByRole("heading", { name: e2eAdminContentReadingTitle })
     ).toBeVisible()
     await expect(
-      learnerPage.getByText("관리자가 발행한 본문입니다.")
+      learnerPage.getByText(
+        "관리자가 발행한 본문입니다. 학습자 화면에서 확인합니다."
+      )
     ).toBeVisible()
     diagnostics.expectNoIssues()
   } finally {
@@ -147,6 +153,7 @@ async function expectAdminNavigationToKeepContent(
   page: Page,
   options: Readonly<{
     linkName: string
+    mobile?: boolean
     sourceHeading?: string
     sourcePath: string
     targetHeading: string
@@ -178,10 +185,14 @@ async function expectAdminNavigationToKeepContent(
         page.getByRole("heading", { name: options.sourceHeading })
       ).toBeVisible()
     }
-    await expect(targetLink.getByText("이동 중", { exact: true })).toHaveCSS(
-      "opacity",
-      "1"
-    )
+    if (options.mobile) {
+      await expect(page.getByRole("dialog", { name: "Sidebar" })).toBeHidden()
+    } else {
+      await expect(targetLink.getByText("이동 중", { exact: true })).toHaveCSS(
+        "opacity",
+        "1"
+      )
+    }
   } finally {
     releaseRequest()
   }

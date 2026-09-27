@@ -5,8 +5,6 @@ import path from "node:path"
 const repositoryRoot = path.resolve(import.meta.dir, "..")
 const options = readOptions(Bun.argv.slice(2))
 const runRoot = await mkdtemp(path.join(tmpdir(), "writing-app-e2e-"))
-const databaseUrl = path.join(runRoot, "writing-app.sqlite")
-const runId = path.basename(runRoot)
 
 try {
   const playwright = Bun.spawn(
@@ -20,7 +18,6 @@ try {
       cwd: repositoryRoot,
       env: {
         ...process.env,
-        E2E_DATABASE_URL: databaseUrl,
         E2E_RUN_ROOT: runRoot,
         E2E_RUNTIME: options.runtime,
         E2E_SERVER_SCOPE: options.serverScope,
@@ -32,22 +29,17 @@ try {
   )
   process.exitCode = await playwright.exited
 } finally {
-  await Promise.all([
-    rm(runRoot, { force: true, recursive: true }),
-    rm(path.join(repositoryRoot, "apps/admin/.next/e2e", runId), {
-      force: true,
-      recursive: true,
-    }),
-    rm(path.join(repositoryRoot, "apps/web/.next/e2e", runId), {
-      force: true,
-      recursive: true,
-    }),
-  ])
+  await rm(runRoot, {
+    force: true,
+    recursive: true,
+    maxRetries: 10,
+    retryDelay: 200,
+  })
 }
 
 interface E2eOptions {
   readonly playwrightArguments: readonly string[]
-  readonly runtime: "development" | "standalone"
+  readonly runtime: "development" | "preview"
   readonly serverScope: "all" | "learner"
 }
 
@@ -66,7 +58,7 @@ function readOptions(arguments_: readonly string[]): E2eOptions {
     const value = arguments_[index + 1]
     if (
       argument === "--runtime" &&
-      (value === "development" || value === "standalone")
+      (value === "development" || value === "preview")
     ) {
       runtime = value
     } else if (

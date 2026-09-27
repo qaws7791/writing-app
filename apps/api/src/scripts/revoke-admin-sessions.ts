@@ -1,49 +1,21 @@
-import { createWritingAppDatabase } from "@workspace/db/client"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import { adminAuthSessions } from "@workspace/auth/schema"
-
-export function revokeAllAdminSessions(db: WritingAppDatabase): number {
-  return db.transaction((transaction) => {
-    const sessionCount = transaction
-      .select({ id: adminAuthSessions.id })
-      .from(adminAuthSessions)
-      .all().length
-    transaction.delete(adminAuthSessions).run()
-    return sessionCount
-  })
+import { createLocalDatabase } from "@/scripts/local-bindings"
+export async function revokeAllAdminSessions(
+  db: WritingAppDatabase
+): Promise<number> {
+  const result = await db.delete(adminAuthSessions).run()
+  return result.meta.changes
 }
-
-export function requireAdminSessionRevocationApproval(
-  databaseUrl: string | undefined,
-  expectedDatabaseUrl: string | undefined,
-  approved: string | undefined
-): string {
-  if (databaseUrl === undefined) {
-    throw new Error("세션 폐기에는 명시적인 DATABASE_URL이 필요합니다.")
-  }
-  if (approved !== "true") {
-    throw new Error(
-      "세션 폐기에는 ADMIN_SESSION_REVOCATION_APPROVED=true가 필요합니다."
-    )
-  }
-  if (expectedDatabaseUrl !== databaseUrl) {
-    throw new Error("세션 폐기 대상 DATABASE_URL 확인값이 일치하지 않습니다.")
-  }
-  return databaseUrl
-}
-
 if (import.meta.main) {
-  const databaseUrl = requireAdminSessionRevocationApproval(
-    process.env["DATABASE_URL"],
-    process.env["ADMIN_SESSION_EXPECTED_DATABASE_URL"],
-    process.env["ADMIN_SESSION_REVOCATION_APPROVED"]
-  )
-  const client = createWritingAppDatabase(databaseUrl)
+  const client = await createLocalDatabase()
   try {
     process.stdout.write(
-      `${JSON.stringify({ revokedSessionCount: revokeAllAdminSessions(client.db) })}\n`
+      JSON.stringify({
+        revokedSessionCount: await revokeAllAdminSessions(client.db),
+      }) + "\n"
     )
   } finally {
-    client.close()
+    await client.close()
   }
 }

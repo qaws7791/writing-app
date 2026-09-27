@@ -6,13 +6,12 @@
   "exports": {
     "./content-asset-images": "./src/content-asset-images.ts",
     "./csp-report": "./src/csp-report.ts",
-    "./image-optimizer-security": "./src/image-optimizer-security.ts",
     "./security-headers": "./src/security-headers.ts",
     "./zod-jitless": "./src/zod-jitless.ts"
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/nextjs-config",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/nextjs-config",
     "typecheck": "tsc7 --noEmit"
   },
   "devDependencies": {

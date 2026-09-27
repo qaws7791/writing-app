@@ -20,10 +20,10 @@ export function createDrizzleIdentityRepository(
 ): IdentityRepository {
   return {
     async findLearnerProfile(userId) {
-      return readLearnerProfile(database, userId)
+      return await readLearnerProfile(database, userId)
     },
     async provisionLearnerProfile(input) {
-      database
+      await database
         .insert(learnerProfiles)
         .values({
           deletedAt: input.profile.deletedAt,
@@ -35,7 +35,7 @@ export function createDrizzleIdentityRepository(
         .onConflictDoNothing({ target: learnerProfiles.userId })
         .run()
 
-      const record = readLearnerProfile(database, input.profile.userId)
+      const record = await readLearnerProfile(database, input.profile.userId)
       if (record === null) {
         throw new Error("저장된 학습자 identity profile을 찾을 수 없습니다.")
       }
@@ -51,7 +51,7 @@ export function createDrizzleIdentityRepository(
       }
 
       if (input.expectedVersion === null) {
-        const inserted = database
+        const inserted = await database
           .insert(learnerProfiles)
           .values({
             ...values,
@@ -66,7 +66,7 @@ export function createDrizzleIdentityRepository(
           : ok({ profile: input.profile, version: nextVersion })
       }
 
-      const updated = database
+      const updated = await database
         .update(learnerProfiles)
         .set(values)
         .where(
@@ -85,11 +85,11 @@ export function createDrizzleIdentityRepository(
   }
 }
 
-function readLearnerProfile(
+async function readLearnerProfile(
   database: WritingAppDatabase,
   userId: Parameters<IdentityRepository["findLearnerProfile"]>[0]
-): LearnerProfileRecord | null {
-  const row = database
+): Promise<LearnerProfileRecord | null> {
+  const row = await database
     .select()
     .from(learnerProfiles)
     .where(eq(learnerProfiles.userId, userId))

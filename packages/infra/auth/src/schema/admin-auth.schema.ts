@@ -81,6 +81,7 @@ export const adminAuthVerifications = sqliteTable(
 )
 
 export const adminAuthRateLimits = sqliteTable("admin_auth_rate_limit", {
+  id: text("id").notNull().unique(),
   key: text("key").primaryKey().notNull(),
   count: integer("count").notNull(),
   lastRequest: integer("last_request").notNull(),

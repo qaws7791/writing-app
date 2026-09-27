@@ -1,3 +1,4 @@
+import { executeBatch, type DatabaseStatement } from "@workspace/db/batch"
 import { eq } from "drizzle-orm"
 import { chunkByBoundParameters } from "@workspace/db/bound-parameter-chunks"
 import type { WritingAppDatabase } from "@workspace/db/client"
@@ -19,9 +20,7 @@ import {
   type CourseSeedRow,
 } from "#content/infrastructure/persistence/content-seed"
 
-type WritingAppDatabaseTransaction = Parameters<
-  Parameters<WritingAppDatabase["transaction"]>[0]
->[0]
+type WritingAppDatabaseTransaction = WritingAppDatabase
 
 const defaultSeedTime = new Date("2026-06-14T00:00:00.000Z")
 
@@ -29,76 +28,84 @@ export async function seedContentDatabase(
   database: WritingAppDatabase
 ): Promise<void> {
   const rows = await createDefaultContentSeedRows()
-  database.transaction((transaction) => {
-    insertMissingContentSeedAggregates(transaction, rows, defaultSeedTime)
-  })
+  await insertMissingContentSeedAggregates(database, rows, defaultSeedTime)
 }
 
-function insertMissingContentSeedAggregates(
+async function insertMissingContentSeedAggregates(
   transaction: WritingAppDatabaseTransaction,
   rows: ContentSeedRows,
   now: Date
-): void {
+): Promise<void> {
   for (const course of rows.courses) {
-    const existingCourse = transaction
+    const existingCourse = await transaction
       .select({ id: courses.id })
       .from(courses)
       .where(eq(courses.id, course.id))
       .get()
 
     if (existingCourse === undefined) {
-      insertSeedCourse(transaction, rows, course, now)
+      await insertSeedCourse(transaction, rows, course, now)
     }
   }
 }
 
-function insertSeedCourse(
+async function insertSeedCourse(
   transaction: WritingAppDatabaseTransaction,
   rows: ContentSeedRows,
   course: CourseSeedRow,
   now: Date
-): void {
+): Promise<void> {
+  const statements: DatabaseStatement[] = []
   const courseId = createCourseId(course.id)
   const publishedVersionId = createCurriculumVersionId(courseId, 1)
   const draftVersionId = createCurriculumVersionId(courseId, 2)
 
-  transaction
-    .insert(courses)
-    .values({
+  statements.push(
+    transaction.insert(courses).values({
       createdAt: now,
       id: courseId,
       publishedCurriculumVersionId: null,
       sortOrder: course.sortOrder,
       status: course.status,
     })
-    .run()
-  insertCurriculumVersion(transaction, course, {
+  )
+  insertCurriculumVersion(transaction, statements, course, {
     createdAt: now,
     id: publishedVersionId,
     revision: 1,
   })
-  insertVersionContent(transaction, rows, course.id, publishedVersionId)
-  transaction
-    .update(courseCurriculumVersions)
-    .set({ publishedAt: now, status: "published", updatedAt: now })
-    .where(eq(courseCurriculumVersions.id, publishedVersionId))
-    .run()
-  transaction
-    .update(courses)
-    .set({ publishedCurriculumVersionId: publishedVersionId })
-    .where(eq(courses.id, courseId))
-    .run()
+  insertVersionContent(
+    transaction,
+    statements,
+    rows,
+    course.id,
+    publishedVersionId
+  )
+  statements.push(
+    transaction
+      .update(courseCurriculumVersions)
+      .set({ publishedAt: now, status: "published", updatedAt: now })
+      .where(eq(courseCurriculumVersions.id, publishedVersionId))
+  )
+  statements.push(
+    transaction
+      .update(courses)
+      .set({ publishedCurriculumVersionId: publishedVersionId })
+      .where(eq(courses.id, courseId))
+  )
 
-  insertCurriculumVersion(transaction, course, {
+  insertCurriculumVersion(transaction, statements, course, {
     createdAt: now,
     id: draftVersionId,
     revision: 2,
   })
-  insertVersionContent(transaction, rows, course.id, draftVersionId)
+  insertVersionContent(transaction, statements, rows, course.id, draftVersionId)
+  await executeBatch(transaction, statements)
 }
 
 function insertCurriculumVersion(
   transaction: WritingAppDatabaseTransaction,
+  statements: DatabaseStatement[],
   course: CourseSeedRow,
   input: {
     readonly createdAt: Date
@@ -106,9 +113,8 @@ function insertCurriculumVersion(
     readonly revision: number
   }
 ): void {
-  transaction
-    .insert(courseCurriculumVersions)
-    .values({
+  statements.push(
+    transaction.insert(courseCurriculumVersions).values({
       category: course.category,
       courseId: course.id,
       createdAt: input.createdAt,
@@ -122,11 +128,12 @@ function insertCurriculumVersion(
       updatedAt: input.createdAt,
       visualKey: course.visualKey,
     })
-    .run()
+  )
 }
 
 function insertVersionContent(
   transaction: WritingAppDatabaseTransaction,
+  statements: DatabaseStatement[],
   rows: ContentSeedRows,
   courseId: string,
   curriculumVersionId: string
@@ -140,32 +147,33 @@ function insertVersionContent(
     fixedParameters: 0,
     parametersPerItem: 5,
   })) {
-    transaction
-      .insert(courseUnitVersions)
-      .values(unitChunk.map((unit) => ({ ...unit, curriculumVersionId })))
-      .run()
+    statements.push(
+      transaction
+        .insert(courseUnitVersions)
+        .values(unitChunk.map((unit) => ({ ...unit, curriculumVersionId })))
+    )
   }
   for (const lessonChunk of chunkByBoundParameters(lessons, {
     fixedParameters: 0,
     parametersPerItem: 10,
   })) {
-    transaction
-      .insert(lessonVersions)
-      .values(
+    statements.push(
+      transaction.insert(lessonVersions).values(
         lessonChunk.map(({ courseId: _courseId, ...lesson }) => ({
           ...lesson,
           curriculumVersionId,
         }))
       )
-      .run()
+    )
   }
   for (const stepChunk of chunkByBoundParameters(steps, {
     fixedParameters: 0,
     parametersPerItem: 7,
   })) {
-    transaction
-      .insert(lessonStepVersions)
-      .values(stepChunk.map((step) => ({ ...step, curriculumVersionId })))
-      .run()
+    statements.push(
+      transaction
+        .insert(lessonStepVersions)
+        .values(stepChunk.map((step) => ({ ...step, curriculumVersionId })))
+    )
   }
 }

@@ -9,17 +9,14 @@ const validProductionEnvironment: AppEnvInput = {
   ADMIN_AUTH_SECRET: adminProductionSecret,
   ADMIN_ORIGIN: "https://admin.example.com",
   CURSOR_SIGNING_SECRET: "a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXyZ1234567890AB",
-  DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
   LEARNER_AUTH_SECRET: learnerProductionSecret,
   NODE_ENV: "production",
-  OPENAI_API_KEY: "sk-test-openai-key",
   WEB_ORIGIN: "https://app.example.com",
 }
 
 describe("production 환경 검증", () => {
   it.each([
     ["HTTP origin", { WEB_ORIGIN: "http://app.example.com" }, /WEB_ORIGIN/u],
-    ["memory DB", { DATABASE_URL: ":memory:" }, /DATABASE_URL/u],
     [
       "공유 auth secret",
       { ADMIN_AUTH_SECRET: learnerProductionSecret },

@@ -15,15 +15,10 @@ const appEnvBaseSchema = z.object({
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
   API_PORT: portSchema.default(localRuntimePorts.api),
   CURSOR_SIGNING_SECRET: z.string().min(32).optional(),
-  DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   LEARNER_AUTH_SECRET: z.string().min(32),
   NODE_ENV: nodeEnvSchema,
-  OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_MAX_RETRIES: z.coerce.number().int().nonnegative().default(2),
-  OPENAI_MODEL: z.string().min(1).default("gpt-4.1-mini"),
-  OPENAI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   WEB_ORIGIN: z.url().default(localRuntimeDefaults.learnerWebOrigin),
 })
 
@@ -75,14 +70,6 @@ function validateProductionEnvironment(
     }
   }
 
-  if (env.DATABASE_URL === undefined || env.DATABASE_URL === ":memory:") {
-    addProductionIssue(
-      context,
-      "DATABASE_URL",
-      "production에서는 영구 DATABASE_URL을 명시해야 합니다."
-    )
-  }
-
   validateProductionSecret(
     context,
     "LEARNER_AUTH_SECRET",
@@ -111,13 +98,6 @@ function validateProductionEnvironment(
       context,
       "ADMIN_AUTH_SECRET",
       "학습자 secret과 다른 값을 사용해야 합니다."
-    )
-  }
-  if (env.OPENAI_API_KEY === undefined) {
-    addProductionIssue(
-      context,
-      "OPENAI_API_KEY",
-      "production에서는 OpenAI API key가 필요합니다."
     )
   }
 }

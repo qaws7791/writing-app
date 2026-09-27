@@ -8,7 +8,9 @@ export type GeneratedApiClientRuntime = Readonly<{
   fetch?: (request: Request) => Promise<Response>
 }>
 
-const generatedApiClientRuntime = Symbol("generated-api-client-runtime")
+const generatedApiClientRuntime = Symbol.for(
+  "writing-app.generated-api-client-runtime"
+)
 
 type GeneratedRequestInit = RequestInit & {
   [generatedApiClientRuntime]?: GeneratedApiClientRuntime

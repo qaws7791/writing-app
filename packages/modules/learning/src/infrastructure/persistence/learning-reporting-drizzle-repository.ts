@@ -25,60 +25,75 @@ export function createDrizzleLearningReportingRepository(
       const [completionRows, activityRows, courseCountRows] = await Promise.all(
         [
           Promise.resolve(
-            chunkByBoundParameters(uniqueUserIds, {
-              fixedParameters: 1,
-              parametersPerItem: 1,
-            }).flatMap((userIdChunk) =>
-              database
-                .select({
-                  completedLessons: count(),
-                  userId: learnerLessonProgress.userId,
-                })
-                .from(learnerLessonProgress)
-                .where(
-                  and(
-                    inArray(learnerLessonProgress.userId, userIdChunk),
-                    eq(learnerLessonProgress.status, "completed")
-                  )
+            (
+              await Promise.all(
+                chunkByBoundParameters(uniqueUserIds, {
+                  fixedParameters: 1,
+                  parametersPerItem: 1,
+                }).map(
+                  async (userIdChunk) =>
+                    await database
+                      .select({
+                        completedLessons: count(),
+                        userId: learnerLessonProgress.userId,
+                      })
+                      .from(learnerLessonProgress)
+                      .where(
+                        and(
+                          inArray(learnerLessonProgress.userId, userIdChunk),
+                          eq(learnerLessonProgress.status, "completed")
+                        )
+                      )
+                      .groupBy(learnerLessonProgress.userId)
+                      .all()
                 )
-                .groupBy(learnerLessonProgress.userId)
-                .all()
-            )
+              )
+            ).flat()
           ),
           Promise.resolve(
-            chunkByBoundParameters(uniqueUserIds, {
-              fixedParameters: 0,
-              parametersPerItem: 1,
-            }).flatMap((userIdChunk) =>
-              database
-                .select({
-                  activityDate: learnerActivityDays.activityDate,
-                  userId: learnerActivityDays.userId,
-                })
-                .from(learnerActivityDays)
-                .where(inArray(learnerActivityDays.userId, userIdChunk))
-                .all()
-            )
+            (
+              await Promise.all(
+                chunkByBoundParameters(uniqueUserIds, {
+                  fixedParameters: 0,
+                  parametersPerItem: 1,
+                }).map(
+                  async (userIdChunk) =>
+                    await database
+                      .select({
+                        activityDate: learnerActivityDays.activityDate,
+                        userId: learnerActivityDays.userId,
+                      })
+                      .from(learnerActivityDays)
+                      .where(inArray(learnerActivityDays.userId, userIdChunk))
+                      .all()
+                )
+              )
+            ).flat()
           ),
           Promise.resolve(
-            chunkByBoundParameters(uniqueUserIds, {
-              fixedParameters: 0,
-              parametersPerItem: 1,
-            }).flatMap((userIdChunk) =>
-              database
-                .select({
-                  courseCount: count(),
-                  status: learnerCourseProgress.status,
-                  userId: learnerCourseProgress.userId,
-                })
-                .from(learnerCourseProgress)
-                .where(inArray(learnerCourseProgress.userId, userIdChunk))
-                .groupBy(
-                  learnerCourseProgress.userId,
-                  learnerCourseProgress.status
+            (
+              await Promise.all(
+                chunkByBoundParameters(uniqueUserIds, {
+                  fixedParameters: 0,
+                  parametersPerItem: 1,
+                }).map(
+                  async (userIdChunk) =>
+                    await database
+                      .select({
+                        courseCount: count(),
+                        status: learnerCourseProgress.status,
+                        userId: learnerCourseProgress.userId,
+                      })
+                      .from(learnerCourseProgress)
+                      .where(inArray(learnerCourseProgress.userId, userIdChunk))
+                      .groupBy(
+                        learnerCourseProgress.userId,
+                        learnerCourseProgress.status
+                      )
+                      .all()
                 )
-                .all()
-            )
+              )
+            ).flat()
           ),
         ]
       )

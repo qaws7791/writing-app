@@ -660,21 +660,6 @@ export function OrderStep() {
 }`,
       },
       {
-        id: "paragraph-order",
-        title: "문단 문장 순서",
-        description: "PARAGRAPH_ORGANIZE에서 고른 문장을 재배치합니다. 순번은 두지 않습니다.",
-        code: `<Sortable value={["claim", "reason"]} onValueChange={() => {}} aria-label="문단 문장 순서">
-  <SortableItem value="claim">
-    <SortableContent>학교는 토론을 늘려야 한다</SortableContent>
-    <SortableHandle />
-  </SortableItem>
-  <SortableItem value="reason">
-    <SortableContent>토론은 근거를 점검하게 한다</SortableContent>
-    <SortableHandle />
-  </SortableItem>
-</Sortable>`,
-      },
-      {
         id: "graded",
         title: "채점 후 잠금",
         description: "확인 뒤에는 state로 정오답을 표시하고 이동을 막습니다.",
@@ -698,7 +683,7 @@ export function OrderStep() {
     ],
     usageNotes: [
       "Sortable은 value와 onValueChange로 순서를 제어하며 각 SortableItem에는 안정적인 value를 제공하세요.",
-      "ORDER와 PARAGRAPH_ORGANIZE는 항목 앞에 순번을 두지 않습니다.",
+      "ORDER는 항목 앞에 순번을 두지 않습니다.",
       "핸들은 항목 오른쪽에 두어 오른손 엄지 도달 범위를 맞춥니다.",
     ],
     accessibility: [

@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
-import {
-  createInMemoryWritingAppDatabase,
-  type WritingAppDatabaseClient,
-} from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+import { type WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import type { LearnerDataPurgePort } from "@workspace/db/learner-data-purge"
 import { aPublishedCourse } from "@workspace/content/test-fixtures"
@@ -38,10 +36,10 @@ const learnerOwnedTableNames = [
 
 describe("삭제 학습자 purge SQLite integration", () => {
   it("cutoff 이하의 사용자 소유 데이터만 삭제하고 최근 사용자와 공유 데이터를 보존한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
+    const client = await createInMemoryWritingAppDatabase()
 
     try {
-      preparePurgeDatabase(client)
+      await preparePurgeDatabase(client)
 
       const result = await runDeletedLearnerPurge(
         client,
@@ -54,29 +52,29 @@ describe("삭제 학습자 purge SQLite integration", () => {
         matchedUserCount: 1,
         purgedUserCount: 1,
       })
-      expect(readLearnerRowCounts(client, "eligible")).toEqual(
+      expect(await readLearnerRowCounts(client, "eligible")).toEqual(
         expectedRowCounts(0)
       )
-      expect(readLearnerRowCounts(client, "recent")).toEqual(
+      expect(await readLearnerRowCounts(client, "recent")).toEqual(
         expectedRowCounts(1)
       )
-      expect(readSharedRowCounts(client)).toEqual({
+      expect(await readSharedRowCounts(client)).toEqual({
         courses: 1,
         curriculumVersions: 1,
         lessonSteps: 1,
       })
     } finally {
-      client.close()
+      await client.close()
     }
   })
 
   it("중간 module purge 실패 시 writing을 포함한 모든 사용자 데이터를 rollback한다", async () => {
-    const client = createInMemoryWritingAppDatabase()
+    const client = await createInMemoryWritingAppDatabase()
 
     try {
-      runCurrentTestMigration(client.sqlite)
-      const course = aPublishedCourse(client.sqlite)
-      seedDeletedLearner(client, {
+      await runCurrentTestMigration(client.sqlite)
+      const course = await aPublishedCourse(client.sqlite)
+      await seedDeletedLearner(client, {
         course,
         deletedAt: purgeCutoff.getTime(),
         id: "rollback-user",
@@ -95,53 +93,55 @@ describe("삭제 학습자 purge SQLite integration", () => {
       expect(result._unsafeUnwrapErr()).toMatchObject({
         kind: "deleted-learner-purge-failed",
       })
-      expect(readLearnerRowCounts(client, "rollback-user")).toEqual(
+      expect(await readLearnerRowCounts(client, "rollback-user")).toEqual(
         expectedRowCounts(1)
       )
-      expect(readSharedRowCounts(client)).toMatchObject({
+      expect(await readSharedRowCounts(client)).toMatchObject({
         courses: 1,
         curriculumVersions: 1,
         lessonSteps: 1,
       })
     } finally {
-      client.close()
+      await client.close()
     }
   })
 })
 
 const failingPurgePort = {
   moduleName: "failing-test-module",
-  purge() {
+  statements() {
     throw new Error("purge fixture failed")
   },
 } satisfies LearnerDataPurgePort
 
-function preparePurgeDatabase(client: WritingAppDatabaseClient): void {
-  runCurrentTestMigration(client.sqlite)
-  const course = aPublishedCourse(client.sqlite)
+async function preparePurgeDatabase(
+  client: WritingAppDatabaseClient
+): Promise<void> {
+  await runCurrentTestMigration(client.sqlite)
+  const course = await aPublishedCourse(client.sqlite)
 
-  seedDeletedLearner(client, {
+  await seedDeletedLearner(client, {
     course,
     deletedAt: purgeCutoff.getTime(),
     id: "eligible",
   })
-  seedDeletedLearner(client, {
+  await seedDeletedLearner(client, {
     course,
     deletedAt: purgeCutoff.getTime() + 1,
     id: "recent",
   })
 }
 
-function seedDeletedLearner(
+async function seedDeletedLearner(
   client: WritingAppDatabaseClient,
   input: Readonly<{
-    course: ReturnType<typeof aPublishedCourse>
+    course: Awaited<ReturnType<typeof aPublishedCourse>>
     deletedAt: number
     id: string
   }>
-): void {
+): Promise<void> {
   const email = `${input.id}@example.test`
-  aLearner(client.sqlite, {
+  await aLearner(client.sqlite, {
     accountId: `account-${input.id}`,
     deletedAt: input.deletedAt,
     displayName: deletedLearnerDisplayName,
@@ -152,7 +152,7 @@ function seedDeletedLearner(
     status: "deleted",
     version: 1,
   })
-  client.sqlite
+  await client.sqlite
     .query<void, [string, string, string, number]>(
       `INSERT INTO verification (
         id, identifier, value, expires_at, created_at, updated_at
@@ -164,7 +164,7 @@ function seedDeletedLearner(
       `verification-token-${input.id}`,
       now.getTime() + dayMs
     )
-  client.sqlite
+  await client.sqlite
     .query<void, [string, string, string, number]>(
       `INSERT INTO verification (
         id, identifier, value, expires_at, created_at, updated_at
@@ -176,15 +176,15 @@ function seedDeletedLearner(
       input.id,
       now.getTime() + dayMs
     )
-  aLearnerWithProgress(client.sqlite, {
+  await aLearnerWithProgress(client.sqlite, {
     course: input.course,
     userId: input.id,
   })
-  aWriting(client.sqlite, {
+  await aWriting(client.sqlite, {
     id: `writing-${input.id}`,
     userId: input.id,
   })
-  client.sqlite
+  await client.sqlite
     .query<void, [string]>(
       `INSERT INTO writing_ai_notices (user_id, acknowledged_at) VALUES (?1, 1)`
     )
@@ -200,61 +200,72 @@ function expectedRowCounts(count: number): Readonly<Record<string, number>> {
   )
 }
 
-function readLearnerRowCounts(
+async function readLearnerRowCounts(
   client: WritingAppDatabaseClient,
   userId: string
-): Readonly<Record<string, number>> {
+): Promise<Readonly<Record<string, number>>> {
   return Object.fromEntries(
-    learnerOwnedTableNames.map((table) => [
-      table,
-      readUserRowCount(client, table, userId),
-    ])
+    await Promise.all(
+      learnerOwnedTableNames.map(async (table) => [
+        table,
+        await readUserRowCount(client, table, userId),
+      ])
+    )
   )
 }
 
-function readUserRowCount(
+async function readUserRowCount(
   client: WritingAppDatabaseClient,
   table: (typeof learnerOwnedTableNames)[number],
   userId: string
-): number {
+): Promise<number> {
   if (table === "verification") {
     return (
-      client.sqlite
-        .query<{ readonly value: number }, [string, string]>(
-          `SELECT COUNT(*) AS value
+      (
+        await client.sqlite
+          .query<{ readonly value: number }, [string, string]>(
+            `SELECT COUNT(*) AS value
            FROM verification
            WHERE identifier = ?1 OR value = ?2`
-        )
-        .get(`${userId}@example.test`, userId)?.value ?? 0
+          )
+          .get(`${userId}@example.test`, userId)
+      )?.value ?? 0
     )
   }
   const userColumn = table === "user" ? "id" : "user_id"
   return (
-    client.sqlite
-      .query<{ readonly value: number }, [string]>(
-        `SELECT COUNT(*) AS value FROM ${table} WHERE ${userColumn} = ?`
-      )
-      .get(userId)?.value ?? 0
+    (
+      await client.sqlite
+        .query<{ readonly value: number }, [string]>(
+          `SELECT COUNT(*) AS value FROM ${table} WHERE ${userColumn} = ?`
+        )
+        .get(userId)
+    )?.value ?? 0
   )
 }
 
-function readSharedRowCounts(client: WritingAppDatabaseClient) {
+async function readSharedRowCounts(client: WritingAppDatabaseClient) {
   return {
-    courses: readTableCount(client, "courses"),
-    curriculumVersions: readTableCount(client, "course_curriculum_versions"),
-    lessonSteps: readTableCount(client, "lesson_step_versions"),
+    courses: await readTableCount(client, "courses"),
+    curriculumVersions: await readTableCount(
+      client,
+      "course_curriculum_versions"
+    ),
+    lessonSteps: await readTableCount(client, "lesson_step_versions"),
   }
 }
 
-function readTableCount(
+async function readTableCount(
   client: WritingAppDatabaseClient,
   table: string
-): number {
+): Promise<number> {
   return (
-    client.sqlite
-      .query<{ readonly value: number }, []>(
-        `SELECT COUNT(*) AS value FROM ${table}`
-      )
-      .get()?.value ?? 0
+    (
+      await client.sqlite
+        .query<{ readonly value: number }, []>(
+          `SELECT COUNT(*) AS value FROM ${table}`
+        )
+        .get()
+    )?.value ?? 0
   )
 }

@@ -7,8 +7,8 @@ export function createDrizzleAdminSessionRevoker(
   database: WritingAppDatabase
 ): AdminSessionRevoker {
   return {
-    revokeAllForAdmin(adminId) {
-      database
+    async revokeAllForAdmin(adminId) {
+      await database
         .delete(adminAuthSessions)
         .where(eq(adminAuthSessions.userId, adminId))
         .run()

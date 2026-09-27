@@ -17,7 +17,7 @@ export function createE2eAdminContentFixture(
 
   return adminCourseEditorWriteDocumentSchema.parse({
     ...writeDocument,
-    category: "구성과 표현",
+    category: "문장·교정",
     coverAssetId: null,
     description: "관리자 발행 결과를 학습자 화면에서 검증합니다.",
     title: e2eAdminContentCourseTitle,
@@ -26,7 +26,7 @@ export function createE2eAdminContentFixture(
         id: id("e2e-publish-unit"),
         lessons: [
           {
-            category: "구성과 표현",
+            category: "문장·교정",
             description: "발행된 revision이 학습자에게 노출되는지 검증합니다.",
             estimatedMinutes: 2,
             id: id("e2e-publish-lesson"),
@@ -36,7 +36,7 @@ export function createE2eAdminContentFixture(
             title: "발행 결과 확인하기",
             steps: [
               {
-                body: "관리자가 발행한 본문입니다.",
+                body: "관리자가 발행한 본문입니다. 학습자 화면에서 확인합니다.",
                 id: id("e2e-publish-reading"),
                 sortOrder: 1,
                 status: "active",

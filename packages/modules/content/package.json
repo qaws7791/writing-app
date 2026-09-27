@@ -17,7 +17,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/content",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/content",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {

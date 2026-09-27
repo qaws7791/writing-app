@@ -1,70 +1,18 @@
-import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
-
-import type { Database } from "bun:sqlite"
-
-type ApplicationMigrationManifestEntry = Readonly<{
-  checksum: string
-  fileName: string
-  id: string
-}>
-
-const applicationMigrationManifest = readApplicationMigrationManifest()
-
-export function runCurrentTestMigration(sqlite: Database): void {
-  for (const migration of applicationMigrationManifest) {
-    const sql = normalizeLineEndings(
-      readFileSync(
-        new URL(
-          `../../../../../apps/api/drizzle/${migration.fileName}`,
-          import.meta.url
-        ),
-        "utf8"
-      )
-    )
-    const checksum = createHash("sha256").update(sql).digest("hex")
-    if (checksum !== migration.checksum) {
-      throw new Error(
-        `application migration checksum이 다릅니다: ${migration.id}`
-      )
-    }
-
-    sqlite.exec(sql)
-  }
-}
-
-function readApplicationMigrationManifest(): readonly ApplicationMigrationManifestEntry[] {
-  const value: unknown = JSON.parse(
-    readFileSync(
-      new URL(
-        "../../../../../apps/api/drizzle/application-migrations.json",
-        import.meta.url
-      ),
-      "utf8"
-    )
+import { readFileSync, readdirSync } from "node:fs"
+import type { SqlDatabaseClient } from "#db/sql-client"
+export async function runCurrentTestMigration(
+  database: SqlDatabaseClient
+): Promise<void> {
+  const directory = new URL(
+    "../../../../../apps/api/migrations/",
+    import.meta.url
   )
-  if (!Array.isArray(value) || !value.every(isManifestEntry)) {
-    throw new Error("application migration manifest 형식이 잘못되었습니다.")
+  for (const file of readdirSync(directory)
+    .filter((name) => name.endsWith(".sql"))
+    .sort()) {
+    const statements = readFileSync(new URL(file, directory), "utf8")
+      .split("--> statement-breakpoint")
+      .map((statement) => database.binding.prepare(statement.trim()))
+    await database.binding.batch(statements)
   }
-
-  return value
-}
-
-function isManifestEntry(
-  value: unknown
-): value is ApplicationMigrationManifestEntry {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "checksum" in value &&
-    typeof value.checksum === "string" &&
-    "fileName" in value &&
-    typeof value.fileName === "string" &&
-    "id" in value &&
-    typeof value.id === "string"
-  )
-}
-
-function normalizeLineEndings(value: string): string {
-  return value.replaceAll("\r\n", "\n").replaceAll("\r", "\n")
 }

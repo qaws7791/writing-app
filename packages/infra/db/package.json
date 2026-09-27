@@ -9,18 +9,17 @@
   "exports": {
     "./bound-parameter-chunks": "./src/bound-parameter-chunks.ts",
     "./client": "./src/client.ts",
-    "./database-backup": "./src/database-backup.ts",
-    "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
     "./fts5": "./src/fts5.ts",
     "./learner-data-purge": "./src/learner-data-purge.ts",
-    "./migration-runner": "./src/migration-runner.ts",
-    "./sqlite-database": "./src/sqlite-database.ts",
     "./test-support/application-migration": "./src/test-support/application-migration.ts",
-    "./test-support/sqlite-types": "./src/test-support/sqlite-types.ts"
+    "./test-support/sqlite-types": "./src/test-support/sqlite-types.ts",
+    "./sql-client": "./src/sql-client.ts",
+    "./test-support/d1-database": "./src/test-support/d1-database.ts",
+    "./batch": "./src/batch.ts"
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/db",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/db",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
@@ -30,6 +29,8 @@
     "@types/bun": "catalog:",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
+    "miniflare": "catalog:"
   }
 }

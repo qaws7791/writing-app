@@ -44,7 +44,7 @@
 - DB fixture는 각 테스트가 열고 닫으며, 실패 경로에서도 자원을 정리한다.
 - SQLite fixture는 추적 중인 statement를 모두 finalize한 뒤 strict close하고 파일을 즉시 제거한다. 강제 GC, 지연 또는 삭제 재시도로 수명주기 결함을 숨기지 않는다.
 - browser와 E2E 테스트는 production OAuth provider에 credential을 제출하지 않는다. Google 로그인은 가짜 client 설정으로 실제 시작 handler와 callback URL까지만 검증하고 외부 이동 직전에 가로챈다. 이메일 인증은 fixture DB의 확인된 사용자를 production과 같은 handler로 검증한다.
-- 로컬 E2E는 Caddy를 기동하지 않으므로 기본 browser context마다 RFC 5737 문서용 trusted client IP를 주입하며, 이는 production Caddy의 client IP header 덮어쓰기 경계를 대체하거나 검증한 증거가 아니다.
+- 로컬 E2E는 격리된 D1·R2와 실제 이메일 인증 handler를 사용한다. 로컬 테스트는 Cloudflare edge의 client IP 신뢰 경계를 검증한 증거가 아니다.
 - E2E fixture를 위한 test-only 인증 route나 제품 UI 조건문을 두지 않는다. 인증 runtime은 주입받은 입력만으로 조립하며, 환경을 직접 읽어 분기를 켜는 통로가 생기지 않도록 커스텀 lint 룰이 `process.env`·`Bun.env`·`import.meta.env` 접근을 차단한다.
 - E2E에서 정지·삭제·탭 종료처럼 상태를 변경하거나 중간 실패 시 오염을 남길 수 있는 시나리오는 전용 seeded actor·lesson을 사용한다. 다른 시나리오의 선행 실행이나 조건부 시작 경로에 의존하지 않는다.
 - secret, 실제 사용자 데이터, production endpoint와 공유 storage를 fixture에 사용하지 않는다.
@@ -64,7 +64,7 @@ Playwright WebKit과 device descriptor는 실제 iOS Safari 기기 자체가 아
 
 ## 성능 회귀 gate
 
-main 품질 workflow는 격리 fixture와 테스트 인증 위에 web production standalone을 새로 조립하고 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)의 landing·learner home·lesson shell mobile 예산을 세 번 측정한다. 실행 wrapper는 fixture와 서버 수명주기, 인증 cookie와 Playwright Chromium 경로를 제공한다. Windows에서는 wrapper가 관리하는 Chromium debugging port를 사용해서 종료 직후의 임시 profile 잠금과 측정 결과 유실을 막는다. 측정·재시도·판정은 Lighthouse CI가 담당한다. `error` assertion은 [Lighthouse CI 공식 설정 계약](https://github.com/GoogleChrome/lighthouse-ci/blob/v0.15.1/docs/configuration.md)에 따라 non-zero로 실패하며 report는 CI artifact로 보존한다.
+main 품질 workflow는 격리 fixture와 테스트 인증 위에 web Worker build을 새로 조립하고 [Lighthouse CI 설정](../../lighthouse-ci.config.cjs)의 landing·learner home·lesson shell mobile 예산을 세 번 측정한다. 실행 wrapper는 fixture와 서버 수명주기, 인증 cookie와 Playwright Chromium 경로를 제공한다. Windows에서는 wrapper가 관리하는 Chromium debugging port를 사용해서 종료 직후의 임시 profile 잠금과 측정 결과 유실을 막는다. 측정·재시도·판정은 Lighthouse CI가 담당한다. `error` assertion은 [Lighthouse CI 공식 설정 계약](https://github.com/GoogleChrome/lighthouse-ci/blob/v0.15.1/docs/configuration.md)에 따라 non-zero로 실패하며 report는 CI artifact로 보존한다.
 
 staging k6는 전용 학습자 session과 고정 fixture로 health, course list, lesson start, multiple-choice 오답 submit만 실행한다. 오답은 `retry`에 머물러 같은 시나리오를 반복할 수 있고 AI feedback endpoint와 provider는 호출하지 않는다. [k6 threshold](https://grafana.com/docs/k6/latest/using-k6/thresholds/)가 check·오류율·지연 경계를 넘으면 실패하며, [시나리오](https://grafana.com/docs/k6/latest/using-k6/scenarios/)와 숫자 예산은 [실행 설정](../../scripts/k6-staging-config.js)이 소유한다. 로컬에서는 source·설정·bundle 산출물만 검증한다. 실제 외부 부하는 image release가 검증한 동일 digest를 승인된 `staging` environment에 배포한 뒤 실행하며, 성공해야 production 배포로 진행한다.
 
@@ -120,13 +120,13 @@ CI는 OpenAPI·Orval 생성 전용 job에서 content-addressed cache를 복원�
 | Main push     | 위 정적·생성 계약, repository와 workspace 전체 unit·integration, Astro UI 문서 browser contract, 설정된 Chromium·WebKit 전체 E2E, Lighthouse, source image Compose smoke      |
 | Image release | 성공한 동일 revision main 품질 결과, 취약점 정책·attestation, registry digest의 격리 Compose smoke, 동일 digest staging 배포 후 k6, production 외부 준비 증거와 public verify |
 
-PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. fixture, API와 Next runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 release 전용 standalone runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 같은 핵심 smoke를 순차 실행한다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
+PR의 학습자·관리자 핵심 smoke는 서버 조립을 한 번만 띄우는 단일 Chromium 실행이다. API와 Vite runtime의 준비·종료는 Playwright `webServer`가 소유하고 실행 wrapper는 격리 디렉터리와 환경만 제공한다. Main release E2E는 web과 admin의 최적화 build를 새로 만든 뒤 로컬 Worker preview runtime으로 실행한다. Chromium과 WebKit은 브라우저별 새 DB·서버·임시 디렉터리에서 같은 핵심 smoke를 순차 실행한다. 브라우저별 실제 test 범위는 config의 project 계약이 소유하며, 모든 시나리오가 모든 engine에서 동작한다고 과장하지 않는다.
 
 로컬 browser tier를 처음 실행하는 개발자는 `bunx playwright install chromium webkit`으로 저장소 Playwright가 요구하는 engine을 설치한다. CI의 engine과 Linux system dependency 설치는 [quality workflow](../../.github/workflows/quality-gates.yml)가 소유한다. 일반 `setup`은 큰 browser cache를 자동으로 설치하지 않는다.
 
 [Playwright 설정](../../playwright.config.ts)은 locator action timeout과 시나리오 전체 timeout을 분리한다. 존재하지 않는 접근성 role은 짧은 action timeout으로 실패해야 한다. 긴 발행 시나리오의 전체 timeout은 실제 후속 단계에만 사용한다.
 
-PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. 다른 운영체제의 로컬 개발 호환성은 매 PR 전체 검증이 아니라 필요할 때 설치 smoke나 주기 실행으로 확인한다. 배포 설정은 자체 parser로 재해석하지 않고 Compose, Caddy, Ansible과 실제 container가 직접 읽게 한다.
+PR 필수 gate는 production 배포 환경과 같은 Linux에서 실행한다. 다른 운영체제의 로컬 개발 호환성은 매 PR 전체 검증이 아니라 필요할 때 설치 smoke나 주기 실행으로 확인한다. Worker 설정은 Wrangler와 Cloudflare Vite plugin이 직접 읽는다.
 
 배포 승인 gate도 같은 원칙을 따른다. playbook의 승인 task만 골라 `--check`로 실제 실행하고, 완결된 production 증거는 통과하며 승인 누락·증거 revision 불일치·placeholder 증거·기간이 지난 복구 훈련·대상 환경 불일치는 각각 멈추는지 확인한다. 조건식의 문자열이나 task 순서를 단정하지 않는다.
 

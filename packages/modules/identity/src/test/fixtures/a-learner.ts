@@ -16,10 +16,10 @@ type LearnerFixtureInput = Readonly<{
   version?: number
 }>
 
-export function aLearner(
+export async function aLearner(
   sqlite: WritingAppSqlite,
   input: LearnerFixtureInput
-): void {
+): Promise<void> {
   const createdAt = input.createdAt ?? 1
   const status = input.status ?? "active"
   const version = input.version ?? 0
@@ -27,7 +27,7 @@ export function aLearner(
   const email = input.email ?? `${input.id}@example.test`
   const name = input.name ?? displayName
 
-  sqlite
+  await sqlite
     .query<void, [string, string, string, number]>(
       `INSERT INTO user (
         id, name, email, email_verified, image, created_at, updated_at
@@ -36,7 +36,7 @@ export function aLearner(
     .run(input.id, name, email, createdAt)
 
   if (input.includeProfile !== false) {
-    sqlite
+    await sqlite
       .query<void, [string, string, string, number | null, number]>(
         `INSERT INTO learner_profiles (
           user_id, status, display_name, deleted_at, version
@@ -46,7 +46,7 @@ export function aLearner(
   }
 
   if (input.sessionId !== undefined && input.sessionToken !== undefined) {
-    sqlite
+    await sqlite
       .query<void, [string, string, string, number]>(
         `INSERT INTO session (
           id, user_id, token, expires_at, created_at, updated_at
@@ -56,7 +56,7 @@ export function aLearner(
   }
 
   if (input.accountId !== undefined) {
-    sqlite
+    await sqlite
       .query<void, [string, string, number]>(
         `INSERT INTO account (
           id, user_id, account_id, provider_id, created_at, updated_at

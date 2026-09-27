@@ -8,8 +8,6 @@
 
 [Bun](https://bun.com/docs/installation)과 [Node.js](https://nodejs.org/en/download) 실행 파일을 `PATH`에 설치한다. 필요한 버전은 [package.json](package.json)의 `packageManager`와 `engines.node`가 소유한다. `setup`은 실제 실행 파일의 버전을 변경 작업 전에 검증한다.
 
-Windows에서 symlink 생성 권한이 없으면 Next standalone 조립이 `EPERM`으로 실패한다. 조직 보안 정책이 허용하면 `bun run build` 전에 [Developer Mode](https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode)를 활성화한다. 조직 보안 정책이 Developer Mode를 금지하면 Linux CI에서 standalone 산출물을 검증한다.
-
 ## 빠른 시작
 
 ```bash
@@ -19,7 +17,7 @@ bun run setup
 bun run dev
 ```
 
-`setup`은 설치, 생성, 환경 파일 보충, API 환경 계약 검사, DB 백업, migration, 기본 seed와 진단을 순서대로 실행한다. `setup`은 사용자 환경 값을 보존한다. `setup`은 누락된 값과 정확히 일치하는 예시 placeholder만 바꾼다. 기존 DB가 있으면 검증된 snapshot을 `data/backups/setup/`에 만든다. 백업이 실패하면 migration과 seed를 실행하지 않는다. 저장소 단위 lock은 동시 setup을 차단한다. 실제 준비 절차와 실패 진단은 [런타임 설정 원칙](docs/engineering/runtime-configuration.md)을 따른다.
+`setup`은 설치, 생성, 환경 파일 보충, 로컬 D1 migration, 기본 seed와 진단을 실행한다. 기존 사용자 환경 값은 보존한다. API 비밀 값과 관리자 개발 계정은 Git에서 제외된 `apps/api/.dev.vars`에 저장한다. Cloudflare 로그인과 원격 자원은 로컬 실행에 필요하지 않다. 실행 방식과 제한은 [런타임 설정 원칙](docs/engineering/runtime-configuration.md)을 따른다.
 
 ## 개발과 검증
 

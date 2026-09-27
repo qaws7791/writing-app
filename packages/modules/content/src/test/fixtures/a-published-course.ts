@@ -33,10 +33,10 @@ type PublishedCourseOptions = Readonly<{
   unitId?: string
 }>
 
-export function aPublishedCourse(
+export async function aPublishedCourse(
   sqlite: WritingAppSqlite,
   options: PublishedCourseOptions = {}
-): PublishedCourseFixture {
+): Promise<PublishedCourseFixture> {
   const courseId = options.courseId ?? "course-1"
   const curriculumVersionId = options.curriculumVersionId ?? "version-1"
   const unitId = options.unitId ?? "unit-1"
@@ -46,7 +46,7 @@ export function aPublishedCourse(
   const stepType = options.stepType ?? "MULTIPLE_CHOICE"
   const courseTitle = options.courseTitle ?? "코스"
 
-  sqlite
+  await sqlite
     .query<void, [string]>(
       `INSERT INTO courses (
         id, status, sort_order, published_curriculum_version_id, created_at
@@ -54,7 +54,7 @@ export function aPublishedCourse(
     )
     .run(courseId)
 
-  sqlite
+  await sqlite
     .query<void, [string, string, string]>(
       `INSERT INTO course_curriculum_versions (
         id, course_id, revision, edit_version, status, title, description,
@@ -66,7 +66,7 @@ export function aPublishedCourse(
     )
     .run(curriculumVersionId, courseId, courseTitle)
 
-  sqlite
+  await sqlite
     .query<void, [string, string]>(
       `INSERT INTO course_unit_versions (
         curriculum_version_id, id, title, status, sort_order
@@ -74,7 +74,7 @@ export function aPublishedCourse(
     )
     .run(curriculumVersionId, unitId)
 
-  insertLesson(sqlite, {
+  await insertLesson(sqlite, {
     curriculumVersionId,
     lessonId,
     lessonTitle,
@@ -85,8 +85,8 @@ export function aPublishedCourse(
     unitId,
   })
 
-  ;(options.additionalLessons ?? []).forEach((lesson, index) => {
-    insertLesson(sqlite, {
+  for (const [index, lesson] of (options.additionalLessons ?? []).entries()) {
+    await insertLesson(sqlite, {
       curriculumVersionId,
       lessonId: lesson.lessonId ?? `lesson-${index + 2}`,
       lessonTitle: lesson.lessonTitle ?? "레슨",
@@ -96,9 +96,9 @@ export function aPublishedCourse(
       additionalSteps: [],
       unitId,
     })
-  })
+  }
 
-  sqlite
+  await sqlite
     .query<void, [string]>(
       `UPDATE course_curriculum_versions
        SET status = 'published', published_at = 1
@@ -106,7 +106,7 @@ export function aPublishedCourse(
     )
     .run(curriculumVersionId)
 
-  sqlite
+  await sqlite
     .query<void, [string, string]>(
       `UPDATE courses
        SET published_curriculum_version_id = ?1
@@ -117,7 +117,7 @@ export function aPublishedCourse(
   return { courseId, curriculumVersionId, lessonId, stepId, unitId }
 }
 
-function insertLesson(
+async function insertLesson(
   sqlite: WritingAppSqlite,
   lesson: Readonly<{
     curriculumVersionId: string
@@ -129,8 +129,8 @@ function insertLesson(
     additionalSteps: readonly PublishedCourseStepOptions[]
     unitId: string
   }>
-): void {
-  sqlite
+): Promise<void> {
+  await sqlite
     .query<void, [string, string, string, string, number]>(
       `INSERT INTO lesson_versions (
         curriculum_version_id, id, unit_id, title, description, category,
@@ -145,25 +145,25 @@ function insertLesson(
       lesson.sortOrder
     )
 
-  insertStep(sqlite, {
+  await insertStep(sqlite, {
     curriculumVersionId: lesson.curriculumVersionId,
     lessonId: lesson.lessonId,
     sortOrder: 1,
     stepId: lesson.stepId,
     stepType: lesson.stepType,
   })
-  lesson.additionalSteps.forEach((step, index) => {
-    insertStep(sqlite, {
+  for (const [index, step] of lesson.additionalSteps.entries()) {
+    await insertStep(sqlite, {
       curriculumVersionId: lesson.curriculumVersionId,
       lessonId: lesson.lessonId,
       sortOrder: index + 2,
       stepId: step.stepId,
       stepType: step.stepType,
     })
-  })
+  }
 }
 
-function insertStep(
+async function insertStep(
   sqlite: WritingAppSqlite,
   step: Readonly<{
     curriculumVersionId: string
@@ -172,8 +172,8 @@ function insertStep(
     stepId: string
     stepType: string
   }>
-): void {
-  sqlite
+): Promise<void> {
+  await sqlite
     .query<void, [string, string, string, string, number]>(
       `INSERT INTO lesson_step_versions (
         curriculum_version_id, id, lesson_id, type, content_json, status,

@@ -149,8 +149,6 @@ export function createApp(container: ApiContainer) {
   return { admin, fetch: unified.fetch, learner, unified }
 }
 
-export type ApiApp = ReturnType<typeof createApp>
-
 export function registerLearnerContractRoutes(
   app: OpenAPIHono<ApiHonoEnv>,
   dependencies: LearnerContractRouteDependencies

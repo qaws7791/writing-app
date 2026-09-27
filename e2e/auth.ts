@@ -16,7 +16,7 @@ export async function loginAdmin(
       ? `${adminWebOrigin}/login`
       : `${adminWebOrigin}${nextPath}`
   )
-  await page.getByLabel("이메일").fill(email)
+  await page.getByLabel("이메일", { exact: true }).fill(email)
   await page.getByLabel("비밀번호", { exact: true }).fill(adminPassword)
   const loginButton = page.getByRole("button", { name: "로그인" })
   await expect(loginButton).toBeEnabled()
@@ -38,7 +38,7 @@ export async function loginLearner(
   nextPath = "/app/courses"
 ): Promise<void> {
   await page.goto(`${learnerWebOrigin}/login?next=${nextPath}`)
-  await page.getByLabel("이메일").fill(learnerEmail)
+  await page.getByLabel("이메일", { exact: true }).fill(learnerEmail)
   await page.getByLabel("비밀번호", { exact: true }).fill(learnerPassword)
   const loginButton = page.getByRole("button", {
     name: "이메일로 로그인하기",
@@ -67,6 +67,7 @@ export async function createLearnerSession(
   const response = await context.request.post(
     `${learnerWebOrigin}/api/auth/sign-in/email`,
     {
+      headers: { Origin: learnerWebOrigin },
       data: {
         callbackURL: `${learnerWebOrigin}/app/courses`,
         email: credentials.email ?? learnerEmail,

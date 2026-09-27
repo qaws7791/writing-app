@@ -1,3 +1,4 @@
+import { fetchApi } from "@/server/http/api-fetch"
 import "server-only"
 
 import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
@@ -21,6 +22,7 @@ export async function getServerAdminRequestOptions(
   return createGeneratedRequestOptions(
     {
       baseUrl: readServerApiBaseUrl(),
+      fetch: fetchApi,
       cookie: `${adminSessionCookieName}=${encodeURIComponent(sessionToken)}`,
     },
     {

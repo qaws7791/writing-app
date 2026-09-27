@@ -1,10 +1,7 @@
-import { rmSync } from "node:fs"
+import { createLocalDatabase } from "@/scripts/local-bindings"
 import { eq, max } from "drizzle-orm"
 
-import {
-  createWritingAppDatabase,
-  type WritingAppDatabase,
-} from "@workspace/db/client"
+import { type WritingAppDatabase } from "@workspace/db/client"
 import { normalizeVersionedStepContentOrThrow } from "@workspace/content/ports"
 import {
   courseCurriculumVersions,
@@ -15,22 +12,16 @@ import {
 } from "@workspace/content/migration-schema"
 
 import { seedApplicationDatabase } from "@/db/seed"
-import { requireE2eDatabaseUrl } from "@/test-support/e2e-database-url"
-
-if (import.meta.main) {
-  await setupE2eContentDatabase(requireE2eDatabaseUrl(process.env))
-}
 
 export async function setupE2eContentDatabase(
-  databaseUrl: string
+  persistPath: string
 ): Promise<void> {
-  removeE2eDatabaseFiles(databaseUrl)
-  await seedLearnerTransitionCourse(databaseUrl)
-  await seedLearnerDraftCourse(databaseUrl)
+  await seedLearnerTransitionCourse(persistPath)
+  await seedLearnerDraftCourse(persistPath)
 }
 
-async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
-  const database = createWritingAppDatabase(databaseUrl)
+async function seedLearnerTransitionCourse(persistPath: string): Promise<void> {
+  const database = await createLocalDatabase(persistPath)
   const now = new Date("2026-07-17T00:00:00.000Z")
   const courseId = "e2e-transition-course"
   const curriculumVersionId = "curriculum:e2e-transition-course:1"
@@ -39,17 +30,17 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
 
   try {
     await seedApplicationDatabase(database)
-    database.db
+    await database.db
       .insert(courses)
       .values({
         createdAt: now,
         id: courseId,
         publishedCurriculumVersionId: null,
-        sortOrder: nextCourseSortOrder(database.db),
+        sortOrder: await nextCourseSortOrder(database.db),
         status: "active",
       })
       .run()
-    database.db
+    await database.db
       .insert(courseCurriculumVersions)
       .values({
         category: "E2E",
@@ -66,7 +57,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
         visualKey: "expression",
       })
       .run()
-    database.db
+    await database.db
       .insert(courseUnitVersions)
       .values({
         curriculumVersionId,
@@ -76,7 +67,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
         title: "상태 전이 검증",
       })
       .run()
-    database.db
+    await database.db
       .insert(lessonVersions)
       .values({
         category: "E2E",
@@ -91,7 +82,7 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
         unitId,
       })
       .run()
-    database.db
+    await database.db
       .insert(lessonStepVersions)
       .values([
         {
@@ -145,23 +136,23 @@ async function seedLearnerTransitionCourse(databaseUrl: string): Promise<void> {
         },
       ])
       .run()
-    database.db
+    await database.db
       .update(courseCurriculumVersions)
       .set({ publishedAt: now, status: "published" })
       .where(eq(courseCurriculumVersions.id, curriculumVersionId))
       .run()
-    database.db
+    await database.db
       .update(courses)
       .set({ publishedCurriculumVersionId: curriculumVersionId })
       .where(eq(courses.id, courseId))
       .run()
   } finally {
-    database.close()
+    await database.close()
   }
 }
 
-async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
-  const database = createWritingAppDatabase(databaseUrl)
+async function seedLearnerDraftCourse(persistPath: string): Promise<void> {
+  const database = await createLocalDatabase(persistPath)
   const now = new Date("2026-07-17T00:00:00.000Z")
   const fixtures = [
     {
@@ -183,8 +174,8 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
   ] as const
 
   try {
-    const firstSortOrder = nextCourseSortOrder(database.db)
-    database.db
+    const firstSortOrder = await nextCourseSortOrder(database.db)
+    await database.db
       .insert(courses)
       .values(
         fixtures.map((fixture, index) => ({
@@ -196,7 +187,7 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
         }))
       )
       .run()
-    database.db
+    await database.db
       .insert(courseCurriculumVersions)
       .values(
         fixtures.map((fixture) => ({
@@ -218,7 +209,7 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
         }))
       )
       .run()
-    database.db
+    await database.db
       .insert(courseUnitVersions)
       .values(
         fixtures.map((fixture) => ({
@@ -230,7 +221,7 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
         }))
       )
       .run()
-    database.db
+    await database.db
       .insert(lessonVersions)
       .values(
         fixtures.map((fixture) => ({
@@ -247,7 +238,7 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
         }))
       )
       .run()
-    database.db
+    await database.db
       .insert(lessonStepVersions)
       .values(
         fixtures.map((fixture) => ({
@@ -276,34 +267,32 @@ async function seedLearnerDraftCourse(databaseUrl: string): Promise<void> {
       )
       .run()
     for (const fixture of fixtures) {
-      database.db
+      await database.db
         .update(courseCurriculumVersions)
         .set({ publishedAt: now, status: "published" })
         .where(eq(courseCurriculumVersions.id, fixture.curriculumVersionId))
         .run()
-      database.db
+      await database.db
         .update(courses)
         .set({ publishedCurriculumVersionId: fixture.curriculumVersionId })
         .where(eq(courses.id, fixture.courseId))
         .run()
     }
   } finally {
-    database.close()
+    await database.close()
   }
 }
 
 /** Keeps fixture courses after seeded courses without pinning the seed count. */
-function nextCourseSortOrder(database: WritingAppDatabase): number {
-  const highest = database
-    .select({ value: max(courses.sortOrder) })
-    .from(courses)
-    .get()?.value
+async function nextCourseSortOrder(
+  database: WritingAppDatabase
+): Promise<number> {
+  const highest = (
+    await database
+      .select({ value: max(courses.sortOrder) })
+      .from(courses)
+      .get()
+  )?.value
 
   return (highest ?? 0) + 1
-}
-
-function removeE2eDatabaseFiles(databasePath: string): void {
-  for (const suffix of ["", "-shm", "-wal"] as const) {
-    rmSync(`${databasePath}${suffix}`, { force: true })
-  }
 }

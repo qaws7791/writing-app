@@ -2,41 +2,26 @@ import {
   createContentModule,
   type ContentModule,
 } from "@workspace/content/module"
-import type { ContentAssetStoragePort } from "@workspace/content/ports"
+import type {
+  ContentAssetStoragePort,
+  ContentAssetImageProcessorPort,
+} from "@workspace/content/ports"
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { createS3ObjectStorage } from "@workspace/storage/object-storage"
 import type { ContentAssetId, CourseId } from "@workspace/types/ids"
 import type { Clock, IdGenerator } from "@workspace/kernel/clock"
 
-import { createContentAssetStorageAdapter } from "@/adapters/content/content-asset-storage"
-import { createSharpContentAssetImageProcessor } from "@/adapters/content/sharp-content-asset-image-processor"
-import type { AdminAssetStoreEnv } from "@/config/env"
-
 export function composeContentModule(input: {
   readonly assetIdGenerator: IdGenerator<ContentAssetId>
-  readonly assetStorage?: ContentAssetStoragePort
-  readonly assetStore: AdminAssetStoreEnv | undefined
+  readonly assetStorage: ContentAssetStoragePort
+  readonly imageProcessor: ContentAssetImageProcessorPort
   readonly clock: Clock
   readonly courseIdGenerator: IdGenerator<CourseId>
   readonly database: WritingAppDatabase
 }): ContentModule {
-  const objectStorage =
-    input.assetStorage ??
-    (input.assetStore === undefined
-      ? null
-      : createS3ObjectStorage(input.assetStore).match(
-          (storage) => createContentAssetStorageAdapter(storage),
-          (error) => {
-            throw new Error("콘텐츠 이미지 저장소 설정이 유효하지 않습니다.", {
-              cause: error,
-            })
-          }
-        ))
-
   return createContentModule({
     assetIdGenerator: input.assetIdGenerator,
-    assetImageProcessor: createSharpContentAssetImageProcessor(),
-    assetStorage: objectStorage,
+    assetImageProcessor: input.imageProcessor,
+    assetStorage: input.assetStorage,
     clock: input.clock,
     courseIdGenerator: input.courseIdGenerator,
     database: input.database,

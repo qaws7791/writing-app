@@ -65,6 +65,12 @@ A directory-level `AGENTS.md` narrows this file's rules for its own path and may
 - `apps/web/AGENTS.md` — required Next.js reading before you write app code.
 - `packages/shared/ui/AGENTS.md` — shared UI component boundaries, import conventions, and edit permission.
 
+## Local Runtime
+
+- Use `bun run setup` to initialize local D1 and R2 development. Cloudflare authentication is not required for local development.
+- Run workspace Vitest suites through the root Node.js runner because Miniflare requires Node.js. Bun remains the package manager and script runner.
+- Treat `apps/api/migrations` as the SQL migration authority. Do not access a native SQLite file from application code.
+
 ## Working with the Repository
 
 - Before starting a task, read `docs/_index.md`, `docs/authority-map.md`, and the relevant authority document, in that order, to confirm current facts.

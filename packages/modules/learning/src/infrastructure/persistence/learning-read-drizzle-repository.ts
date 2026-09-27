@@ -50,18 +50,24 @@ export function createDrizzleLearningReadRepository(
   }>
 ): LearnerReadModelRepository {
   return {
-    findCourseDetail: (query) =>
-      findCourseDetail(database, input.content, query),
-    findLesson: (query) =>
-      findLesson(database, input.content, input.presentationSecret, query),
+    findCourseDetail: async (query) =>
+      await findCourseDetail(database, input.content, query),
+    findLesson: async (query) =>
+      await findLesson(
+        database,
+        input.content,
+        input.presentationSecret,
+        query
+      ),
     async listCourseCategories() {
       const courses = await input.content.listPublishedCourses()
       return [
         ...new Set(courses.map((course) => course.category.normalize("NFC"))),
       ].sort((left, right) => left.localeCompare(right, "ko"))
     },
-    listCourses: (query) => listCourses(input.content, query),
-    listProgress: (query) => listProgress(database, input.content, query),
+    listCourses: async (query) => await listCourses(input.content, query),
+    listProgress: async (query) =>
+      await listProgress(database, input.content, query),
   }
 }
 
@@ -115,7 +121,7 @@ async function findCourseDetail(
   content: LearningContentQueryPort,
   input: Readonly<{ courseId: CourseId; userId: LearnerId }>
 ): Promise<LearnerCourseDetail | null> {
-  const progress = database
+  const progress = await database
     .select()
     .from(learnerCourseProgress)
     .where(
@@ -138,7 +144,7 @@ async function findCourseDetail(
     content,
     curriculum.coverAssetId === null ? [] : [curriculum.coverAssetId]
   )
-  return projectCourseDetail(
+  return await projectCourseDetail(
     database,
     curriculum,
     input.userId,
@@ -147,13 +153,13 @@ async function findCourseDetail(
   )
 }
 
-function projectCourseDetail(
+async function projectCourseDetail(
   database: WritingAppDatabase,
   curriculum: LearningCurriculum,
   userId: LearnerId,
   courseProgress: typeof learnerCourseProgress.$inferSelect | undefined,
   cover: LearnerContentAssetReference | null
-): LearnerCourseDetail {
+): Promise<LearnerCourseDetail> {
   const activeUnits = curriculum.units
     .filter((unit) => unit.status === "active")
     .sort((left, right) => left.sortOrder - right.sortOrder)
@@ -168,7 +174,7 @@ function projectCourseDetail(
         left.sortOrder - right.sortOrder ||
         left.id.localeCompare(right.id)
     )
-  const progressRows = database
+  const progressRows = await database
     .select()
     .from(learnerLessonProgress)
     .where(
@@ -244,7 +250,7 @@ async function findLesson(
   presentationSecret: string,
   input: Readonly<{ lessonId: LessonId; userId: LearnerId }>
 ) {
-  const lessonPinned = database
+  const lessonPinned = await database
     .select({
       courseId: learnerLessonProgress.courseId,
       curriculumVersionId: learnerLessonProgress.curriculumVersionId,
@@ -266,7 +272,7 @@ async function findLesson(
   const scopedCourseId = lessonPinned?.courseId ?? published?.courseId
   if (scopedCourseId === undefined) return { kind: "not-found" as const }
 
-  const courseProgress = database
+  const courseProgress = await database
     .select()
     .from(learnerCourseProgress)
     .where(
@@ -312,7 +318,7 @@ async function findLesson(
       )
     ),
   ])
-  const course = projectCourseDetail(
+  const course = await projectCourseDetail(
     database,
     curriculum,
     input.userId,
@@ -349,7 +355,7 @@ async function findLesson(
       category: lesson.category,
       courseId: curriculum.courseId,
       description: lesson.description,
-      drafts: readLearnerStepDrafts(database, {
+      drafts: await readLearnerStepDrafts(database, {
         courseId: curriculum.courseId,
         curriculumVersionId: curriculum.curriculumVersionId,
         lessonId: lesson.id,
@@ -400,39 +406,40 @@ async function listProgress(
   }
   const cursorDate =
     cursor.kind === "after" ? new Date(cursor.primary) : undefined
-  const rows = database
-    .select({
-      courseId: learnerCourseProgress.courseId,
-      lastActivityAt: learnerCourseProgress.lastActivityAt,
-    })
-    .from(learnerCourseProgress)
-    .where(
-      and(
-        eq(learnerCourseProgress.userId, query.userId),
-        query.status === undefined
-          ? undefined
-          : eq(learnerCourseProgress.status, query.status),
-        cursor.kind === "after" && cursorDate !== undefined
-          ? or(
-              lt(learnerCourseProgress.lastActivityAt, cursorDate),
-              and(
-                eq(learnerCourseProgress.lastActivityAt, cursorDate),
-                gt(learnerCourseProgress.courseId, cursor.courseId)
+  const rows = (
+    await database
+      .select({
+        courseId: learnerCourseProgress.courseId,
+        lastActivityAt: learnerCourseProgress.lastActivityAt,
+      })
+      .from(learnerCourseProgress)
+      .where(
+        and(
+          eq(learnerCourseProgress.userId, query.userId),
+          query.status === undefined
+            ? undefined
+            : eq(learnerCourseProgress.status, query.status),
+          cursor.kind === "after" && cursorDate !== undefined
+            ? or(
+                lt(learnerCourseProgress.lastActivityAt, cursorDate),
+                and(
+                  eq(learnerCourseProgress.lastActivityAt, cursorDate),
+                  gt(learnerCourseProgress.courseId, cursor.courseId)
+                )
               )
-            )
-          : undefined
+            : undefined
+        )
       )
-    )
-    .orderBy(
-      desc(learnerCourseProgress.lastActivityAt),
-      asc(learnerCourseProgress.courseId)
-    )
-    .limit(query.limit + 1)
-    .all()
-    .map((row) => ({
-      courseId: courseIdSchema.parse(row.courseId),
-      lastActivityAt: row.lastActivityAt,
-    }))
+      .orderBy(
+        desc(learnerCourseProgress.lastActivityAt),
+        asc(learnerCourseProgress.courseId)
+      )
+      .limit(query.limit + 1)
+      .all()
+  ).map((row) => ({
+    courseId: courseIdSchema.parse(row.courseId),
+    lastActivityAt: row.lastActivityAt,
+  }))
   const { nextPosition, pageRows } = projectLearnerProgressPageWindow(
     rows,
     query.limit

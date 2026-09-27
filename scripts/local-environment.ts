@@ -4,8 +4,8 @@ import path from "node:path"
 
 const environmentFiles = [
   {
-    examplePath: "apps/api/.env.example",
-    targetPath: "apps/api/.env",
+    examplePath: "apps/api/.dev.vars.example",
+    targetPath: "apps/api/.dev.vars",
   },
   {
     examplePath: "apps/web/.env.example",
@@ -39,7 +39,7 @@ export function prepareLocalEnvironmentFiles(
   return environmentFiles.map(({ examplePath, targetPath }) => {
     const example = readRequiredFile(repositoryRoot, examplePath)
     const preparedExample =
-      targetPath === "apps/api/.env" ? prepareApiExample(example) : example
+      targetPath === "apps/api/.dev.vars" ? prepareApiExample(example) : example
     const target = path.join(repositoryRoot, targetPath)
 
     if (!existsSync(target)) {
@@ -56,7 +56,7 @@ export function prepareLocalEnvironmentFiles(
       current,
       example,
       preparedExample,
-      repairKnownPlaceholders: targetPath === "apps/api/.env",
+      repairKnownPlaceholders: targetPath === "apps/api/.dev.vars",
     })
     if (reconciliation.keys.length === 0) {
       return { kind: "preserved", path: targetPath }
@@ -105,7 +105,7 @@ export function inspectLocalEnvironmentFiles(
       )
     }
 
-    if (targetPath === "apps/api/.env") {
+    if (targetPath === "apps/api/.dev.vars") {
       const placeholders = generatedApiKeys.filter(
         (key) => current.values.get(key) === example.values.get(key)
       )
@@ -133,11 +133,11 @@ export function inspectLocalEnvironmentFiles(
 export function readLocalApiEnvironment(
   repositoryRoot: string
 ): Readonly<Record<string, string>> {
-  const targetPath = path.join(repositoryRoot, "apps/api/.env")
+  const targetPath = path.join(repositoryRoot, "apps/api/.dev.vars")
   const parsed = parseEnvironment(readFileSync(targetPath, "utf8"))
   if (parsed.duplicateKeys.length > 0) {
     throw new Error(
-      `apps/api/.env에 중복 환경 변수가 있습니다: ${parsed.duplicateKeys.join(", ")}`
+      `apps/api/.dev.vars에 중복 환경 변수가 있습니다: ${parsed.duplicateKeys.join(", ")}`
     )
   }
   return Object.fromEntries(parsed.values)

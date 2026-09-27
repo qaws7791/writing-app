@@ -1,51 +1,52 @@
-import type { Database } from "bun:sqlite"
+import type { SqlDatabaseClient as Database } from "@workspace/db/sql-client"
 
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+
 import { createOperationsModule } from "@workspace/operations/module"
 import type {
   AuditEventFailureObserver,
   AuditTrail,
 } from "@workspace/operations/ports"
 
-import { runApplicationMigrations } from "@/db/migrate"
+import { runCurrentTestMigration as runApplicationMigrations } from "@workspace/db/test-support/application-migration"
 
 export type AuditTrailFixture = Readonly<{
   auditTrail: AuditTrail
-  close: () => void
+  close: () => Promise<void>
   sqlite: Database
 }>
 
-export function createAuditTrailFixture(input: {
+export async function createAuditTrailFixture(input: {
   readonly clock: () => Date
   readonly failureObserver?: AuditEventFailureObserver
   readonly nextId: () => string
-}): AuditTrailFixture {
-  const client = createInMemoryWritingAppDatabase()
-  const reportingClient = createInMemoryWritingAppDatabase()
-  const close = () => {
-    reportingClient.close()
-    client.close()
+}): Promise<AuditTrailFixture> {
+  const client = await createInMemoryWritingAppDatabase()
+  const close = async () => {
+    await client.close()
   }
 
   try {
-    runApplicationMigrations(client.sqlite)
+    await runApplicationMigrations(client.sqlite)
 
     return {
-      auditTrail: createOperationsModule({
-        audit: {
-          failureObserver: input.failureObserver ?? (() => undefined),
-          idGenerator: { next: input.nextId },
-        },
-        clock: { now: input.clock },
-        database: client.db,
-        reportingDatabase: reportingClient.sqlite,
-        reportingFailureObserver: () => undefined,
-      }).auditTrail,
+      auditTrail: (
+        await createOperationsModule({
+          audit: {
+            failureObserver: input.failureObserver ?? (() => undefined),
+            idGenerator: { next: input.nextId },
+          },
+          clock: { now: input.clock },
+          database: client.db,
+          reportingDatabase: client.sqlite,
+          reportingFailureObserver: () => undefined,
+        })
+      ).auditTrail,
       close,
       sqlite: client.sqlite,
     }
   } catch (cause) {
-    close()
+    await close()
     throw cause
   }
 }

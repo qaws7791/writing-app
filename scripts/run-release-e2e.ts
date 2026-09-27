@@ -9,7 +9,7 @@ const releaseBuildEnvironment = {
   ADMIN_ORIGIN: e2eRuntime.adminOrigin,
   API_BASE_URL: e2eRuntime.apiOrigin,
   CONTENT_ASSET_IMAGE_ALLOWED_ORIGINS: e2eRuntime.assetOrigin,
-  CONTENT_ASSET_PUBLIC_BASE_URL: `${e2eRuntime.assetOrigin}/content-assets`,
+  CONTENT_ASSET_PUBLIC_BASE_URL: `${e2eRuntime.assetOrigin}/assets/content`,
   NEXT_PUBLIC_LEARNER_WEB_ORIGIN: e2eRuntime.learnerOrigin,
   NODE_ENV: "test",
   WEB_ORIGIN: e2eRuntime.learnerOrigin,
@@ -32,7 +32,7 @@ function runReleaseProject(project: ReleaseE2eProject): Promise<void> {
     "bun",
     "scripts/run-e2e.ts",
     "--runtime",
-    "standalone",
+    "preview",
     "--project",
     project,
   ])

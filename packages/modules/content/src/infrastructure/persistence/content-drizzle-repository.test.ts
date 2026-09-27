@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/test-support/d1-database"
+
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { runCurrentTestMigration } from "@workspace/db/test-support/application-migration"
 import type { Result } from "@workspace/kernel/result"
@@ -66,7 +67,7 @@ describe("content Drizzle repository", () => {
         nextDraftRevision: nextDraft.revision,
         publishedRevision: published.revision,
       }).toEqual({ nextDraftRevision: 2, publishedRevision: 1 })
-      expect(() =>
+      await expect(
         fixture.databaseClient.db
           .update(courseCurriculumVersions)
           .set({ title: "변경 금지" })
@@ -77,7 +78,13 @@ describe("content Drizzle repository", () => {
             )
           )
           .run()
-      ).toThrow(/published curriculum version is immutable/u)
+      ).rejects.toMatchObject({
+        cause: expect.objectContaining({
+          message: expect.stringMatching(
+            /published curriculum version is immutable/u
+          ),
+        }),
+      })
     })
   })
 
@@ -125,7 +132,7 @@ describe("content Drizzle repository", () => {
 
   it("asset 전이 중 edit version이 바뀌면 draft와 asset 전이를 함께 rollback한다", async () => {
     await withReferencedAsset(async ({ asset, fixture, referencedDraft }) => {
-      fixture.databaseClient.sqlite.exec(`
+      await fixture.databaseClient.sqlite.exec(`
         CREATE TRIGGER force_content_conflict_after_asset_transition
         BEFORE UPDATE ON content_assets
         BEGIN
@@ -143,13 +150,13 @@ describe("content Drizzle repository", () => {
           now: removedAt,
         })
       } finally {
-        fixture.databaseClient.sqlite.exec(
+        await fixture.databaseClient.sqlite.exec(
           "DROP TRIGGER force_content_conflict_after_asset_transition"
         )
       }
 
       expect({
-        asset: readAssetState(fixture, asset.id),
+        asset: await readAssetState(fixture, asset.id),
         draftEditVersion: (await readDraftOrThrow(fixture.repository))
           .editVersion,
         error: raced.match(
@@ -168,15 +175,15 @@ describe("content Drizzle repository", () => {
 async function withContentRepository(
   run: (fixture: ContentRepositoryFixture) => Promise<void>
 ): Promise<void> {
-  const databaseClient = createInMemoryWritingAppDatabase()
+  const databaseClient = await createInMemoryWritingAppDatabase()
   try {
-    runCurrentTestMigration(databaseClient.sqlite)
+    await runCurrentTestMigration(databaseClient.sqlite)
     await run({
       databaseClient,
       repository: createDrizzleContentRepository(databaseClient.db),
     })
   } finally {
-    databaseClient.close()
+    await databaseClient.close()
   }
 }
 
@@ -239,11 +246,13 @@ async function readDraftOrThrow(
   return draft
 }
 
-function readAssetState(
+async function readAssetState(
   fixture: ContentRepositoryFixture,
   assetId: ContentAssetId
-): Readonly<{ orphanedAt: number | null; status: ContentAsset["status"] }> {
-  const asset = fixture.databaseClient.db
+): Promise<
+  Readonly<{ orphanedAt: number | null; status: ContentAsset["status"] }>
+> {
+  const asset = await fixture.databaseClient.db
     .select({
       orphanedAt: contentAssets.orphanedAt,
       status: contentAssets.status,

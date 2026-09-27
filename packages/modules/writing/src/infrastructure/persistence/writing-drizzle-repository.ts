@@ -1,3 +1,9 @@
+import {
+  executeBatch,
+  requireBatchCondition,
+  isBatchConflict,
+  type DatabaseStatement,
+} from "@workspace/db/batch"
 import { and, asc, count, desc, eq, gt, gte, lt, or, sql } from "drizzle-orm"
 import type {
   LearnerId,
@@ -40,7 +46,7 @@ export function createDrizzleWritingRepository(
 ): WritingRepository {
   return {
     async acknowledgeAiNotice(input) {
-      database
+      await database
         .insert(writingAiNotices)
         .values({
           acknowledgedAt: input.now,
@@ -50,7 +56,7 @@ export function createDrizzleWritingRepository(
         .run()
     },
     async countSuccessfulChecksInRange(input) {
-      const row = database
+      const row = await database
         .select({ value: count() })
         .from(writingChecks)
         .innerJoin(writings, eq(writingChecks.writingId, writings.id))
@@ -65,8 +71,8 @@ export function createDrizzleWritingRepository(
       return row?.value ?? 0
     },
     async createCheck(input) {
-      database.transaction((transaction) => {
-        transaction
+      const statements: DatabaseStatement[] = [
+        database
           .insert(writingChecks)
           .values({
             bodyVersion: input.bodyVersion,
@@ -76,62 +82,68 @@ export function createDrizzleWritingRepository(
             writingId: input.writing.id,
           })
           .onConflictDoUpdate({
+            target: writingChecks.writingId,
             set: {
               bodyVersion: input.bodyVersion,
               id: input.id,
               resultJson: JSON.stringify(input.result),
               succeededAt: input.now,
             },
-            target: writingChecks.writingId,
-          })
-          .run()
-        insertEvents(transaction, input.writing, [input.eventType], input.now)
-      })
+          }),
+      ]
+      insertEvents(
+        database,
+        input.writing,
+        [input.eventType],
+        input.now,
+        statements
+      )
+      await executeBatch(database, statements)
     },
     async createPiece(writing, eventType) {
-      database.transaction((transaction) => {
-        transaction.insert(writings).values(toWritingValues(writing)).run()
-        insertEvents(transaction, writing, [eventType], writing.createdAt)
-      })
+      const statements: DatabaseStatement[] = [
+        database.insert(writings).values(toWritingValues(writing)),
+      ]
+      insertEvents(
+        database,
+        writing,
+        [eventType],
+        writing.createdAt,
+        statements
+      )
+      await executeBatch(database, statements)
     },
     async createTask(draft) {
-      database.insert(writingTasks).values(toTaskValues(draft)).run()
+      await database.insert(writingTasks).values(toTaskValues(draft)).run()
     },
     async deletePiece(input) {
-      return database.transaction((transaction) => {
-        const deleted = transaction
-          .delete(writings)
-          .where(
-            and(
-              eq(writings.id, input.writingId),
-              eq(writings.userId, input.learnerId),
-              eq(writings.version, input.expectedVersion)
-            )
-          )
-          .returning({ id: writings.id })
-          .get()
-
-        if (deleted === undefined) {
-          return writingExists(transaction, input)
-            ? err({ kind: "writing-version-conflict" as const })
-            : err({ kind: "writing-not-found" as const })
-        }
-
-        transaction
-          .insert(writingEvents)
-          .values({
-            eventType: input.eventType,
-            recordedAt: input.now,
-            userId: input.learnerId,
-            writingId: input.writingId,
-          })
-          .onConflictDoNothing()
-          .run()
-        return ok(writingIdSchema.parse(deleted.id))
-      })
+      try {
+        await executeBatch(database, [
+          requireBatchCondition(
+            database,
+            sql`EXISTS (SELECT 1 FROM ${writings} WHERE ${writings.id} = ${input.writingId} AND ${writings.userId} = ${input.learnerId} AND ${writings.version} = ${input.expectedVersion})`
+          ),
+          database.delete(writings).where(eq(writings.id, input.writingId)),
+          database
+            .insert(writingEvents)
+            .values({
+              eventType: input.eventType,
+              recordedAt: input.now,
+              userId: input.learnerId,
+              writingId: input.writingId,
+            })
+            .onConflictDoNothing(),
+        ])
+        return ok(input.writingId)
+      } catch (error) {
+        if (!isBatchConflict(error)) throw error
+        return (await writingExists(database, input))
+          ? err({ cause: error, kind: "writing-version-conflict" as const })
+          : err({ cause: error, kind: "writing-not-found" as const })
+      }
     },
     async findLatestPublicationByTaskId(taskId) {
-      const row = database
+      const row = await database
         .select({
           publication: writingTaskPublications,
         })
@@ -145,7 +157,7 @@ export function createDrizzleWritingRepository(
       return row === undefined ? null : toPublication(row.publication)
     },
     async findPieceById(input) {
-      const row = database
+      const row = await database
         .select()
         .from(writings)
         .where(
@@ -158,7 +170,7 @@ export function createDrizzleWritingRepository(
       return row === undefined ? null : toWriting(row)
     },
     async findPublicationById(publicationId) {
-      const row = database
+      const row = await database
         .select()
         .from(writingTaskPublications)
         .where(eq(writingTaskPublications.id, publicationId))
@@ -166,7 +178,7 @@ export function createDrizzleWritingRepository(
       return row === undefined ? null : toPublication(row)
     },
     async findTaskById(taskId) {
-      const row = database
+      const row = await database
         .select()
         .from(writingTasks)
         .where(eq(writingTasks.id, taskId))
@@ -174,7 +186,7 @@ export function createDrizzleWritingRepository(
       return row === undefined ? null : toTask(row)
     },
     async findLatestCheck(writingId) {
-      const row = database
+      const row = await database
         .select()
         .from(writingChecks)
         .where(eq(writingChecks.writingId, writingId))
@@ -184,20 +196,20 @@ export function createDrizzleWritingRepository(
     },
     async hasAcknowledgedAiNotice(learnerId) {
       return (
-        database
+        (await database
           .select({ userId: writingAiNotices.userId })
           .from(writingAiNotices)
           .where(eq(writingAiNotices.userId, learnerId))
-          .get() !== undefined
+          .get()) !== undefined
       )
     },
     async hasSucceededCheck(writingId) {
       return (
-        database
+        (await database
           .select({ id: writingChecks.id })
           .from(writingChecks)
           .where(eq(writingChecks.writingId, writingId))
-          .get() !== undefined
+          .get()) !== undefined
       )
     },
     async listCatalog(input) {
@@ -208,7 +220,7 @@ export function createDrizzleWritingRepository(
         cursor: input.cursor,
         direction,
       })
-      const rows = database
+      const rows = await database
         .select({
           publication: writingTaskPublications,
           taskId: writingTasks.id,
@@ -283,7 +295,7 @@ export function createDrizzleWritingRepository(
         direction,
         learnerId: input.learnerId,
       })
-      const rows = database
+      const rows = await database
         .select({
           publication: writingTaskPublications,
           writing: writings,
@@ -361,7 +373,7 @@ export function createDrizzleWritingRepository(
         cursor: filter.cursor,
         direction,
       })
-      const rows = database
+      const rows = await database
         .select()
         .from(writingTasks)
         .where(and(where, cursorCondition))
@@ -400,66 +412,64 @@ export function createDrizzleWritingRepository(
       }
     },
     async publishTask(input) {
-      return database.transaction((transaction) => {
-        transaction
-          .insert(writingTaskPublications)
-          .values(toPublicationValues(input.publication))
-          .run()
-        const updated = transaction
-          .update(writingTasks)
-          .set(toTaskValues(input.draft))
-          .where(
-            and(
-              eq(writingTasks.id, input.draft.id),
-              eq(writingTasks.editVersion, input.expectedEditVersion)
-            )
-          )
-          .returning()
-          .get()
-
-        if (updated === undefined) {
-          return taskExists(transaction, input.draft.id)
-            ? err({ kind: "writing-task-version-conflict" as const })
-            : err({ kind: "writing-task-not-found" as const })
-        }
-        return ok(toTask(updated))
-      })
+      try {
+        await executeBatch(database, [
+          requireBatchCondition(
+            database,
+            sql`EXISTS (SELECT 1 FROM ${writingTasks} WHERE ${writingTasks.id} = ${input.draft.id} AND ${writingTasks.editVersion} = ${input.expectedEditVersion})`
+          ),
+          database
+            .insert(writingTaskPublications)
+            .values(toPublicationValues(input.publication)),
+          database
+            .update(writingTasks)
+            .set(toTaskValues(input.draft))
+            .where(eq(writingTasks.id, input.draft.id)),
+        ])
+        return ok(input.draft)
+      } catch (error) {
+        if (!isBatchConflict(error)) throw error
+        return (await taskExists(database, input.draft.id))
+          ? err({
+              cause: error,
+              kind: "writing-task-version-conflict" as const,
+            })
+          : err({ cause: error, kind: "writing-task-not-found" as const })
+      }
     },
     async savePiece(input) {
-      return database.transaction((transaction) => {
-        const updated = transaction
+      const statements: DatabaseStatement[] = [
+        requireBatchCondition(
+          database,
+          sql`EXISTS (SELECT 1 FROM ${writings} WHERE ${writings.id} = ${input.writing.id} AND ${writings.userId} = ${input.writing.learnerId} AND ${writings.version} = ${input.expectedVersion})`
+        ),
+        database
           .update(writings)
           .set(toWritingValues(input.writing))
-          .where(
-            and(
-              eq(writings.id, input.writing.id),
-              eq(writings.userId, input.writing.learnerId),
-              eq(writings.version, input.expectedVersion)
-            )
-          )
-          .returning()
-          .get()
-
-        if (updated === undefined) {
-          return writingExists(transaction, {
-            learnerId: input.writing.learnerId,
-            writingId: input.writing.id,
-          })
-            ? err({ kind: "writing-version-conflict" as const })
-            : err({ kind: "writing-not-found" as const })
-        }
-
-        insertEvents(
-          transaction,
-          input.writing,
-          input.eventTypes,
-          input.writing.updatedAt
-        )
-        return ok(toWriting(updated))
-      })
+          .where(eq(writings.id, input.writing.id)),
+      ]
+      insertEvents(
+        database,
+        input.writing,
+        input.eventTypes,
+        input.writing.updatedAt,
+        statements
+      )
+      try {
+        await executeBatch(database, statements)
+        return ok(input.writing)
+      } catch (error) {
+        if (!isBatchConflict(error)) throw error
+        return (await writingExists(database, {
+          learnerId: input.writing.learnerId,
+          writingId: input.writing.id,
+        }))
+          ? err({ cause: error, kind: "writing-version-conflict" as const })
+          : err({ cause: error, kind: "writing-not-found" as const })
+      }
     },
     async saveTask(input) {
-      const updated = database
+      const updated = await database
         .update(writingTasks)
         .set(toTaskValues(input.draft))
         .where(
@@ -472,7 +482,7 @@ export function createDrizzleWritingRepository(
         .get()
 
       if (updated === undefined) {
-        return taskExists(database, input.draft.id)
+        return (await taskExists(database, input.draft.id))
           ? err({ kind: "writing-task-version-conflict" as const })
           : err({ kind: "writing-task-not-found" as const })
       }
@@ -485,7 +495,8 @@ function insertEvents(
   database: WritingAppDatabase,
   writing: WritingPiece,
   eventTypes: readonly WritingEventType[],
-  recordedAt: Date
+  recordedAt: Date,
+  statements: DatabaseStatement[]
 ): void {
   if (eventTypes.length === 0) return
 
@@ -493,27 +504,28 @@ function insertEvents(
     fixedParameters: 0,
     parametersPerItem: 4,
   })) {
-    database
-      .insert(writingEvents)
-      .values(
-        eventTypeChunk.map((eventType) => ({
-          eventType,
-          recordedAt,
-          userId: writing.learnerId,
-          writingId: writing.id,
-        }))
-      )
-      .onConflictDoNothing()
-      .run()
+    statements.push(
+      database
+        .insert(writingEvents)
+        .values(
+          eventTypeChunk.map((eventType) => ({
+            eventType,
+            recordedAt,
+            userId: writing.learnerId,
+            writingId: writing.id,
+          }))
+        )
+        .onConflictDoNothing()
+    )
   }
 }
 
-function writingExists(
+async function writingExists(
   database: WritingAppDatabase,
   input: Readonly<{ learnerId: string; writingId: string }>
-): boolean {
+): Promise<boolean> {
   return (
-    database
+    (await database
       .select({ id: writings.id })
       .from(writings)
       .where(
@@ -522,17 +534,20 @@ function writingExists(
           eq(writings.userId, input.learnerId)
         )
       )
-      .get() !== undefined
+      .get()) !== undefined
   )
 }
 
-function taskExists(database: WritingAppDatabase, taskId: string): boolean {
+async function taskExists(
+  database: WritingAppDatabase,
+  taskId: string
+): Promise<boolean> {
   return (
-    database
+    (await database
       .select({ id: writingTasks.id })
       .from(writingTasks)
       .where(eq(writingTasks.id, taskId))
-      .get() !== undefined
+      .get()) !== undefined
   )
 }
 

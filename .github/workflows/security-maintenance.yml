@@ -31,5 +31,4 @@ jobs:
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
-      - run: bun scripts/image-vulnerability-policy.ts validate
       - run: bun run audit:full

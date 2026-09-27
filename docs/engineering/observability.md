@@ -56,7 +56,7 @@ Production 배포 전에 operations owner는 telemetry backend와 접근 권한 
 
 Operations owner는 alert channel, 일차 on-call contact와 전달 실패 시 fallback contact를 지정해야 한다. Operations owner는 실제 test alert를 보내고 수신 시각과 evidence 식별자를 release 기록에 연결해야 한다. 이 항목 중 하나라도 없으면 alert 준비를 완료로 판정하면 안 된다.
 
-Incident commander는 alert에서 source revision, 영향 route와 request 식별자를 찾을 수 있는지 확인해야 한다. Release operator는 같은 revision의 Actions run, container digest, Caddy·service health, maintenance 결과와 operation lock을 순서대로 확인해야 한다. DB 무결성 또는 migration 상태가 불명확하면 code rollback을 실행하면 안 된다. Incident commander는 [백업·복구 절차](./database-backup-restore.md)로 전환해야 한다.
+Incident commander는 alert에서 source revision, 영향 route와 request 식별자를 찾을 수 있는지 확인해야 한다. Release operator는 같은 revision의 Actions run, Worker version, service health와 maintenance 결과을 순서대로 확인해야 한다. DB 무결성 또는 migration 상태가 불명확하면 code rollback을 실행하면 안 된다. Incident commander는 [백업·복구 절차](./database-backup-restore.md)로 전환해야 한다.
 
 ## 도입 판단
 

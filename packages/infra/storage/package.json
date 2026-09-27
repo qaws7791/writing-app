@@ -8,21 +8,21 @@
   },
   "exports": {
     "./object-storage": "./src/object-storage.ts",
-    "./private-object-storage": "./src/private-object-storage.ts"
+    "./private-object-storage": "./src/private-object-storage.ts",
+    "./r2-object-storage": "./src/r2-object-storage.ts"
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "cd ../../.. && bun --bun node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/storage",
+    "test": "cd ../../.. && node node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --project @workspace/storage",
     "typecheck": "tsc7 --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1088.0",
-    "@workspace/kernel": "workspace:*",
-    "zod": "catalog:"
+    "@workspace/kernel": "workspace:*"
   },
   "devDependencies": {
     "@workspace/typescript-config": "workspace:*",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@cloudflare/workers-types": "catalog:"
   }
 }

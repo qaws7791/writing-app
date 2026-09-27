@@ -35,8 +35,8 @@ export function registerAdminFoundationRoutes(
     },
     summary: "어드민 API readiness 조회",
   })
-  app.openapi(readinessRoute, (context) => {
-    const ready = input.health.isDatabaseReady()
+  app.openapi(readinessRoute, async (context) => {
+    const ready = await input.health.isDatabaseReady()
     return context.json(
       {
         checks: { database: ready ? "ready" : "unavailable" },

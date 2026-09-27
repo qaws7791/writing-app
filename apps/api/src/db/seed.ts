@@ -5,24 +5,21 @@ import { seedWritingDatabase } from "@workspace/writing/module"
 import type { WritingAppDatabaseClient } from "@workspace/db/client"
 import { seedLearnerIdentity } from "@workspace/identity/module"
 
-import { runApplicationMigrations } from "@/db/migrate"
-
 const seedTime = new Date("2026-06-14T00:00:00.000Z")
 const seedLearnerId = userIdSchema.parse("user-1")
 
 export async function seedApplicationDatabase(
   client: WritingAppDatabaseClient
 ): Promise<void> {
-  runApplicationMigrations(client.sqlite)
-  seedLearnerAuth(client.db, {
+  await seedLearnerAuth(client.db, {
     email: "learner@example.com",
     name: "글쓰기 탐험가",
     now: seedTime,
     userId: seedLearnerId,
   })
   await seedContentDatabase(client.db)
-  seedWritingDatabase(client.db)
-  seedLearnerIdentity(client.db, {
+  await seedWritingDatabase(client.db)
+  await seedLearnerIdentity(client.db, {
     displayName: "글쓰기 탐험가",
     userId: seedLearnerId,
   })

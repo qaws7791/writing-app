@@ -62,30 +62,19 @@ async function runSetupWithLock(): Promise<void> {
   await run(
     [
       "bun",
-      "--env-file=apps/api/.env",
+      "--env-file=apps/api/.dev.vars",
       "apps/api/src/scripts/check-environment.ts",
     ],
     apiEnvironment
   )
   await requireAvailableApiPort(readApiPort(apiEnvironment))
 
-  const backupPath = createSetupBackupPath()
-  await run(
-    [
-      "bun",
-      "--env-file=apps/api/.env",
-      "apps/api/src/scripts/backup-database.ts",
-      `--output=${backupPath}`,
-      "--if-source-missing=skip",
-    ],
-    apiEnvironment
-  )
   await run(["bun", "run", "dev:admin:setup"], apiEnvironment)
   await run(["bun", "run", "doctor"], apiEnvironment)
 
   console.log("로컬 준비가 완료되었습니다. bun run dev를 실행하세요.")
   console.log(
-    "관리자가 새로 생성된 경우 로그인 값은 apps/api/.env의 ADMIN_SEED_EMAIL과 ADMIN_SEED_PASSWORD에 있습니다."
+    "관리자가 새로 생성된 경우 로그인 값은 apps/api/.dev.vars의 ADMIN_SEED_EMAIL과 ADMIN_SEED_PASSWORD에 있습니다."
   )
   console.log("이미 존재한 관리자 credential은 변경하지 않습니다.")
 }
@@ -102,21 +91,6 @@ function requireSafeSetupEnvironment(
     throw new Error(
       "로컬 setup은 기존 관리자 credential을 보존하기 위해 ADMIN_SEED_RESET_PASSWORD=false가 필요합니다."
     )
-  }
-
-  const databaseUrl = environment["DATABASE_URL"]
-  if (
-    databaseUrl === undefined ||
-    databaseUrl === "" ||
-    databaseUrl === ":memory:"
-  ) {
-    throw new Error("로컬 setup은 file-backed DATABASE_URL이 필요합니다.")
-  }
-  if (
-    /^[a-z][a-z\d+.-]*:\/\//iu.test(databaseUrl) &&
-    !databaseUrl.startsWith("file://")
-  ) {
-    throw new Error("로컬 setup은 원격 DATABASE_URL을 변경하지 않습니다.")
   }
 }
 
@@ -167,17 +141,6 @@ export function acquireSetupLock(root: string): SetupLock {
   }
 }
 
-function createSetupBackupPath(): string {
-  const timestamp = new Date().toISOString().replaceAll(":", "-")
-  return path.join(
-    repositoryRoot,
-    "data",
-    "backups",
-    "setup",
-    `api-${timestamp}.sqlite`
-  )
-}
-
 function isFileSystemError(error: unknown, code: string): boolean {
   return (
     error instanceof Error &&
@@ -187,7 +150,7 @@ function isFileSystemError(error: unknown, code: string): boolean {
 }
 
 function readApiPort(environment: Readonly<Record<string, string>>): number {
-  const value = environment["API_PORT"]
+  const value = environment["API_PORT"] ?? "4000"
   const port = Number(value)
   if (!Number.isInteger(port) || port < 1 || port > 65_535) {
     throw new Error(`API_PORT가 올바르지 않습니다: ${value ?? "missing"}`)
